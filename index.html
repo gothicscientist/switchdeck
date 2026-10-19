@@ -132,6 +132,21 @@ h1,h2,h3{text-wrap:balance;margin:0;font-weight:700;letter-spacing:-.02em}
 .bticks span{position:absolute;transform:translateX(-50%)}
 .bticks span:first-child{transform:none}.bticks span:last-child{transform:translateX(-100%)}
 
+/* maker photos */
+.ph{display:block;position:relative;width:100%}
+.ph>svg{display:none}.ph.err>img{display:none}.ph.err>svg{display:block}
+.ph img{display:block;width:100%;height:auto}
+.ph.clean img{mix-blend-mode:multiply}
+.ph.field img,.ph.thumb img{aspect-ratio:2.6/1;object-fit:cover}
+.ph.clean.detail img,.ph.clean.stage img{aspect-ratio:2.3/1;object-fit:cover}
+.ph.scene img{border-radius:14px;aspect-ratio:4/3;object-fit:cover;max-height:440px}
+.fitem .ph img{filter:none}
+.credit{position:absolute;left:14px;bottom:12px;font-size:11px;color:var(--faint)}
+.boardwrap{position:relative}
+.stagetoggle{position:absolute;top:14px;right:14px;display:flex;background:var(--surface);border-radius:9px;padding:3px;box-shadow:var(--shadow-sm)}
+.stagetoggle button{border:0;background:transparent;font-size:12.5px;font-weight:600;padding:5px 10px;border-radius:7px;color:var(--muted)}
+.stagetoggle button[aria-pressed="true"]{background:var(--tile-hover);color:var(--ink)}
+
 /* RESULTS modal */
 .rscrim{position:fixed;inset:0;z-index:85;background:var(--scrim);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;padding:max(24px,env(safe-area-inset-top,0px)) max(24px,env(safe-area-inset-right,0px)) max(24px,env(safe-area-inset-bottom,0px)) max(24px,env(safe-area-inset-left,0px));animation:fade .3s var(--ease) both}
 .rscrim.closing{animation:fade .22s var(--ease) reverse both}
@@ -463,7 +478,7 @@ const CASES = [
      colors:[['Moonlight','#D8D9DD'],['Midnight','#262A33'],['Sage','#8E9F86']],
      kit:{pcb:{hotswap:true,pins:5,led:'none',rgb:false,stabs:['screw']},plate:'Aluminum',stabs:null},
      blurb:'Premium 75% with modular mounting. Built to be tinkered with.'}),
-  C({id:'zoom75',brand:'Meletrix',name:'Zoom75 Essential',layout:'75',keys:84,knob:true,mount:'Gasket',material:'Aluminum',conn:'Tri-mode',price:179,
+  C({id:'zoom75',brand:'Meletrix',name:'Zoom75 TIGA',layout:'75',keys:84,knob:true,mount:'Gasket',material:'Aluminum',conn:'Tri-mode',price:215,
      colors:[['Milk White','#ECEAE4'],['Anodized Black','#24262A'],['Navy','#2E3B5B']],
      kit:{pcb:{hotswap:true,pins:5,led:'south',rgb:true,stabs:['screw']},plate:'PC',stabs:'Screw-in (included)'},
      blurb:'Wireless aluminum 75% with a soft, bouncy typing feel.'}),
@@ -570,6 +585,23 @@ const EXTRAS = [
   {id:'puller',cat:'extras',brand:'Various',name:'Switch + keycap puller',kind:'Tool',price:6,fx:{},blurb:'You need one to swap switches on a hot-swap board.'},
   {id:'coiled',cat:'extras',brand:'Various',name:'Coiled USB-C cable with aviator',kind:'Cable',price:35,fx:{},blurb:'Coiled cable with a detachable aviator connector.'},
 ];
+
+/* Maker photos, hotlinked from each maker's own store with a link back. clean = plain top-down shot on white that can sit in the field. */
+const PHOTOS = {
+  'kc-q1max':{img:'https://cdn.shopify.com/s/files/1/0059/0630/1017/files/Keychron-Q1-Max-QMK-VIA-Wireless-Custom-Mechanical-Keyboard-75_-Layout-Aluminum-Black-Fully-Assembled-Knob-for-Mac-Windows-Linux-Gateron-Jupiter-Red.jpg',page:'https://www.keychron.com/products/keychron-q1-max-qmk-via-wireless-custom-mechanical-keyboard',clean:true,pos:'50% 55%'},
+  'kc-q3max':{img:'https://cdn.shopify.com/s/files/1/0059/0630/1017/files/Keychron-Q3-Max-QMK-VIA-Wireless-Custom-Mechanical-Keyboard-80-percent-Layout-Aluminum-Black-Fully-Assembled-Knob-for-Mac-Windows-Linux-Gateron-Jupiter-Red.jpg',page:'https://www.keychron.com/products/keychron-q3-max-qmk-via-wireless-custom-mechanical-keyboard',clean:true,pos:'50% 55%'},
+  'kc-q6max':{img:'https://cdn.shopify.com/s/files/1/0059/0630/1017/files/Keychron-Q6-Max-QMK-VIA-Wireless-Custom-Mechanical-Keyboard-100_-Layout-Aluminum-Black-Fully-Assembled-Knob-for-Mac-Windows-Linux-Gateron-Jupiter-Red.jpg',page:'https://www.keychron.com/products/keychron-q6-max-qmk-via-wireless-custom-mechanical-keyboard',clean:true,pos:'50% 55%'},
+  'kc-v1max':{img:'https://cdn.shopify.com/s/files/1/0059/0630/1017/files/Keychron-V1-Max-QMK-Wireless-Custom-Mechanical-Keyboard-75_-Layout-Fully-Assembled-Knob-for-Mac-Windows-Linux-Gateron-Jupiter-Red_c19869a6-3c1d-41fc-962c-2896d416a9b6.jpg',page:'https://www.keychron.com/products/keychron-v1-max-qmk-via-wireless-custom-mechanical-keyboard',clean:true,pos:'50% 55%'},
+  'kc-q4pro':{img:'https://cdn.shopify.com/s/files/1/0059/0630/1017/products/Keychron-Q4-Pro-QMK-VIA-wireless-custom-mechanical-keyboard-60-percent-layout-full-aluminum-black-frame-for-Mac-WIndows-Linux-with-RGB-backlight-and-hot-swappable-K-Pro-switch-red.jpg',page:'https://www.keychron.com/products/keychron-q4-pro-qmk-via-wireless-custom-mechanical-keyboard',clean:true,pos:'50% 52%'},
+  'nk65e':{img:'https://cdn.shopify.com/s/files/1/3099/8088/products/NK65_EE_Top_Atomic.jpg',page:'https://novelkeys.com/products/nk65-entry-edition',clean:true,pos:'50% 50%'},
+  'rainy75':{img:'https://cdn.shopify.com/s/files/1/0665/1484/5931/files/3500_dd7a8372-ed99-4a0a-a932-e4ed6e94d9bb.jpg',page:'https://www.wobkey.com/products/rainy75'},
+  'zoom75':{img:'https://cdn.shopify.com/s/files/1/0607/2474/0287/files/02_0c6f20a4-1bf4-4915-90f2-2b432e8165c4.jpg',page:'https://meletrix.com/products/zoom75-tiga-e-white'},
+  'tofu65':{page:'https://kbdfans.com/products/tofu65-3-0-custom-color-edition'},
+  'tofu60':{page:'https://kbdfans.com/products/tofu60-3-0'},
+  'bow':{page:'https://kbdfans.com/products/pbtfans-bow'},
+  'nkcream':{page:'https://novelkeys.com/products/nk-cream-series'},
+};
+for(const [id,ph] of Object.entries(PHOTOS)){const p=[...CASES,...SWITCHES,...KEYCAPS].find(x=>x.id===id); if(p) p.photo=ph}
 
 const ALLPARTS = [...CASES,...PCBS,...PLATES,...SWITCHES,...KEYCAPS,...STABS,...EXTRAS];
 const BYID = Object.fromEntries(ALLPARTS.map(p=>[p.id,p]));
@@ -838,7 +870,7 @@ function extraSVG(e){
 }
 function thumbFor(p,b){
   if(!p) return '';
-  if(p.cat==='case') return boardSVG({layout:p.layout,caseColor:p.colors[0][1],legends:false,u:20,cls:'',knob:p.knob,label:p.name});
+  if(p.cat==='case') return caseVisual({case:p.id,color:0,keycaps:null,extras:[]},'thumb');
   if(p.cat==='switches') return switchSVG(p);
   if(p.cat==='keycaps') return capsSVG(p);
   if(p.cat==='plate') return plateSVG(p.material);
@@ -846,6 +878,15 @@ function thumbFor(p,b){
   if(p.cat==='stabs') return stabSVG(p);
   if(p.cat==='extras') return extraSVG(p);
   return '';
+}
+let stageMode='photo';
+function caseVisual(b,kind){
+  const c=caseOf(b); if(!c) return '';
+  const small=kind==='field'||kind==='thumb';
+  const svg=buildBoard(b,{legends:!small,u:small?20:40,cls:''});
+  const p=c.photo; if(!p||!p.img||(small&&!p.clean)) return svg;
+  const w={thumb:240,field:520,detail:1100,stage:1400}[kind];
+  return `<span class="ph ${kind} ${p.clean?'clean':'scene'}"><img src="${p.img}?width=${w}" alt="${esc(c.brand+' '+c.name)}" loading="lazy" decoding="async" style="object-position:${p.pos||'50% 50%'}" onerror="this.parentNode.classList.add('err')">${svg}</span>`;
 }
 function buildBoard(b,opts={}){
   const c=caseOf(b); if(!c) return null;
@@ -858,7 +899,7 @@ function buildBoard(b,opts={}){
    ========================================================= */
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function money(n){return '$'+(Math.round(n*100)/100).toLocaleString('en-US',{minimumFractionDigits:n%1?2:0,maximumFractionDigits:2})}
-function shopLink(p){const u=SHOPS[p.brand]||SHOPS.Various; return u.includes('google.com/search')&&p.brand==='Various'?u+encodeURIComponent(p.name):u}
+function shopLink(p){if(p.photo&&p.photo.page) return p.photo.page; const u=SHOPS[p.brand]||SHOPS.Various; return u.includes('google.com/search')&&p.brand==='Various'?u+encodeURIComponent(p.name):u}
 function searchLink(p){return 'https://www.google.com/search?tbm=shop&q='+encodeURIComponent(`${p.brand==='Various'?'':p.brand+' '}${p.name}`)}
 function specChips(p){
   const ch=[];
@@ -997,7 +1038,7 @@ const answered=()=>Object.keys(quizAns).length>0;
 const FIELD_SLOTS=[[8,14],[22,8],[37,6],[63,6],[78,8],[92,14],[5,37],[18,31],[82,31],[95,37],[6,60],[17,57],[83,57],[94,60],[8,84],[21,90],[79,90],[92,84]];
 const LW={'60':.64,'65':.72,'75':.78,'tkl':.9,'full':1};
 const fieldEls={};
-function fieldBoard(b){return buildBoard(b,{legends:false,u:20,cls:''})}
+function fieldBoard(b){return caseVisual(b,'field')}
 function initField(){
   const field=document.getElementById('field'); if(field.childElementCount) return;
   const base=evalAns({});
@@ -1141,7 +1182,7 @@ function closeResults(){
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!document.getElementById('results').hidden) closeResults()});
 function renderRList(){
   const el=document.getElementById('rlist');
-  el.innerHTML=resList.map((r,i)=>{const c=caseOf(r.b);return `<button style="--i:${i}" data-ri="${i}" aria-current="${i===resIdx}"><span class="rthumb">${buildBoard(r.b,{legends:false,u:12,cls:''})}</span><span style="min-width:0"><b>${esc(c.brand)} ${esc(c.name)}</b><small>${money(r.t)}</small></span>${i===0?'<span class="best">Best match</span>':`<small>${r.pct}%</small>`}</button>`}).join('');
+  el.innerHTML=resList.map((r,i)=>{const c=caseOf(r.b);return `<button style="--i:${i}" data-ri="${i}" aria-current="${i===resIdx}"><span class="rthumb">${caseVisual(r.b,'thumb')}</span><span style="min-width:0"><b>${esc(c.brand)} ${esc(c.name)}</b><small>${money(r.t)}</small></span>${i===0?'<span class="best">Best match</span>':`<small>${r.pct}%</small>`}</button>`}).join('');
   el.querySelectorAll('[data-ri]').forEach(b=>b.onclick=()=>{resIdx=+b.dataset.ri; el.querySelectorAll('[data-ri]').forEach(x=>x.setAttribute('aria-current',x===b)); renderRDetail()});
 }
 function renderRDetail(){
@@ -1157,7 +1198,7 @@ function renderRDetail(){
   ];
   const el=document.getElementById('rdetail');
   el.innerHTML=`<button class="iconbtn rclose" id="rclose" aria-label="Close">${icon('close')}</button>
-    <div class="rimg swapin">${buildBoard(b,{cls:''})}</div>
+    <div class="rimg swapin">${caseVisual(b,'detail')}${c.photo&&c.photo.img?`<span class="credit">Photo: ${esc(c.brand)}</span>`:''}</div>
     <div class="rinfo swapin"><h2>${esc(c.brand)} ${esc(c.name)}</h2><div class="price">${money(r.t)} <span class="note">complete build</span></div>
       <div class="stats2"><div><span>Match</span><b>${r.pct}%</b></div><div><span>Sound</span><b>${pitchWord(r.e.pitch)}</b></div></div>
       <div class="specs-t">${rows.map(([a,v])=>`<div><span>${a}</span><span>${esc(v)}</span></div>`).join('')}</div>
@@ -1174,10 +1215,12 @@ function renderBuilder(){
   document.getElementById('buildname').value=build.name||'My keyboard';
   document.getElementById('buildeyebrow').textContent = build.example?'Example build · edit anything':'Your build';
   const sb=document.getElementById('stageboard');
-  sb.innerHTML = c? `<div class="swap">${buildBoard(build)}</div>` : `<div class="empty"><p style="margin:0 0 10px">Start with a case or kit. It sets the layout for everything else.</p><button class="btn primary" data-pick="case">Choose a case</button></div>`;
+  const hasPhoto=!!(c&&c.photo&&c.photo.img);
+  sb.innerHTML = c? `<div class="swap">${hasPhoto&&stageMode==='photo'?caseVisual(build,'stage'):buildBoard(build)}</div>${hasPhoto?`<div class="stagetoggle" role="group" aria-label="Preview type"><button aria-pressed="${stageMode==='photo'}" data-stage="photo">Photo</button><button aria-pressed="${stageMode!=='photo'}" data-stage="render">Your build</button></div>${stageMode==='photo'?`<span class="credit">Photo: ${esc(c.brand)}</span>`:''}`:''}` : `<div class="empty"><p style="margin:0 0 10px">Start with a case or kit. It sets the layout for everything else.</p><button class="btn primary" data-pick="case">Choose a case</button></div>`;
   const sw=document.getElementById('swatches');
   sw.innerHTML = c? `<span>Case color</span>${c.colors.map(([n,h],i)=>`<button class="sw" style="background:${h}" title="${esc(n)}" aria-label="${esc(n)}" aria-pressed="${(build.color||0)===i}" data-color="${i}"></button>`).join('')}<span class="mono" style="margin-left:auto">${LAYOUT_NAMES[c.layout]} · ${c.keys} keys${c.knob?' + knob':''}</span>`:'';
-  sw.querySelectorAll('[data-color]').forEach(b=>b.onclick=()=>{build.color=+b.dataset.color; commit()});
+  sw.querySelectorAll('[data-color]').forEach(b=>b.onclick=()=>{build.color=+b.dataset.color; stageMode='render'; commit()});
+  sb.querySelectorAll('[data-stage]').forEach(b=>b.onclick=()=>{stageMode=b.dataset.stage; renderBuilder()});
   renderParts(); renderRail(); renderPill();
 }
 function renderParts(){
@@ -1362,6 +1405,7 @@ function choose(slot,p){
   const notes=[];
   if(slot==='extras'){ build.extras=[...new Set([...(build.extras||[]),p.id])]; commit(); renderPickList(); toast(`Added ${p.name}`); return }
   build[slot]=p.id;
+  if(slot==='keycaps') stageMode='render'; if(slot==='case') stageMode='photo';
   if(slot==='case'){
     build.color=0;
     if(p.kit){ if(build.pcb||build.plate) notes.push('PCB and plate are now included with the kit'); build.pcb=null; build.plate=null; if(p.kit.stabs&&build.stabs){notes.push('stabilizers are included'); build.stabs=null} }
