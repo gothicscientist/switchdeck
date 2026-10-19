@@ -85,4 +85,9 @@ export async function syncCatalog({offline=false,log=console.log}={}) {
   await writeFile(path.join(dir,'catalog-manifest.json'),JSON.stringify(manifest,null,2)+'\n');
   log(JSON.stringify({listings:products.length,builderSwitches:switches.length,builderExtras:extras.length,builderCases:cases.length,builderKeycaps:keycaps.length,builderStabs:stabs.length,categories:manifest.categories}));return manifest;
 }
-if(typeof process!=='undefined'&&process.argv[1]&&path.resolve(process.argv[1])===fileURLToPath(import.meta.url))await syncCatalog({offline:process.argv.includes('--offline')});
+if(typeof process!=='undefined'&&process.argv[1]&&path.resolve(process.argv[1])===fileURLToPath(import.meta.url)){
+  // In GitHub Actions, failures and per-store problems also go out as annotations, readable without the raw log.
+  const gha=!!process.env.GITHUB_ACTIONS;
+  try{await syncCatalog({offline:process.argv.includes('--offline'),log:m=>{console.log(m);if(gha&&/: (?:using last good|HTTP|Store currency|Product feed|Cannot verify|Unexpected|Retries|Invalid|Empty|Feed)/.test(m))console.log('::warning title=catalog source::'+m.slice(0,500))}})}
+  catch(e){if(gha)console.log('::error title=catalog sync::'+String(e.message).slice(0,900));throw e}
+}
