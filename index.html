@@ -699,8 +699,6 @@ const PHOTOS = {
 };
 for(const [id,ph] of Object.entries(PHOTOS)){const p=[...CASES,...SWITCHES,...KEYCAPS].find(x=>x.id===id); if(p) p.photo=ph}
 
-// The finder ranks curated parts only; imported retailer listings join the builder pickers.
-const FINDER_CASES=[...CASES];
 // Imported parts carry only retailer-published facts. Unknown fields stay null and the
 // compatibility panel asks the buyer to check them instead of assuming a fit.
 {const cat=window.SWITCHDECK_CATALOG||{}, add=(pool,list)=>{const have=new Set(pool.map(p=>p.id));for(const p of list||[]) if(!have.has(p.id)){pool.push(p);have.add(p.id)}};
@@ -709,6 +707,9 @@ const FINDER_CASES=[...CASES];
     if(p.cat==='switches') p.col??={top:'#D6D3D1',bot:'#A8A29E',stem:'#78716C'};
     if(p.cat==='case'){p.keys??=LAYOUT_KEYS[p.layout]; p.keysEstimated=true}}
   add(CASES,cat.cases); add(SWITCHES,cat.switches); add(KEYCAPS,cat.keycaps); add(STABS,cat.stabs); add(EXTRAS,cat.extras);}
+// The finder ranks every board. Imported kits are paired with curated switches and keycaps,
+// whose sound data drives the ranking; assembled boards are matched as they ship.
+const FINDER_CASES=[...CASES];
 const ALLPARTS = [...CASES,...PCBS,...PLATES,...SWITCHES,...KEYCAPS,...STABS,...EXTRAS];
 // Reviewed, version-specific matches enrich existing parts without replacing kit prices or fit rules.
 for(const [id,meta] of Object.entries(window.SWITCHDECK_CATALOG?.curated||{})){const p=ALLPARTS.find(p=>p.id===id);if(p&&meta.photo){p.photo={...p.photo,...meta.photo,clean:false};p.retailers=meta.retailers}}
@@ -1004,7 +1005,7 @@ function caseVisual(b,kind){
   const c=caseOf(b); if(!c) return '';
   const small=kind==='field'||kind==='thumb';
   const svg=buildBoard(b,{legends:!small,u:small?20:40,cls:''});
-  const p=c.photo; if(!p||!p.img||(small&&!p.clean)) return svg;
+  const p=c.photo; if(!p||!p.img||(small&&!p.clean&&!c.catalogId)) return svg;
   const w={thumb:240,field:520,detail:1100,stage:1400}[kind];
   const src=new URL(p.img);src.searchParams.set('width',w);
   return `<span class="ph ${kind} ${p.clean?'clean':'scene'}"><img src="${esc(src.href)}" alt="${esc(c.brand+' '+c.name)}" loading="lazy" decoding="async" style="object-position:${p.pos||'50% 50%'}" onerror="this.parentNode.classList.add('err')">${svg}</span>`;
@@ -1271,9 +1272,22 @@ function evalAns(ans){
   const list=[];
   for(const c of FINDER_CASES){
     if(L&&c.layout!==L) continue;
-    const wl=/Tri|Blue/.test(c.conn);
+    const wl=/Tri|Blue|2\.4/.test(c.conn);
     if(ans.wireless==='yes'&&!wl) continue;
     if(ans.wireless==='wired'&&wl) continue;
+    if(ans.solder==='hotswap'&&c.kit&&c.kit.pcb.hotswap===false) continue;
+    if(c.assembled){
+      // Ships with its own switches and keycaps, which stores rarely spec, so feel and look can't be checked.
+      const b={case:c.id,color:0,pcb:null,plate:null,switches:null,keycaps:null,stabs:null,extras:[]};
+      const t=total(b); if(budget&&t>budget) continue;
+      const e=estimate(b);
+      let sc=100 - Math.abs(e.pitch-T.p)*0.7 - Math.abs(e.vol-T.v)*0.45 - 6;
+      if(feel) sc-=4; if(ans.look&&ans.look!=='any'&&!surprise) sc-=4;
+      if(budget) sc-=Math.max(0,(budget*0.5-t)/budget)*20; else sc-=t/60;
+      if(ans.use==='gaming'&&(c.layout==='60'||c.layout==='65')) sc+=3;
+      if(ans.use==='work'&&(c.layout==='75'||c.layout==='tkl'||c.layout==='full')) sc+=3;
+      list.push({b,sc,t,e}); continue;
+    }
     let best=null;
     let caseK=kcs.filter(k=>k.covers.includes(c.layout)||(k.addon&&k.addon[c.layout]));
     if(surprise) caseK=caseK.map(k=>[k,hashStr(`${c.id}:${k.id}:${ans.seed||0}`)]).sort((a,b)=>a[1]-b[1]).map(x=>x[0]);
@@ -1289,7 +1303,7 @@ function evalAns(ans){
       if(ans.use==='gaming'){ if(s.type==='Linear'&&s.force<=55) sc+=8; if(c.layout==='60'||c.layout==='65') sc+=3 }
       if(ans.use==='work'){ if(/Tactile/.test(s.type)) sc+=5; if(c.layout==='75'||c.layout==='tkl'||c.layout==='full') sc+=3 }
       if(k.addon&&!k.covers.includes(c.layout)) sc-=4;
-      const pcbE=effPcb(b); if(!pcbE.hotswap) sc-=8;
+      const pcbE=effPcb(b); if(pcbE.hotswap===false||(pcbE.hotswap==null&&!c.catalogId)) sc-=8; if(c.catalogId) sc-=3;
       if(!best||sc>best.sc) best={b,sc,t,e};
     }}
     if(!best) continue;
@@ -1308,19 +1322,22 @@ const answered=()=>Object.keys(quizAns).length>0;
 
 /* field of keyboards */
 const FIELD_SLOTS=[[8,14],[22,8],[37,6],[63,6],[78,8],[92,14],[5,37],[18,31],[82,31],[95,37],[6,60],[17,57],[83,57],[94,60],[8,84],[21,90],[79,90],[92,84]];
+const MSLOTS_N=4;
 const LW={'60':.64,'65':.72,'75':.78,'tkl':.9,'full':1};
 const fieldEls={};
 function fieldBoard(b){return caseVisual(b,'field')}
 function initField(){
-  const field=document.getElementById('field'); if(field.childElementCount) return;
-  const base=evalAns({});
-  for(const c of FINDER_CASES){
+}
+function fieldEl(id){
+  if(fieldEls[id]) return fieldEls[id];
+  const field=document.getElementById('field'), c=BYID[id];
+  {
     const el=document.createElement('button'); el.className='fitem'; el.type='button';
-    const r=base.byCase.get(c.id); const b=r?r.b:{case:c.id,color:0,keycaps:null,extras:[]};
+    const r=evalAns({}).byCase.get(c.id); const b=r?r.b:{case:c.id,color:0,keycaps:null,extras:[]};
     el.innerHTML=`<span class="art">${fieldBoard(b)}</span><span class="cap"></span>`; el.dataset.k=b.keycaps||'';
     el.setAttribute('aria-label',`${c.brand} ${c.name}`);
     el.addEventListener('click',()=>{const res=evalAns(quizAns); if(res.byCase.has(c.id)) openResults(c.id); else toast(`${c.name} doesn't match your answers`)});
-    field.appendChild(el); fieldEls[c.id]=el;
+    field.appendChild(el); fieldEls[c.id]=el; return el;
   }
 }
 function layoutField(){
@@ -1332,7 +1349,10 @@ function layoutField(){
   const featW=mobile?Math.min(150,W*0.36):Math.max(160,Math.min(250,W*0.17)), othW=mobile?W*0.2:Math.max(90,Math.min(150,W*0.1));
   const featPos=mobile?[[50,.3],[25,.72],[75,.72]]:[[50,.28],[33,.68],[67,.68]];
   const top=res.list.slice(0,3).map(r=>r.b.case);
-  const rest=FINDER_CASES.map(c=>c.id).filter(id=>!top.includes(id)).sort((a,b)=>(res.byCase.has(b)?1:0)-(res.byCase.has(a)?1:0));
+  // Only as many boards as there are slots get drawn; matches fill them first, best first.
+  const nSlots=mobile?MSLOTS_N:FIELD_SLOTS.length;
+  const rest=[...res.list.slice(3).map(r=>r.b.case),...FINDER_CASES.filter(c=>!c.catalogId&&!res.byCase.has(c.id)).map(c=>c.id)].slice(0,nSlots);
+  for(const id in fieldEls) if(!top.includes(id)&&!rest.includes(id)) fieldEls[id].className='fitem hidden-slot';
   top.forEach((id,i)=>place(id,{x:featPos[i][0]/100*W,y:topBar+featPos[i][1]*avail,w:featW,cls:'feat',r:res.byCase.get(id)}));
   const MSLOTS=[[13,.06],[87,.06],[9,.5],[91,.5]];
   rest.forEach((id,i)=>{
@@ -1342,7 +1362,7 @@ function layoutField(){
   });
 }
 function place(id,{x,y,w,cls,r}){
-  const el=fieldEls[id], c=BYID[id];
+  const el=fieldEl(id), c=BYID[id];
   el.style.left=x+'px'; el.style.top=y+'px'; el.style.width=(w*LW[c.layout])+'px';
   el.className='fitem '+cls;
   if(r&&el.dataset.k!==r.b.keycaps){el.dataset.k=r.b.keycaps; el.querySelector('.art').innerHTML=fieldBoard(r.b)}
@@ -1441,7 +1461,7 @@ document.addEventListener('keydown',e=>{
    ========================================================= */
 let resList=[], resIdx=0;
 function openResults(caseId){
-  resList=evalAns(quizAns).list; if(!resList.length) return;
+  resList=evalAns(quizAns).list; if(!resList.length) return; rShown=60;
   resIdx=caseId?Math.max(0,resList.findIndex(r=>r.b.case===caseId)):0;
   const el=document.getElementById('results'); el.hidden=false; document.body.classList.add('lock');
   el.innerHTML=`<div class="rscrim" id="rscrim"><div class="rgrid" role="dialog" aria-modal="true" aria-label="Your matches"><div class="card rdetail" id="rdetail"></div><div class="card rlist" id="rlist"></div></div></div>`;
@@ -1453,31 +1473,35 @@ function closeResults(){
   s.classList.add('closing'); setTimeout(()=>{el.hidden=true; el.innerHTML=''; document.body.classList.remove('lock')},220);
 }
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!document.getElementById('results').hidden) closeResults()});
+let rShown=60;
 function renderRList(){
-  const el=document.getElementById('rlist');
-  el.innerHTML=resList.map((r,i)=>{const c=caseOf(r.b);return `<button style="--i:${i}" data-ri="${i}" aria-current="${i===resIdx}"><span class="rthumb">${caseVisual(r.b,'thumb')}</span><span style="min-width:0"><b>${esc(c.brand)} ${esc(c.name)}</b><small>${money(r.t)}</small></span>${i===0?'<span class="best">Best match</span>':`<small>${r.pct}%</small>`}</button>`}).join('');
+  const el=document.getElementById('rlist'); rShown=Math.max(rShown,resIdx+1);
+  el.innerHTML=resList.slice(0,rShown).map((r,i)=>{const c=caseOf(r.b);return `<button style="--i:${i}" data-ri="${i}" aria-current="${i===resIdx}"><span class="rthumb">${caseVisual(r.b,'thumb')}</span><span style="min-width:0"><b>${esc(c.brand)} ${esc(c.name)}</b><small>${money(r.t)}</small></span>${i===0?'<span class="best">Best match</span>':`<small>${r.pct}%</small>`}</button>`}).join('')+(resList.length>rShown?`<button class="rmore" id="rmore" style="grid-template-columns:1fr;text-align:center"><small>Show more (${resList.length-rShown} left)</small></button>`:'');
+  const more=el.querySelector('#rmore'); if(more) more.onclick=()=>{rShown+=60; const st=el.scrollTop; renderRList(); el.scrollTop=st};
   el.querySelectorAll('[data-ri]').forEach(b=>b.onclick=()=>{resIdx=+b.dataset.ri; el.querySelectorAll('[data-ri]').forEach(x=>x.setAttribute('aria-current',x===b)); renderRDetail()});
 }
 function renderRDetail(){
   const r=resList[resIdx], b=r.b, c=caseOf(b), s=BYID[b.switches];
   const items=lineItems(b), SL=k=>SLOTS.find(x=>x.key===k).label;
   const sub=i=>i.slot==='switches'?`${i.qty} × ${money(i.part.price)}`:i.slot==='keycaps'&&i.addon?`incl. ${money(i.addon)} numpad kit`:i.slot==='stabs'?`${layoutOf(b)==='full'?7:5}-stab set`:'';
-  const desc=p=>p.cat==='case'?`${LAYOUT_NAMES[p.layout]} · ${p.material} · ${p.mount} mount${p.kit?' · kit':''}`:p.cat==='switches'?`${p.type} · ${p.force} g · ${p.pins}-pin`:p.cat==='keycaps'?`${p.profile} profile · ${p.material} · ${p.legends}`:p.cat==='pcb'?`${p.hotswap?'Hot-swap':'Solder'} · ${p.pins}-pin`:p.cat==='plate'?p.material:p.blurb||'';
+  const desc=p=>p.cat==='case'?[LAYOUT_NAMES[p.layout],p.material,p.mount&&p.mount+' mount',p.assembled?'sold assembled':p.kit&&'kit'].filter(Boolean).join(' · '):p.cat==='switches'?`${p.type} · ${p.force} g · ${p.pins}-pin`:p.cat==='keycaps'?`${p.profile} profile · ${p.material} · ${p.legends}`:p.cat==='pcb'?`${p.hotswap?'Hot-swap':'Solder'} · ${p.pins}-pin`:p.cat==='plate'?p.material:p.blurb||'';
   let rows=items.map((i,n)=>`<div class="part" style="--i:${n}"><span class="pt">${i.slot==='case'?buildBoard({case:c.id,color:b.color||0,keycaps:null,extras:[]},{legends:false,u:10,cls:''}):thumbFor(i.part)}</span>
       <div class="pn"><small>${esc(SL(i.slot))}</small><b>${esc(i.part.brand==='Various'?'':i.part.brand+' ')}${esc(i.part.name)}</b><em>${esc(desc(i.part))}</em></div>
       <div class="pp">${money(i.price)}${sub(i)?`<small>${esc(sub(i))}</small>`:''}</div>
       <div class="stores">${i.slot==='switches'?listenBtn('part:'+i.part.id)+soundSearchLink(i.part):''}${i.slot==='keycaps'&&quizAns.look==='surprise'?'<button type="button" class="listen" id="reroll">↻ Shuffle</button>':''}${storeChips(i.part)}</div></div>`);
-  if(c.kit) rows.splice(1,0,`<div class="part inc" style="--i:1"><span class="pt">${pcbSVG(c.kit.pcb)}</span><div class="pn"><small>Included</small><b>PCB, ${esc(c.kit.plate)} plate${c.kit.stabs?' and stabilizers':''}</b><em>Comes with the ${esc(c.name)}</em></div><div class="pp"><span class="chip ok">Included</span></div></div>`);
+  if(c.assembled) rows.splice(1,0,`<div class="part inc" style="--i:1"><span class="pt">${pcbSVG(c.kit.pcb)}</span><div class="pn"><small>Included</small><b>Switches and keycaps, per the listing</b><em>Listed as a complete keyboard. Check ${esc(storeOf(c))} for which switches and keycaps it ships with.</em></div><div class="pp"><span class="chip ok">Included</span></div></div>`);
+  else if(c.kit&&c.catalogId) rows.splice(1,0,`<div class="part inc" style="--i:1"><span class="pt">${pcbSVG(c.kit.pcb)}</span><div class="pn"><small>Kit</small><b>PCB and plate, per the listing</b><em>Check ${esc(storeOf(c))} for exactly what the ${esc(c.name)} kit includes.</em></div><div class="pp"><span class="chip ok">Kit</span></div></div>`);
+  else if(c.kit) rows.splice(1,0,`<div class="part inc" style="--i:1"><span class="pt">${pcbSVG(c.kit.pcb)}</span><div class="pn"><small>Included</small><b>PCB, ${esc(c.kit.plate)} plate${c.kit.stabs?' and stabilizers':''}</b><em>Comes with the ${esc(c.name)}</em></div><div class="pp"><span class="chip ok">Included</span></div></div>`);
   const el=document.getElementById('rdetail');
   el.innerHTML=`<button class="iconbtn rclose" id="rclose" aria-label="Close">${icon('close')}</button>
     <div class="rsum swapin">
-      <div class="board">${buildBoard(b,{legends:true,u:34,cls:''})}</div>
+      <div class="board">${c.catalogId&&c.photo?.img?caseVisual(b,'detail'):buildBoard(b,{legends:true,u:34,cls:''})}</div>
       <div><h2>${esc(c.brand)} ${esc(c.name)}</h2></div>
       <div class="total"><b>${money(r.t)}</b><span>approx. for every part</span></div>
-      <div class="stats3"><div><span>Match</span><b>${r.pct}%</b></div><div><span>Sound</span><b>${pitchWord(r.e.pitch)}</b></div><div><span>Feel</span><b>${esc(s.type)}</b></div></div>
-      <div class="ractions">${listenBtn('res:'+resIdx,'Hear the switches')}<button class="btn primary" id="rbuild">Customize this build</button><button class="btn" id="rcopy">Copy parts list</button></div>
-      <div class="soundlinks">${soundSearchLink(s)}</div>
-      <p class="note" style="margin:0">Sound tests feature these switches in another keyboard. Your case, plate, keycaps and mods will change the result.</p>
+      <div class="stats3"><div><span>Match</span><b>${r.pct}%</b></div><div><span>Sound</span><b>${pitchWord(r.e.pitch)}</b></div><div><span>Feel</span><b>${esc(s?s.type:'As shipped')}</b></div></div>
+      <div class="ractions">${s?listenBtn('res:'+resIdx,'Hear the switches'):''}<button class="btn primary" id="rbuild">Customize this build</button><button class="btn" id="rcopy">Copy parts list</button></div>
+      ${s?`<div class="soundlinks">${soundSearchLink(s)}</div>
+      <p class="note" style="margin:0">Sound tests feature these switches in another keyboard. Your case, plate, keycaps and mods will change the result.</p>`:`<p class="note" style="margin:0">This board is sold assembled, so its switches and keycaps come with it. Swap them in the builder if you want a different feel or look.</p>`}
       <textarea id="rcopyfb" hidden aria-label="Parts list" style="width:100%;min-height:80px;font-size:12px;background:var(--tile);border:0;border-radius:8px;padding:8px"></textarea>
     </div>
     <div class="rparts swapin"><div class="phead"><h3>Parts and where to buy</h3><span>${items.length+(c.kit?1:0)} items</span></div>
