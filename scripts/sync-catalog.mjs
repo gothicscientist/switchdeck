@@ -70,7 +70,7 @@ export async function syncCatalog({offline=false,log=console.log}={}) {
     files.push({name,body:JSON.stringify(chunk)});
     for(const p of chunk)index.push({id:p.id,name:p.name,brand:p.brand,category:p.category,sourceId:p.sourceId,retailer:p.retailer,image:p.images[0],price:p.priceMin,priceMax:p.priceMax,currency:p.currency,available:p.available,url:p.url,specs:p.specs,missingFields:p.missingFields,shard:name});
   }
-  const builder=products.map(builderPart).filter(Boolean),pick=c=>builder.filter(p=>p.cat===c);
+  const builder=products.flatMap(p=>builderPart(p)||[]),pick=c=>builder.filter(p=>p.cat===c);
   const switches=pick('switches'),extras=pick('extras'),cases=pick('case'),keycaps=pick('keycaps'),stabs=pick('stabs');
   const matches=JSON.parse(await readFile(path.join(root,'scripts/curated-matches.json'),'utf8'));
   const curated=Object.fromEntries(Object.entries(matches).map(([id,ids])=>{

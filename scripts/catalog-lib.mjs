@@ -34,6 +34,8 @@ export function category(p) {
   if(/\bplate\b|\bplates\b/i.test(title+' '+type)&&!/keyboard|keycap/i.test(title)) return 'plate';
   if(/\bcase\b/i.test(type+' '+title)&&!/keycap|carrying|travel|storage|foam/i.test(title)) return 'cases';
   if(/\baccessories\b|\badd-ons\b|\bcomponents\b|\bweights?\b|\bknobs?\b|\bfeet\b|\bbumpons?\b|\bscrews?\b/i.test(title)) return 'extras';
+  // Store titles like "Linear Switch 5pin RGB for Mechanical Keyboard" describe switches, not keyboards.
+  if(/\bswitch(?:es)?\b/i.test(title)&&/(?:for|of)\s+(?:gaming\s+)?mechanical\s+keyboards?|mx[- ]?stem|\b[345]\s?-?pins?\b/i.test(title)&&!/keyboard/i.test(title.replace(/(?:for|of)\s+(?:gaming\s+)?mechanical\s+keyboards?/ig,''))&&!/keycaps?\b|tester|\bpcb\b|\bplate\b|puller|opener|lube|film|spring kit/i.test(title)) return 'switches';
   // Complete keyboards bundled with a named keycap set are still keyboards.
   if(/keyboard|diy kit/i.test(type)&&(!/keycaps?(?: set)?$/i.test(title)||/with keycaps$/i.test(title))) return 'keyboards';
   if(/keycap/i.test(type)||/keycaps?|\b(?:GMK|PBTfans|DSS|DCS|KAT|KAM|MT3|MW|DCX)\b/i.test(title)) return 'keycaps';
@@ -87,7 +89,9 @@ export function extractSpecs(p,cat) {
 export function packQuantity(p,v,cat) {
   if(cat!=='switches') return null;
   const variant=plain(v.title||'');
-  const vn=variant.match(/^(\d{1,3})\s*(?:set|pcs|pieces|switches|pack|count)(?:\s*\/|$)/i)||((p.options||[]).some(o=>/quantity|pack|count|switches|^size$/i.test(o.name))?variant.match(/^(\d{1,3})$/):null);
+  // A count can sit in any "/"-separated part of a variant name ("Linear / 35 Pieces"). "1 pack" or "3 packs"
+  // counts packs of unknown size, so a pack count only qualifies from 10 up ("10-pack").
+  const vn=variant.split(/\s*\/\s*/).map(x=>x.match(/^(\d{1,3})\s*(?:sets?|pcs|pieces|switches|count|(?<=\d{2}\s*)-?packs?)$/i)).find(Boolean)||((p.options||[]).some(o=>/quantity|pack|count|switches|^size$/i.test(o.name))?variant.match(/^(\d{1,3})$/):null);
   if(vn&&+vn[1]>=1&&+vn[1]<=200) return +vn[1];
   const text=plain(p.body_html)+'\n'+(p.tags||[]).join('\n')+'\n'+plain(p.title);
   const patterns=[/(\d{1,3})\s+(?:switches?\s+per\s+(?:pack|quantity)|included in each pack|pcs? per (?:package|pack)|pieces? per (?:pack|quantity))/i,/(?:sold|selling) in (?:packs|quantities|sets) of\s*(\d{1,3})/i,/(?:each|one) (?:pack|quantity|unit) (?:contains|includes)\s*(\d{1,3})/i,/\b(\d{1,3})\s*switches?\s*\/\s*pack/i];
@@ -154,6 +158,14 @@ export function builderLayout(raw,name='') {
 }
 const COLOR_HEX={black:'#26272B',white:'#EDEBE6',silver:'#B8BBBF',grey:'#8E9196',gray:'#8E9196',navy:'#2B3A55',blue:'#4C6FA8',pink:'#E7A9BE',purple:'#7D66B2',lavender:'#B8A6DB',green:'#5D8C6A',olive:'#7C805A',red:'#B5463F',beige:'#DDD1B8',cream:'#E8DFC9',yellow:'#E7C65A',orange:'#D9823B',gold:'#C8A75A',brown:'#7A5A40',teal:'#3E8E8A',mint:'#A6D5C2',clear:'#D9DEE2',transparent:'#D9DEE2',e:'#5F5E5A'};
 const colorHex=n=>{const k=Object.keys(COLOR_HEX).find(c=>new RegExp('\\b'+c+'\\b','i').test(n));return k?COLOR_HEX[k]:null};
+// Board names usually carry their size ("Zoom75", "Crush 80", "QK65", "104 keys").
+export function layoutFromName(name) {
+  if(/\btkl\b|tenkeyless/i.test(name)) return {layout:'tkl',label:'TKL'};
+  if(/full[- ]?size|\b1800\b/i.test(name)) return {layout:'full',label:'Full-size'};
+  const m=String(name).match(/(?:^|[^\d.])(60|61|64|65|66|67|68|75|80|81|82|83|84|87|96|98|100|104|108)(?:\s?%|(?![\d.]))(?!\s?(?:g|gf|mm|hz|mah|k|keycaps?|pcs|switch))/i);
+  if(!m) return null; const n=+m[1];
+  return n<=64?{layout:'60',label:'60%'}:n<=68?{layout:'65',label:'65%'}:n===75||(n>=81&&n<=84)?{layout:'75',label:'75%'}:n===80||n===87?{layout:'tkl',label:'TKL'}:{layout:'full',label:n===96||n===98?n+'%':'Full-size'};
+}
 export function builderPart(p) {
   const s=p.specs;
   if(!p.available) return null;
@@ -164,22 +176,34 @@ export function builderPart(p) {
     return {...base(p,v),cat:'extras',name:p.name+(v.name==='Default Title'?'':' · '+v.name),kind,fx:{},blurb:'Retailer listing for the named variant. No sound effect is assumed.'};
   }
   if(p.category==='switches') {
-    const type=switchType(s.type); if(!type||(s.system&&s.system!=='mx-mechanical')||NON_MX.test(p.name)) return null;
-    // Pack sizes may differ between variants; anything else (spring weight, color) cannot be flattened into one switch.
-    const vs=live(p); if(!vs.length||vs.some(v=>!v.quantity||!v.unitPrice)) return null;
-    if(new Set(vs.map(v=>v.name.replace(String(v.quantity),'').replace(/\b(?:pcs|pieces|pack|switches|count|set)\b/gi,'').replace(/[\s/|,()-]+/g,' ').trim().toLowerCase())).size>1) return null;
-    const v=vs.slice().sort((a,b)=>a.unitPrice-b.unitPrice)[0];
-    const verified=s.system==='mx-mechanical'&&!p.missingFields.length;
-    return {...base(p,v),cat:'switches',type,force:s.actuationForceG??null,bottom:s.bottomOutForceG??null,travel:s.totalTravelMm??null,pins:s.pins??null,price:v.unitPrice,packPrice:v.price,packQuantity:v.quantity,
-      factory:s.factoryLubed??null,sound:null,vol:/Silent/.test(type)?15:type==='Clicky'?85:50,verified,
-      blurb:'Published retailer specs. '+v.quantity+' per pack.'+(verified?'':' Some specs are not listed by the store.')+' Sound and preview colors are illustrative.'};
+    if((s.system&&s.system!=='mx-mechanical')||NON_MX.test(p.name)) return null;
+    const type0=switchType(s.type), optNames=(p.options||[]).map(o=>o.name).join(' ');
+    // Variants that differ only by pack size are one switch; anything else (spring weight, color, type)
+    // is a separate switch sold under one listing, so each becomes its own part.
+    const label=v=>v.name.replace(String(v.quantity),'').replace(/\b(?:sets?|pcs|pieces|switches|packs?|count)\b/gi,'').replace(/[\s/|,()-]+/g,' ').trim();
+    const groups=new Map();
+    for(const v of live(p)){ if(!v.quantity||!v.unitPrice) continue; const k=label(v).toLowerCase(); if(!groups.has(k)||v.unitPrice<groups.get(k).unitPrice) groups.set(k,v) }
+    if(!groups.size||groups.size>8) return null;
+    const part=(v,split)=>{
+      const type=switchType(split?label(v):'')||type0; if(!type) return null;
+      const w=split&&label(v).match(/(\d{2,3}(?:\.\d+)?)\s?gf?\b/i);
+      let force=s.actuationForceG??null, bottom=s.bottomOutForceG??null;
+      if(split){force=w&&/actuat|operat/i.test(optNames)?+w[1]:null; bottom=w&&/bottom/i.test(optNames)?+w[1]:null}
+      const verified=!split&&s.system==='mx-mechanical'&&!p.missingFields.length;
+      return {...base(p,v),id:split?p.id+'~'+v.id:p.id,name:shortName(p.name,cleanBrand(p))+(split?' · '+label(v):''),cat:'switches',type,force,bottom,travel:s.totalTravelMm??null,pins:s.pins??null,price:v.unitPrice,packPrice:v.price,packQuantity:v.quantity,
+        factory:s.factoryLubed??null,sound:null,vol:/Silent/.test(type)?15:type==='Clicky'?85:50,verified,
+        blurb:'Published retailer specs. '+v.quantity+' per pack.'+(verified?'':' Some specs are not listed by the store.')+' Sound and preview colors are illustrative.'};
+    };
+    if(groups.size===1) return part([...groups.values()][0],false);
+    const parts=[...groups.values()].map(v=>part(v,true)).filter(Boolean);
+    return parts.length?parts:null;
   }
   if(p.category==='keycaps') {
     // GMK only produces Cherry-height sets (now sold as CYL), so a GMK title with no profile is Cherry.
     const profile=s.profile||(p.name.match(/\b(DCS|DSA|SA|XDA|MT3|KAT|KAM|OEM|MDA|ASA|OSA|DSS|DCX|MOA)\b/)||[])[1]||(/^GMK\b/i.test(p.name)?'Cherry':null);
     if(!profile||/single|artisan|novelt|spacebar|accent|add-?on|extension|\b1u\b|numpad|40s|ortho|international|iso kit|kit collection|\bextras?\b/i.test(p.name)) return null;
     const vs=live(p); if(!vs.length) return null;
-    const v=vs.find(v=>/\b(base|core|alpha|standard|full|keycap set|default title|ansi)\b/i.test(v.name))||(vs.length===1?vs[0]:null);
+    const v=vs.filter(v=>/\b(base|core|alpha|standard|full|keycap set|default title|ansi|87|tkl|104|108)\b/i.test(v.name)&&!/numpad|novelt|spacebar|extension|mod plus|accent/i.test(v.name)).sort((a,b)=>a.price-b.price)[0]||(vs.length===1?vs[0]:null);
     if(!v) return null;
     const k=s.keyCount; const covers=k>=104?['60','65','75','tkl','full']:k>=87?['60','65','75','tkl']:k>=84?['60','65','75']:k>=68?['60','65']:k>=61?['60']:null;
     return {...base(p,v),cat:'keycaps',name:shortName(p.name,cleanBrand(p))+(vs.length>1&&v.name!=='Default Title'?' · '+v.name:''),profile:titleCase(profile.toLowerCase()).replace(/^(Oem|Xda|Dsa|Sa|Mt3|Kat|Kam|Dss|Dcs|Dcx|Asa|Osa|Mda|Moa)$/,x=>x.toUpperCase()),material:s.material?s.material.toUpperCase().replace(/\s/g,''):null,legends:s.legends??null,keyCount:k??null,covers,mood:[],
@@ -194,7 +218,7 @@ export function builderPart(p) {
     return {...base(p,v),cat:'stabs',mount,fullPrice:full?full.price:v.price,blurb:'Published retailer listing.'+(full?'':' Check the set has enough stabilizers for a full-size board.')};
   }
   if(p.category==='keyboards') {
-    const L=builderLayout(s.layout,p.name); if(!L||s.switchSystem||NON_MX.test(p.name)||LOW_PROFILE_MODELS.test(p.name)||NOT_A_BOARD.test(p.name)||LOCALE.test(p.name)) return null;
+    const L=builderLayout(s.layout,p.name)||layoutFromName(p.name); if(!L||s.switchSystem||NON_MX.test(p.name)||LOW_PROFILE_MODELS.test(p.name)||NOT_A_BOARD.test(p.name)||LOCALE.test(p.name)) return null;
     const vs0=live(p); if(!vs0.length) return null;
     const vs=vs0.filter(v=>!LOCALE.test(v.name)).length?vs0.filter(v=>!LOCALE.test(v.name)):vs0;
     const bare=vs.find(v=>/bare ?bones?|barebone|\bkit\b|no switch|without switch|\bdiy\b/i.test(v.name));

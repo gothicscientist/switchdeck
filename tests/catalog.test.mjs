@@ -26,7 +26,9 @@ test('pack price stays separate from unit price and variant URL',()=>{
 });
 test('ambiguous switch quantity or variant cannot become a builder part',()=>{
   const p=normalize(raw({body_html:'Actuation: 45g\nTotal Travel: 3.6mm\n5-pin',variants:[{id:456,title:'Default Title',price:'9',available:true}]}),source,'2026-10-19T00:00:00Z');assert.equal(p.variants[0].quantity,null);assert.equal(builderPart(p),null);
-  const multi=normalize(raw({variants:[{id:1,title:'18 Set / 45g',price:'9',available:true},{id:2,title:'18 Set / 55g',price:'10',available:true}]}),source,'2026-10-19T00:00:00Z');assert.equal(builderPart(multi),null);
+  const multi=normalize(raw({variants:[{id:1,title:'18 Set / 45g',price:'9',available:true},{id:2,title:'18 Set / 55g',price:'10',available:true}]}),source,'2026-10-19T00:00:00Z');
+  // Spring weights become separate parts; a weight with no stated meaning is not reported as actuation force.
+  const split=builderPart(multi);assert.equal(split.length,2);assert.deepEqual(split.map(x=>x.name),['Example Linear Switches · 45g','Example Linear Switches · 55g']);assert.ok(split.every(x=>x.force===null&&x.id.startsWith(multi.id+'~')));
 });
 test('quantity parsing does not confuse force weight with pack count',()=>{
   assert.equal(packQuantity(raw({body_html:'',options:[{name:'Spring weight'}]}),{title:'45'},'switches'),null);
@@ -79,4 +81,14 @@ test('builder admits kits, keycap sets and stabilizers only with the facts it ne
 test('switches with pack-size variants are admitted at the cheapest unit price',()=>{
   const p=normalize(raw({options:[{name:'Quantity'}],body_html:'Linear. 5-pin.',variants:[{id:1,title:'10',price:'6',available:true},{id:2,title:'70',price:'35',available:true}]}),source,'2026-10-19T00:00:00Z');
   const b=builderPart(p);assert.equal(b.packQuantity,70);assert.equal(b.price,.5);assert.equal(b.verified,false);assert.equal(b.force,null);
+});
+test('pack counts of unknown size are not switch quantities',()=>{
+  assert.equal(packQuantity(raw({body_html:''}),{title:'1 pack'},'switches'),null);
+  assert.equal(packQuantity(raw({body_html:''}),{title:'3 packs'},'switches'),null);
+  assert.equal(packQuantity(raw({body_html:''}),{title:'Linear / 35 Pieces'},'switches'),35);
+  assert.equal(packQuantity(raw({body_html:''}),{title:'10-pack'},'switches'),10);
+});
+test('store titles that describe switches for keyboards are switches',()=>{
+  assert.equal(category(raw({title:'Gateron North Pole Switch Linear 50g 5pin SMD RGB mx stem switch for mechanical keyboard',product_type:''})),'switches');
+  assert.equal(category(raw({title:'Example 65% Hot-swap Keyboard with 5pin Gateron switches',product_type:''})),'keyboards');
 });

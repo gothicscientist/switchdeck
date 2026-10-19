@@ -28,11 +28,11 @@ for(const [k,m] of [['cases','builderCaseCount'],['keycaps','builderKeycapCount'
 for(const meta of Object.values(catalog.curated||{})){if(meta.photo)assert.equal(new URL(meta.photo.img).protocol,'https:');for(const r of meta.retailers)assert.equal(new URL(r.url).protocol,'https:')}
 const builderIds=new Set();
 for(const b of [...catalog.switches,...catalog.extras,...(catalog.cases||[]),...(catalog.keycaps||[]),...(catalog.stabs||[])]){
-  const p=byId.get(b.id);assert.ok(p&&p.available,b.id);assert.ok(!builderIds.has(b.id),'duplicate builder id '+b.id);builderIds.add(b.id);
+  const p=byId.get(b.id.split('~')[0]);assert.ok(p&&p.available,b.id);assert.ok(!builderIds.has(b.id),'duplicate builder id '+b.id);builderIds.add(b.id);
   assert.ok(b.price>0&&b.photo&&new URL(b.photo.img).protocol==='https:'&&b.retailers.every(r=>new URL(r.url).origin===new URL(p.url).origin),b.id);
 }
-for(const b of catalog.switches){const p=byId.get(b.id);assert.ok(!p.specs.system||p.specs.system==='mx-mechanical',b.id);assert.equal(b.force,p.specs.actuationForceG??null);assert.equal(b.travel,p.specs.totalTravelMm??null);assert.ok(b.packQuantity&&b.packPrice);assert.equal(b.sound,null)}
-for(const b of catalog.cases||[]){const p=byId.get(b.id);assert.equal(p.category,'keyboards');assert.ok(['60','65','75','tkl','full'].includes(b.layout));assert.equal(b.kit.pcb.hotswap,p.specs.hotswap??null)}
-for(const b of catalog.keycaps||[]){const p=byId.get(b.id);assert.equal(p.category,'keycaps');assert.ok(b.profile)}
+for(const b of catalog.switches){const p=byId.get(b.id.split('~')[0]);assert.ok(!p.specs.system||p.specs.system==='mx-mechanical',b.id);if(!b.id.includes('~'))assert.equal(b.force,p.specs.actuationForceG??null);assert.equal(b.travel,p.specs.totalTravelMm??null);assert.ok(b.packQuantity&&b.packPrice);assert.equal(b.sound,null)}
+for(const b of catalog.cases||[]){const p=byId.get(b.id.split('~')[0]);assert.equal(p.category,'keyboards');assert.ok(['60','65','75','tkl','full'].includes(b.layout));assert.equal(b.kit.pcb.hotswap,p.specs.hotswap??null)}
+for(const b of catalog.keycaps||[]){const p=byId.get(b.id.split('~')[0]);assert.equal(p.category,'keycaps');assert.ok(b.profile)}
 for(const b of catalog.stabs||[])assert.ok(['screw','clip','plate'].includes(b.mount),b.id)
 console.log(`Validated ${products.length} listings, ${products.reduce((n,p)=>n+p.variants.length,0)} variants, ${catalog.switches.length} builder switches, ${(catalog.cases||[]).length} keyboards, ${(catalog.keycaps||[]).length} keycap sets, ${(catalog.stabs||[]).length} stabilizers, ${catalog.extras.length} extras across ${manifest.sources.length} retailers.`);

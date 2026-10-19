@@ -705,7 +705,7 @@ const FINDER_CASES=[...CASES];
 // compatibility panel asks the buyer to check them instead of assuming a fit.
 {const cat=window.SWITCHDECK_CATALOG||{}, add=(pool,list)=>{const have=new Set(pool.map(p=>p.id));for(const p of list||[]) if(!have.has(p.id)){pool.push(p);have.add(p.id)}};
   for(const k of ['cases','switches','keycaps','stabs','extras']) for(const p of cat[k]||[]){
-    p.catalogId??=p.id; p.checkedAt??=cat.generatedAt; if(p.photo&&!p.photo.page) p.photo.page=p.retailers?.[0]?.url;
+    p.catalogId??=p.id.split('~')[0]; p.checkedAt??=cat.generatedAt; if(p.photo&&!p.photo.page) p.photo.page=p.retailers?.[0]?.url;
     if(p.cat==='switches') p.col??={top:'#D6D3D1',bot:'#A8A29E',stem:'#78716C'};
     if(p.cat==='case'){p.keys??=LAYOUT_KEYS[p.layout]; p.keysEstimated=true}}
   add(CASES,cat.cases); add(SWITCHES,cat.switches); add(KEYCAPS,cat.keycaps); add(STABS,cat.stabs); add(EXTRAS,cat.extras);}
@@ -761,7 +761,7 @@ function lineItems(b){
   if(!(c&&c.kit)){ if(b.pcb) items.push({slot:'pcb',part:BYID[b.pcb],price:BYID[b.pcb].price}); if(b.plate) items.push({slot:'plate',part:BYID[b.plate],price:BYID[b.plate].price}); }
   if(b.switches){const s=BYID[b.switches], q=switchQty(b)||70; items.push({slot:'switches',part:s,price:switchCost(s,q),qty:s.packQuantity?Math.ceil(q/s.packQuantity)*s.packQuantity:q});}
   if(b.stabs && !stabsIncluded(b)){const s=BYID[b.stabs]; items.push({slot:'stabs',part:s,price:L==='full'?s.fullPrice:s.price});}
-  if(b.keycaps){const k=BYID[b.keycaps]; let p=k.price, add=0; if(L&&!k.covers.includes(L)&&k.addon&&k.addon[L]) add=k.addon[L]; items.push({slot:'keycaps',part:k,price:p+add,addon:add});}
+  if(b.keycaps){const k=BYID[b.keycaps]; let p=k.price, add=0; if(L&&k.covers&&!k.covers.includes(L)&&k.addon&&k.addon[L]) add=k.addon[L]; items.push({slot:'keycaps',part:k,price:p+add,addon:add});}
   for(const id of b.extras||[]){const e=BYID[id]; if(e) items.push({slot:'extras',part:e,price:e.price});}
   return items;
 }
@@ -1611,7 +1611,7 @@ let pk={slot:null,q:'',f:{},compat:true,sort:'featured',maxPrice:null,minF:30,ma
 function partPrice(slot,p){
   if(slot==='switches') return switchCost(p,switchQty(build)||70);
   if(slot==='stabs') return layoutOf(build)==='full'?p.fullPrice:p.price;
-  if(slot==='keycaps'){const L=layoutOf(build); return p.price+((L&&!p.covers.includes(L)&&p.addon&&p.addon[L])||0)}
+  if(slot==='keycaps'){const L=layoutOf(build); return p.price+((L&&p.covers&&!p.covers.includes(L)&&p.addon&&p.addon[L])||0)}
   return p.price;
 }
 function tryPart(slot,p){
@@ -1657,7 +1657,7 @@ function openPicker(slot){
   document.getElementById('pkfilt').onclick=()=>fs.classList.toggle('open');
   document.getElementById('scrim').addEventListener('click',e=>{if(e.target.id==='scrim') closePicker()});
   renderPickList();
-  setTimeout(()=>document.getElementById('pkq').focus(),30);
+  setTimeout(()=>document.getElementById('pkq')?.focus(),30);
 }
 function closePicker(){const el=document.getElementById('picker'); el.hidden=true; el.innerHTML=''; document.body.style.overflow=''}
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!document.getElementById('picker').hidden) closePicker()});
@@ -1740,7 +1740,9 @@ document.getElementById('importbtn').onclick=()=>{
    BOOT
    ========================================================= */
 const start=(location.hash||'').replace('#','');
-window.SwitchdeckBuilder={has:id=>!!BYID[id]?.catalogId,add:id=>{const p=BYID[id];if(!p?.catalogId)return;go('build');choose(p.cat,p)}};
+// The directory lists retailer listings; one listing can hold several builder parts (one per spring weight or type).
+const BY_LISTING=new Map(); for(const p of ALLPARTS) if(p.catalogId&&!BY_LISTING.has(p.catalogId)) BY_LISTING.set(p.catalogId,p);
+window.SwitchdeckBuilder={has:id=>BY_LISTING.has(id),add:id=>{const p=BY_LISTING.get(id);if(!p)return;go('build');choose(p.cat,p)}};
 go(['finder','build','saved','directory'].includes(start)?start:'finder',false);
 renderPill();
 </script>
