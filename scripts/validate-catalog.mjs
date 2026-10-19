@@ -1,4 +1,6 @@
 import assert from 'node:assert/strict';
+// In GitHub Actions, surface the failing check as an annotation so it is readable without the raw log.
+if(process.env.GITHUB_ACTIONS) process.on('uncaughtException',e=>{console.log('::error title=catalog check::'+String(e.message).replace(/\n/g,' ').slice(0,900));process.exit(1)});
 import {readFile} from 'node:fs/promises';
 import vm from 'node:vm';
 import {digest,requiredFields} from './catalog-lib.mjs';
