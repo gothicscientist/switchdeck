@@ -139,6 +139,8 @@ h1,h2,h3{text-wrap:balance;margin:0;font-weight:700;letter-spacing:-.02em}
 .ph.clean.field,.ph.clean.stage,.ph.clean.detail{background:var(--bg);isolation:isolate}
 .ph.clean img{mix-blend-mode:multiply;filter:none!important}
 .ph.field img,.ph.thumb img{aspect-ratio:2.6/1;object-fit:cover}
+.ph.thumb{flex:initial;width:100%;height:auto;padding:0;border-radius:0;background:none;overflow:visible}
+.ph.thumb img,.ph.thumb svg{height:auto}
 .ph.clean.detail img,.ph.clean.stage img{aspect-ratio:2.3/1;object-fit:cover}
 .ph.scene img{border-radius:14px;aspect-ratio:4/3;object-fit:cover;max-height:440px}
 .fitem .ph img{filter:none}
@@ -282,7 +284,7 @@ h1,h2,h3{text-wrap:balance;margin:0;font-weight:700;letter-spacing:-.02em}
 .pick .side small{font-size:11.5px;color:var(--muted)}
 .pick.bad{opacity:.55}
 .pick .why{font-size:12.5px;color:var(--fail)}
-.pick .links{display:flex;gap:12px;font-size:12.5px;flex-wrap:wrap}
+.pick .links{display:flex;gap:12px;font-size:12.5px;flex-wrap:wrap;align-items:center}
 .pick .links a{color:var(--muted);text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:2px}
 .pick.selected{box-shadow:inset 0 0 0 1.5px var(--ink)}
 .filtbtn{display:none}
@@ -305,12 +307,82 @@ h1,h2,h3{text-wrap:balance;margin:0;font-weight:700;letter-spacing:-.02em}
 .foot{color:var(--faint);font-size:12px;padding-block:24px}
 .foot .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
 
+/* sound preview buttons */
+.optw{position:relative;display:grid}
+.optw>.opt{height:100%}
+.play{position:absolute;top:8px;left:8px;z-index:2;width:30px;height:30px;border:0;border-radius:50%;background:var(--surface);color:var(--ink);display:grid;place-items:center;box-shadow:0 1px 2px rgba(41,37,36,.12),0 0 0 1px var(--line);transition:transform .2s var(--spring),background .2s,color .2s}
+.play:hover{transform:scale(1.08)}
+.play:active{transform:scale(.94)}
+.play.playing{background:var(--ink);color:var(--surface)}
+.play svg{width:14px;height:14px}
+.play .eq{display:none;gap:2px;align-items:flex-end;height:12px}
+.play .eq i{width:2px;border-radius:1px;background:currentColor;animation:eq .5s ease-in-out infinite alternate}
+.play .eq i:nth-child(2){animation-delay:-.2s}.play .eq i:nth-child(3){animation-delay:-.35s}
+.play.playing svg{display:none}.play.playing .eq{display:flex}
+@keyframes eq{from{height:3px}to{height:12px}}
+.listen{display:inline-flex;align-items:center;gap:6px;border:0;background:var(--tile);color:var(--ink);font-size:12.5px;font-weight:600;padding:6px 11px 6px 9px;border-radius:999px;transition:background .2s,color .2s}
+.listen:hover{background:var(--tile-hover)}
+.listen svg{width:12px;height:12px}
+.listen .eq{display:none;gap:2px;align-items:flex-end;height:11px}
+.listen .eq i{width:2px;border-radius:1px;background:currentColor;animation:eq .5s ease-in-out infinite alternate}
+.listen .eq i:nth-child(2){animation-delay:-.2s}.listen .eq i:nth-child(3){animation-delay:-.35s}
+.listen.playing{background:var(--ink);color:var(--surface)}
+.listen.playing svg{display:none}.listen.playing .eq{display:flex}
+.qhint{margin:-6px 0 12px;text-align:center;font-size:12.5px;color:var(--muted)}
+
+/* results: summary + parts list */
+.rdetail{grid-template-columns:minmax(0,.92fr) minmax(0,1.08fr)}
+.rsum{display:flex;flex-direction:column;gap:14px;padding:22px;border-right:1px solid var(--line);min-width:0;overflow:auto}
+.rsum .board{background:var(--tile);border-radius:14px;padding:26px 22px;display:flex;align-items:center;justify-content:center;min-height:170px}
+.rsum .board svg{width:100%;height:auto;filter:drop-shadow(0 14px 18px rgba(41,37,36,.16))}
+.rsum h2{font-size:21px;letter-spacing:-.02em}
+.rsum .total{display:flex;align-items:baseline;gap:8px;margin-top:-8px}
+.rsum .total b{font-size:17px;font-weight:600}
+.rsum .total span{font-size:12.5px;color:var(--muted)}
+.stats3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.stats3 div{background:var(--tile);border-radius:8px;padding:8px 10px;display:grid;gap:1px;min-width:0}
+.stats3 span{font-size:10.5px;color:var(--muted)}
+.stats3 b{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rsum .ractions{grid-template-columns:auto 1fr}
+.rsum .ractions .listen{padding:9px 14px 9px 12px;font-size:13px;border-radius:var(--r-tile)}
+.rparts{display:flex;flex-direction:column;min-width:0;overflow:auto}
+.rparts .phead{position:sticky;top:0;z-index:1;background:color-mix(in srgb,var(--surface) 88%,transparent);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);padding:20px 22px 12px;display:flex;justify-content:space-between;align-items:baseline;gap:12px;border-bottom:1px solid var(--line)}
+.rparts .phead h3{font-size:15px;letter-spacing:-.01em}
+.rparts .phead span{font-size:12px;color:var(--muted)}
+.part{display:grid;grid-template-columns:52px minmax(0,1fr) auto;gap:4px 14px;padding:14px 22px;border-bottom:1px solid var(--line);animation:fadeUp .45s var(--out) both;animation-delay:calc(var(--i,0) * 40ms)}
+.part:last-of-type{border-bottom:0}
+.part .pt{grid-row:span 2;width:52px;height:40px;border-radius:8px;background:var(--tile);display:grid;place-items:center;padding:4px;overflow:hidden}
+.part .pt svg{width:100%;height:100%}
+.part .pn{min-width:0;display:flex;flex-direction:column;gap:1px}
+.part .pn small{font-size:11px;color:var(--faint);font-weight:500;letter-spacing:.02em;text-transform:uppercase}
+.part .pn b{font-size:14px;font-weight:600;line-height:1.3}
+.part .pn em{font-style:normal;font-size:12px;color:var(--muted)}
+.part .pp{text-align:right;font-size:14px;font-weight:600;white-space:nowrap}
+.part .pp small{display:block;font-weight:400;font-size:11px;color:var(--muted)}
+.stores{grid-column:2 / -1;display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;align-items:center}
+.store{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:500;color:var(--ink);text-decoration:none;padding:5px 10px;border-radius:999px;background:var(--surface);box-shadow:inset 0 0 0 1px var(--line);transition:background .2s,box-shadow .2s,transform .15s var(--ease)}
+.store:hover{background:var(--tile);box-shadow:inset 0 0 0 1px var(--faint)}
+.store:active{transform:scale(.97)}
+.store.maker{background:var(--ink);color:var(--surface);box-shadow:none}
+.store.maker:hover{background:var(--dark)}
+.store svg{width:10px;height:10px;opacity:.6}
+.store.cmp{color:var(--muted)}
+.part.inc .pn b{color:var(--muted);font-weight:500}
+.rdetail .rclose{left:auto;right:14px;top:14px}
+.rparts .phead{padding-right:58px}
+.rparts .pfoot{padding:14px 22px 20px;font-size:11.5px;color:var(--faint);line-height:1.5}
+.prow .stores{grid-column:auto;margin-top:4px}
+.prow .stores .store{font-size:11.5px;padding:4px 9px}
+
 @media (max-width:1000px){
   .bgrid{grid-template-columns:minmax(0,1fr)}
   .rail{position:static}
-  .rgrid{grid-template-columns:minmax(0,1fr);height:100%;overflow:auto;grid-template-rows:auto auto}
+  .rgrid{grid-template-columns:minmax(0,1fr);height:100%;overflow:auto;grid-template-rows:max-content max-content}
+  .rdetail{overflow:visible}
   .rdetail{grid-template-columns:minmax(0,1fr)}
   .rimg{min-height:220px}
+  .rsum{border-right:0;border-bottom:1px solid var(--line);overflow:visible}
+  .rparts{overflow:visible}
   .rlist{max-height:none}
 }
 @media (max-width:760px){
@@ -923,6 +995,99 @@ async function copyText(txt,fallbackEl){
 }
 
 /* =========================================================
+   SOUND: switch previews synthesized with Web Audio (no recordings)
+   ========================================================= */
+const SND_PRESETS={
+  Linear:{pitch:46,vol:50,kind:'linear'}, Tactile:{pitch:44,vol:56,kind:'tactile'},
+  Clicky:{pitch:70,vol:86,kind:'clicky'}, Silent:{pitch:38,vol:16,kind:'silent'},
+  thock:{pitch:18,vol:58,kind:'linear'}, creamy:{pitch:38,vol:36,kind:'linear',soft:true},
+  clack:{pitch:82,vol:64,kind:'linear'}, quiet:{pitch:38,vol:14,kind:'silent'},
+};
+const SND_PITCH={deep:26,mid:46,bright:70};
+const kindOf=type=>/Silent/.test(type)?'silent':/Clicky/.test(type)?'clicky':/Tactile/.test(type)?'tactile':'linear';
+function sndFor(key){
+  if(SND_PRESETS[key]) return SND_PRESETS[key];
+  if(key.startsWith('part:')){const s=BYID[key.slice(5)]; return s&&{pitch:SND_PITCH[s.sound]||46,vol:s.vol,kind:kindOf(s.type)}}
+  if(key==='build'||key.startsWith('res:')){
+    const b=key==='build'?build:(resList[+key.slice(4)]||{}).b; if(!b) return null;
+    const s=BYID[b.switches], e=estimate(b); return {pitch:e.pitch,vol:Math.max(e.vol,s&&/Silent/.test(s.type)?10:20),kind:s?kindOf(s.type):'linear'};
+  }
+  return null;
+}
+let actx=null, noiseBuf=null, sndBtn=null, sndT;
+function audio(){
+  if(!actx){const A=window.AudioContext||window.webkitAudioContext; if(!A) return null; actx=new A()}
+  if(actx.state==='suspended') actx.resume();
+  if(!noiseBuf){const n=actx.sampleRate; noiseBuf=actx.createBuffer(1,n,actx.sampleRate); const d=noiseBuf.getChannelData(0); for(let i=0;i<n;i++) d[i]=Math.random()*2-1}
+  return actx;
+}
+function burst(ctx,out,t,f,{q=1,dur=.04,gain=.5,type='bandpass'}={}){
+  const s=ctx.createBufferSource(), fl=ctx.createBiquadFilter(), g=ctx.createGain();
+  s.buffer=noiseBuf; fl.type=type; fl.frequency.value=f; fl.Q.value=q;
+  g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(gain,t+.0015); g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+  s.connect(fl).connect(g).connect(out); s.start(t,Math.random()*.8); s.stop(t+dur+.02);
+}
+function tone(ctx,out,t,f,{dur=.06,gain=.4,drop=1.5,type='sine'}={}){
+  const o=ctx.createOscillator(), g=ctx.createGain(); o.type=type;
+  o.frequency.setValueAtTime(f*drop,t); o.frequency.exponentialRampToValueAtTime(f,t+.014);
+  g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(gain,t+.002); g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+  o.connect(g).connect(out); o.start(t); o.stop(t+dur+.02);
+}
+/* one key press: optional click or bump, the bottom-out (filtered noise + a low body thump), then the quieter upstroke */
+function keystroke(ctx,out,t,P,big){
+  const r=()=>1+(Math.random()-.5)*.14, lo=P.pitch/100, silent=P.kind==='silent';
+  const f=(silent?260:420+P.pitch*26)*r()*(big?.72:1);
+  if(P.kind==='clicky'){burst(ctx,out,t-.022,4300*r(),{q:7,dur:.016,gain:.75}); tone(ctx,out,t-.022,3100*r(),{dur:.012,gain:.12,drop:1,type:'triangle'})}
+  if(P.kind==='tactile') burst(ctx,out,t-.026,f*.7,{q:.8,dur:.018,gain:.12});
+  burst(ctx,out,t,f,{q:silent?.6:1.1+lo*1.6,dur:(P.soft?.07:.055)-lo*.02+(big?.03:0),gain:silent?.22:.62});
+  if(!silent&&!P.soft) burst(ctx,out,t,f*2.3,{q:2.2,dur:.012+lo*.006,gain:.1+lo*.32});
+  tone(ctx,out,t,(silent?80:90+P.pitch*2.2)*(big?.8:1),{dur:.05+(1-lo)*.07+(big?.04:0),gain:silent?.12:.18+(1-lo)*.42});
+  const up=t+.085+Math.random()*.03;
+  if(P.kind==='clicky') burst(ctx,out,up,3900*r(),{q:6,dur:.012,gain:.38});
+  burst(ctx,out,up,f*1.25,{q:1,dur:.028,gain:silent?.04:P.soft?.1:.2});
+}
+function playSnd(key,btn){
+  const P=sndFor(key), ctx=audio(); if(!P||!ctx) return;
+  const out=ctx.createGain(), comp=ctx.createDynamicsCompressor(), lp=ctx.createBiquadFilter();
+  lp.type='lowpass'; lp.frequency.value=P.soft?3200:P.kind==='silent'?2200:9000;
+  out.gain.value=.25+Math.min(100,P.vol)/100*.75;
+  out.connect(lp).connect(comp).connect(ctx.destination);
+  const t0=ctx.currentTime+.04, gaps=[0,.15,.27,.45,.58,.76,.86];
+  gaps.forEach((g,i)=>keystroke(ctx,out,t0+g+(i?(Math.random()-.5)*.03:0),P,i===gaps.length-1));
+  if(sndBtn) sndBtn.classList.remove('playing');
+  sndBtn=btn||null; if(sndBtn) sndBtn.classList.add('playing');
+  clearTimeout(sndT); sndT=setTimeout(()=>{if(sndBtn) sndBtn.classList.remove('playing'); sndBtn=null},1150);
+}
+const EQ='<span class="eq" aria-hidden="true"><i></i><i></i><i></i></span>';
+const SPK='<svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M4 2.5v11L13 8z"/></svg>';
+const playBtn=(key,label)=>`<button type="button" class="play" data-snd="${key}" aria-label="Hear ${esc(label)}" title="Hear it">${SPK}${EQ}</button>`;
+const listenBtn=(key,label='Listen')=>`<button type="button" class="listen" data-snd="${key}">${SPK}${EQ}${esc(label)}</button>`;
+document.addEventListener('click',e=>{const b=e.target.closest('[data-snd]'); if(b){e.preventDefault(); e.stopPropagation(); playSnd(b.dataset.snd,b)}},true);
+
+/* =========================================================
+   WHERE TO BUY: maker page plus store searches
+   ========================================================= */
+const STORES={
+  amazon:['Amazon',q=>'https://www.amazon.com/s?k='+q],
+  divinikey:['Divinikey',q=>'https://divinikey.com/search?q='+q],
+  kbdfans:['KBDfans',q=>'https://kbdfans.com/search?q='+q],
+  novelkeys:['NovelKeys',q=>'https://novelkeys.com/search?q='+q],
+  cannonkeys:['CannonKeys',q=>'https://cannonkeys.com/search?q='+q],
+  kfa:['KeebsForAll',q=>'https://keebsforall.com/search?q='+q],
+};
+const STORES_FOR={case:['amazon','divinikey','kbdfans'],pcb:['kbdfans','divinikey','cannonkeys'],plate:['kbdfans','divinikey','cannonkeys'],
+  switches:['divinikey','kfa','novelkeys','amazon'],keycaps:['divinikey','kbdfans','novelkeys','amazon'],stabs:['divinikey','cannonkeys','kbdfans','amazon'],extras:['amazon','divinikey','kfa']};
+const ARROW='<svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M3 2h5v5M8 2L2.5 7.5"/></svg>';
+function buyLinks(p){
+  const term=`${p.brand==='Various'?'':p.brand+' '}${p.name}`+(p.cat==='switches'?' switches':p.cat==='keycaps'&&!/keycap/i.test(p.name)?' keycaps':'');
+  const q=encodeURIComponent(term.trim()), out=[], maker=shopLink(p);
+  if(!/google\.com/.test(maker)) out.push({n:p.brand,u:maker,maker:true});
+  for(const k of STORES_FOR[p.cat]||['amazon']){const [n,u]=STORES[k]; if(n.toLowerCase()!==p.brand.toLowerCase()&&!(p.brand==='PBTfans'&&k==='kbdfans')) out.push({n,u:u(q)})}
+  return out.slice(0,4).concat({n:'Compare prices',u:searchLink(p),cmp:true});
+}
+const storeChips=p=>buyLinks(p).map(l=>`<a class="store ${l.maker?'maker':''} ${l.cmp?'cmp':''}" href="${esc(l.u)}" target="_blank" rel="noopener">${esc(l.n)}${ARROW}</a>`).join('');
+
+/* =========================================================
    ROUTING
    ========================================================= */
 let view='finder';
@@ -964,15 +1129,15 @@ const QUESTIONS = [
     {v:'any',b:'No preference'}]},
   {key:'use',title:'What is it for?',opts:[
     {v:'gaming',b:'Gaming',s:'Fast, light presses'},{v:'work',b:'Work',s:'Typing and coding'},{v:'any',b:'No preference',s:'A bit of both'}]},
-  {key:'feel',title:'How should a key feel?',opts:[
-    {v:'Linear',b:'Linear',s:'Smooth all the way',art:()=>switchSVG(BYID.milkyyp)},
-    {v:'Tactile',b:'Tactile',s:'A bump you can feel',art:()=>switchSVG(BYID.u4t)},
-    {v:'Clicky',b:'Clicky',s:'Bump and a click',art:()=>switchSVG(BYID.mx2ablue)},
-    {v:'Silent',b:'Silent',s:'Dampened, quiet',art:()=>switchSVG(BYID.silentred)},
+  {key:'feel',title:'How should a key feel?',hint:'Tap the play button to hear each one.',opts:[
+    {v:'Linear',b:'Linear',s:'Smooth all the way',snd:'Linear',art:()=>switchSVG(BYID.milkyyp)},
+    {v:'Tactile',b:'Tactile',s:'A bump you can feel',snd:'Tactile',art:()=>switchSVG(BYID.u4t)},
+    {v:'Clicky',b:'Clicky',s:'Bump and a click',snd:'Clicky',art:()=>switchSVG(BYID.mx2ablue)},
+    {v:'Silent',b:'Silent',s:'Dampened, quiet',snd:'Silent',art:()=>switchSVG(BYID.silentred)},
     {v:'any',b:'Not sure'}]},
-  {key:'sound',title:'What should it sound like?',opts:[
-    {v:'thock',b:'Deep thock',s:'Low and rounded'},{v:'creamy',b:'Creamy',s:'Soft and muted'},
-    {v:'clack',b:'Crisp clack',s:'Bright and sharp'},{v:'quiet',b:'Quiet',s:'For calls and shared rooms'},{v:'any',b:'No preference'}]},
+  {key:'sound',title:'What should it sound like?',hint:'Tap the play button to hear each one.',opts:[
+    {v:'thock',b:'Deep thock',s:'Low and rounded',snd:'thock',art:()=>waveSVG(.18)},{v:'creamy',b:'Creamy',s:'Soft and muted',snd:'creamy',art:()=>waveSVG(.38)},
+    {v:'clack',b:'Crisp clack',s:'Bright and sharp',snd:'clack',art:()=>waveSVG(.82)},{v:'quiet',b:'Quiet',s:'For calls and shared rooms',snd:'quiet',art:()=>waveSVG(.4,.3)},{v:'any',b:'No preference'}]},
   {key:'wireless',title:'How should it connect?',opts:[
     {v:'wired',b:'Wired only',s:'Nothing to charge'},{v:'yes',b:'Wireless',s:'Bluetooth or 2.4 GHz'},{v:'any',b:'No preference',s:'Nothing ruled out'}]},
   {key:'solder',title:'Will you solder?',opts:[
@@ -980,8 +1145,16 @@ const QUESTIONS = [
   {key:'budget',title:"What's your budget?",budget:true},
   {key:'look',title:'Pick a look',opts:[
     {v:'dark',b:'Dark',s:'Black and charcoal',art:()=>capsSVG(BYID.gmkwob)},{v:'light',b:'Light',s:'White and cream',art:()=>capsSVG(BYID.bow)},
-    {v:'colorful',b:'Colorful',s:'Bold accents',art:()=>capsSVG(BYID.gmklaser)},{v:'retro',b:'Retro',s:'Vintage beige',art:()=>capsSVG(BYID.devtty)},{v:'any',b:'No preference'}]},
+    {v:'colorful',b:'Colorful',s:'Bold accents',art:()=>capsSVG(BYID.gmklaser)},{v:'retro',b:'Retro',s:'Vintage beige',art:()=>capsSVG(BYID.devtty)},{v:'surprise',b:'Surprise me',s:'We pick a set for you',art:()=>surpriseSVG()}]},
 ];
+function waveSVG(pitch,amp=1){
+  const n=26, pts=[]; for(let i=0;i<n;i++){const x=4+i*(112/(n-1)), env=Math.exp(-((i%13)/(2+ (1-pitch)*5))), y=30+Math.sin(i*(1.1+pitch*2.4))*env*20*amp; pts.push(`${x.toFixed(1)},${y.toFixed(1)}`)}
+  return `<svg viewBox="0 0 120 60" aria-hidden="true"><polyline points="${pts.join(' ')}" fill="none" stroke="#57534E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+}
+function surpriseSVG(){
+  const cap=(x,y,r,top,side,leg)=>`<g transform="translate(${x} ${y}) rotate(${r})"><rect x="-15" y="-15" width="30" height="30" rx="5" fill="${side}"/><rect x="-11" y="-14" width="22" height="22" rx="4" fill="${top}"/>${leg?`<text x="0" y="2" text-anchor="middle" dominant-baseline="middle" font-family="Inter,system-ui" font-weight="700" font-size="13" fill="${leg}">?</text>`:''}</g>`;
+  return `<svg viewBox="0 0 120 60" aria-hidden="true">${cap(34,34,-12,'#E14E9B','#B93C7E')}${cap(86,34,12,'#4FD3E3','#2FA9B8')}${cap(60,30,0,'#2C2B2D','#1A1A1B','#F4EEE0')}</svg>`;
+}
 const B_MIN=100, B_MAX=600;
 const SOUND_T={thock:{p:25,v:50},creamy:{p:40,v:38},clack:{p:74,v:62},quiet:{p:40,v:15}};
 function configsFor(c,ans){
@@ -991,13 +1164,15 @@ function configsFor(c,ans){
   return out;
 }
 const evalCache=new Map();
+function hashStr(str){let h=2166136261; for(let i=0;i<str.length;i++){h^=str.charCodeAt(i); h=Math.imul(h,16777619)} return h>>>0}
 function evalAns(ans){
   const key=JSON.stringify(ans); if(evalCache.has(key)) return evalCache.get(key);
   const L=ans.layout&&ans.layout!=='any'?ans.layout:null;
   const budget=typeof ans.budget==='number'&&ans.budget<B_MAX?ans.budget:null;
   const feel=ans.feel&&ans.feel!=='any'?ans.feel:null;
   const sws=SWITCHES.filter(s=>!feel||(feel==='Silent'?/Silent/.test(s.type):s.type===feel));
-  const kcs=KEYCAPS.filter(k=>!ans.look||ans.look==='any'||k.mood.includes(ans.look));
+  const surprise=ans.look==='surprise';
+  const kcs=KEYCAPS.filter(k=>!ans.look||ans.look==='any'||surprise||k.mood.includes(ans.look));
   const T=SOUND_T[ans.sound]||{p:45,v:50};
   const list=[];
   for(const c of CASES){
@@ -1006,8 +1181,10 @@ function evalAns(ans){
     if(ans.wireless==='yes'&&!wl) continue;
     if(ans.wireless==='wired'&&wl) continue;
     let best=null;
-    for(const cf of configsFor(c,ans)) for(const s of sws) for(const k of kcs){
-      if(!k.covers.includes(c.layout)&&!(k.addon&&k.addon[c.layout])) continue;
+    let caseK=kcs.filter(k=>k.covers.includes(c.layout)||(k.addon&&k.addon[c.layout]));
+    if(surprise) caseK=caseK.map(k=>[k,hashStr(`${c.id}:${k.id}:${ans.seed||0}`)]).sort((a,b)=>a[1]-b[1]).map(x=>x[0]);
+    for(const k of caseK){ if(surprise&&best) break;
+    for(const cf of configsFor(c,ans)) for(const s of sws){
       const b={case:c.id,color:0,pcb:cf.pcb,plate:cf.plate,switches:s.id,keycaps:k.id,stabs:null,extras:['puller']};
       if(!stabsIncluded(b)){const pcb=effPcb(b); b.stabs=pcb.stabs.includes('screw')?'durockv2':'cherryclip'}
       if(ans.sound==='thock'||ans.sound==='creamy') b.extras.push('casefoam');
@@ -1020,7 +1197,7 @@ function evalAns(ans){
       if(k.addon&&!k.covers.includes(c.layout)) sc-=4;
       const pcbE=effPcb(b); if(!pcbE.hotswap) sc-=8;
       if(!best||sc>best.sc) best={b,sc,t,e};
-    }
+    }}
     if(!best) continue;
     const iss=compat(best.b); if(iss.some(i=>i.level==='fail')) continue;
     best.sc-=iss.filter(i=>i.level==='warn').length*5;
@@ -1110,7 +1287,8 @@ function renderQuiz(){
       <button class="btn primary block" id="bcontinue">Continue</button></div>`;
   } else {
     title=Q.title;
-    body=`<div class="opts">${Q.opts.map((o,i)=>`<button class="opt" style="--i:${i}" aria-pressed="${quizAns[Q.key]===o.v}" data-v="${o.v}">${o.art?`<span class="art">${o.art()}</span>`:''}<b>${esc(o.b)}</b>${o.s?`<span>${esc(o.s)}</span>`:''}<i class="tick">${icon('tick')}</i></button>`).join('')}</div>`;
+    const optB=(o,i)=>`<button class="opt" style="--i:${i}" aria-pressed="${quizAns[Q.key]===o.v}" data-v="${o.v}">${o.art?`<span class="art">${o.art()}</span>`:''}<b>${esc(o.b)}</b>${o.s?`<span>${esc(o.s)}</span>`:''}<i class="tick">${icon('tick')}</i></button>`;
+    body=`${Q.hint?`<p class="qhint">${esc(Q.hint)}</p>`:''}<div class="opts">${Q.opts.map((o,i)=>o.snd?`<div class="optw" style="--i:${i}">${optB(o,i)}${playBtn(o.snd,o.b)}</div>`:optB(o,i)).join('')}</div>`;
   }
   wrapEl.classList.toggle('wide',!!(Q&&Q.opts&&Q.opts.length>5));
   card.innerHTML=`<div class="qhead"><div class="l"><button class="iconbtn" id="qback" aria-label="Previous question" ${quizStep===0?'disabled':''}>${icon('back')}</button><button class="iconbtn" id="qreset" aria-label="Start over" ${answered()?'':'disabled'}>${icon('reset')}</button></div>
@@ -1130,14 +1308,14 @@ function renderQuiz(){
 function setCount(){const n=evalAns(quizAns).list.length; const el=document.getElementById('qcount'); if(el) el.innerHTML=`<b>${n}</b><span class="w">${n===1?'keyboard':'keyboards'}</span>`}
 function choose_(Q,btn){
   if(btn.disabled) return;
-  quizAns[Q.key]=btn.dataset.v; store.set('sy.quiz',quizAns);
-  btn.parentElement.querySelectorAll('.opt').forEach(o=>o.setAttribute('aria-pressed',o===btn));
+  quizAns[Q.key]=btn.dataset.v; if(btn.dataset.v==='surprise') quizAns.seed=Math.floor(Math.random()*1e6); store.set('sy.quiz',quizAns);
+  btn.closest('.opts').querySelectorAll('.opt').forEach(o=>o.setAttribute('aria-pressed',o===btn));
   setCount(); layoutField();
   clearTimeout(window.__adv); window.__adv=setTimeout(()=>{quizStep++;qDir=1;renderQuiz()},320);
 }
 function markDisabled(Q,card){
   for(const b of card.querySelectorAll('.opt')){
-    const v=b.dataset.v; if(v==='any') continue;
+    const v=b.dataset.v; if(v==='any'||v==='surprise') continue;
     const n=evalAns({...quizAns,[Q.key]:v}).list.length;
     if(!n&&quizAns[Q.key]!==v){b.disabled=true; b.title='No keyboards match this with your other answers'}
   }
@@ -1187,25 +1365,35 @@ function renderRList(){
   el.querySelectorAll('[data-ri]').forEach(b=>b.onclick=()=>{resIdx=+b.dataset.ri; el.querySelectorAll('[data-ri]').forEach(x=>x.setAttribute('aria-current',x===b)); renderRDetail()});
 }
 function renderRDetail(){
-  const r=resList[resIdx], b=r.b, c=caseOf(b), s=BYID[b.switches], k=BYID[b.keycaps], pcb=effPcb(b), plate=effPlate(b), st=BYID[b.stabs];
-  const rows=[
-    ['Layout',`${LAYOUT_NAMES[c.layout]} · ${c.keys} keys${c.knob?' + knob':''}`],
-    ['Case',`${c.material}, ${c.mount.toLowerCase()} mount`],['Connection',c.conn],
-    ['PCB',pcb.hotswap?'Hot-swap':'Solder'],['Plate',plate?plate.material:'None'],
-    ['Switches',`${s.brand} ${s.name} · ${s.force} g`],
-    ['Keycaps',`${k.brand} ${k.name} · ${k.profile}`],
-    ['Stabilizers',stabsIncluded(b)?'Included':(st?st.name:'—')],
-    ['Volume',volWord(r.e.vol)],['Typing feel',flexWord(r.e.flex)],
-  ];
+  const r=resList[resIdx], b=r.b, c=caseOf(b), s=BYID[b.switches];
+  const items=lineItems(b), SL=k=>SLOTS.find(x=>x.key===k).label;
+  const sub=i=>i.slot==='switches'?`${i.qty} × ${money(i.part.price)}`:i.slot==='keycaps'&&i.addon?`incl. ${money(i.addon)} numpad kit`:i.slot==='stabs'?`${layoutOf(b)==='full'?7:5}-stab set`:'';
+  const desc=p=>p.cat==='case'?`${LAYOUT_NAMES[p.layout]} · ${p.material} · ${p.mount} mount${p.kit?' · kit':''}`:p.cat==='switches'?`${p.type} · ${p.force} g · ${p.pins}-pin`:p.cat==='keycaps'?`${p.profile} profile · ${p.material} · ${p.legends}`:p.cat==='pcb'?`${p.hotswap?'Hot-swap':'Solder'} · ${p.pins}-pin`:p.cat==='plate'?p.material:p.blurb||'';
+  let rows=items.map((i,n)=>`<div class="part" style="--i:${n}"><span class="pt">${i.slot==='case'?buildBoard({case:c.id,color:b.color||0,keycaps:null,extras:[]},{legends:false,u:10,cls:''}):thumbFor(i.part)}</span>
+      <div class="pn"><small>${esc(SL(i.slot))}</small><b>${esc(i.part.brand==='Various'?'':i.part.brand+' ')}${esc(i.part.name)}</b><em>${esc(desc(i.part))}</em></div>
+      <div class="pp">${money(i.price)}${sub(i)?`<small>${esc(sub(i))}</small>`:''}</div>
+      <div class="stores">${i.slot==='switches'?listenBtn('part:'+i.part.id):''}${i.slot==='keycaps'&&quizAns.look==='surprise'?'<button type="button" class="listen" id="reroll">↻ Shuffle</button>':''}${storeChips(i.part)}</div></div>`);
+  if(c.kit) rows.splice(1,0,`<div class="part inc" style="--i:1"><span class="pt">${pcbSVG(c.kit.pcb)}</span><div class="pn"><small>Included</small><b>PCB, ${esc(c.kit.plate)} plate${c.kit.stabs?' and stabilizers':''}</b><em>Comes with the ${esc(c.name)}</em></div><div class="pp"><span class="chip ok">Included</span></div></div>`);
   const el=document.getElementById('rdetail');
   el.innerHTML=`<button class="iconbtn rclose" id="rclose" aria-label="Close">${icon('close')}</button>
-    <div class="rimg swapin">${caseVisual(b,'detail')}${c.photo&&c.photo.img?`<span class="credit">Photo: ${esc(c.brand)}</span>`:''}</div>
-    <div class="rinfo swapin"><h2>${esc(c.brand)} ${esc(c.name)}</h2><div class="price">${money(r.t)} <span class="note">complete build</span></div>
-      <div class="stats2"><div><span>Match</span><b>${r.pct}%</b></div><div><span>Sound</span><b>${pitchWord(r.e.pitch)}</b></div></div>
-      <div class="specs-t">${rows.map(([a,v])=>`<div><span>${a}</span><span>${esc(v)}</span></div>`).join('')}</div>
-      <div class="ractions"><a class="btn" href="${shopLink(c)}" target="_blank" rel="noopener">${esc(c.brand)} store</a><a class="btn" href="${searchLink(c)}" target="_blank" rel="noopener">Compare prices</a><button class="btn primary" id="rbuild">Customize this build</button></div></div>`;
+    <div class="rsum swapin">
+      <div class="board">${buildBoard(b,{legends:true,u:34,cls:''})}</div>
+      <div><h2>${esc(c.brand)} ${esc(c.name)}</h2></div>
+      <div class="total"><b>${money(r.t)}</b><span>approx. for every part</span></div>
+      <div class="stats3"><div><span>Match</span><b>${r.pct}%</b></div><div><span>Sound</span><b>${pitchWord(r.e.pitch)}</b></div><div><span>Feel</span><b>${esc(s.type)}</b></div></div>
+      <div class="ractions">${listenBtn('res:'+resIdx,'Hear it')}<button class="btn primary" id="rbuild">Customize this build</button><button class="btn" id="rcopy">Copy parts list</button></div>
+      <textarea id="rcopyfb" hidden aria-label="Parts list" style="width:100%;min-height:80px;font-size:12px;background:var(--tile);border:0;border-radius:8px;padding:8px"></textarea>
+    </div>
+    <div class="rparts swapin"><div class="phead"><h3>Parts and where to buy</h3><span>${items.length+(c.kit?1:0)} items</span></div>
+      ${rows.join('')}
+      <p class="pfoot">Prices are approximate list prices before shipping and tax. The filled button opens the maker's own page; the others search that store for the part, so check stock and price there.</p></div>`;
   el.querySelector('#rclose').onclick=closeResults;
   el.querySelector('#rbuild').onclick=()=>{build={...b,extras:[...b.extras],name:`My ${c.name} build`}; persist(); closeResults(); go('build'); toast('Loaded into the builder')};
+  el.querySelector('#rcopy').onclick=()=>copyText(partsText({...b,name:`${c.brand} ${c.name} build`}),el.querySelector('#rcopyfb'));
+  const rr=el.querySelector('#reroll'); if(rr) rr.onclick=()=>{
+    quizAns.seed=Math.floor(Math.random()*1e6); store.set('sy.quiz',quizAns);
+    const id=c.id; resList=evalAns(quizAns).list; resIdx=Math.max(0,resList.findIndex(x=>x.b.case===id)); renderRList(); renderRDetail(); layoutField();
+  };
 }
 
 /* =========================================================
@@ -1252,7 +1440,7 @@ function renderParts(){
     if(s.key==='keycaps'&&li.addon) sub=`<small>incl. numpad kit ${money(li.addon)}</small>`;
     if(s.key==='stabs') sub=`<small>${layoutOf(build)==='full'?'7':'5'}-stab set</small>`;
     h+=`<div class="prow"><div class="slot">${s.label}<small>${s.hint}</small></div>
-      <div class="item"><span class="thumb">${thumbFor(p)}</span><div class="meta"><b>${esc(p.name)}</b><span class="by">${esc(p.brand)} · <a href="${shopLink(p)}" target="_blank" rel="noopener">seller</a> · <a href="${searchLink(p)}" target="_blank" rel="noopener">compare prices</a></span><span class="specs">${specChips(p)}${iss.map(i=>`<span class="chip ${i.level}">${i.level==='fail'?'Conflict':'Note'}</span>`).join('')}</span></div></div>
+      <div class="item"><span class="thumb">${thumbFor(p)}</span><div class="meta"><b>${esc(p.name)}</b><span class="by">${esc(p.brand)}</span><span class="specs">${specChips(p)}${iss.map(i=>`<span class="chip ${i.level}">${i.level==='fail'?'Conflict':'Note'}</span>`).join('')}</span><span class="stores">${s.key==='switches'?listenBtn('part:'+p.id):''}${storeChips(p)}</span></div></div>
       <div class="price"><span>${money(li.price)}</span>${sub}</div>
       <div class="acts"><button class="btn small" data-pick="${s.key}">Change</button><button class="btn small ghost" data-rm="${s.key}" aria-label="Remove ${esc(p.name)}">✕</button></div></div>`;
   }
@@ -1273,7 +1461,7 @@ function renderRail(){
     <ul class="issues">${sorted.map(i=>`<li class="${i.level}"><i></i><span>${esc(i.msg)}${i.sub?`<br><small>${esc(i.sub)}</small>`:''}</span></li>`).join('')}</ul></section>
   <section class="card"><h3>Price</h3><div class="totals">${items.map(i=>`<div><span>${SLOTS.find(s=>s.key===i.slot).label}${i.slot==='extras'?': '+esc(i.part.name):''}</span><span class="mono">${money(i.price)}</span></div>`).join('')||'<div><span class="note">Nothing yet</span></div>'}
     <div class="grand"><span>Total</span><span class="mono">${money(t)}</span></div></div><p class="note" style="margin:0">Approximate list prices, before shipping and tax.</p></section>
-  <section class="card"><h3>Sound and feel estimate</h3>
+  <section class="card"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><h3>Sound and feel estimate</h3>${build.switches?listenBtn('build','Hear it'):''}</div>
     ${meter('Pitch',e.pitch,pitchWord(e.pitch),'Deep','Bright')}
     ${meter('Volume',e.vol,volWord(e.vol),'Quiet','Loud')}
     ${meter('Typing feel',e.flex,flexWord(e.flex),'Stiff','Bouncy')}
@@ -1287,7 +1475,7 @@ function renderRail(){
 function partsText(b){
   const lines=[`${b.name||'My keyboard'} (Switchyard)`,''];
   const c=caseOf(b);
-  for(const i of lineItems(b)) lines.push(`${SLOTS.find(s=>s.key===i.slot).label}: ${i.part.brand} ${i.part.name}${i.qty?` x${i.qty}`:''} - ${money(i.price)}`);
+  for(const i of lineItems(b)) lines.push(`${SLOTS.find(s=>s.key===i.slot).label}: ${i.part.brand} ${i.part.name}${i.qty?` x${i.qty}`:''} - ${money(i.price)}`,`  ${buyLinks(i.part)[0].u}`);
   if(c&&c.kit) lines.push(`Included with kit: PCB, ${c.kit.plate} plate${c.kit.stabs?', stabilizers':''}`);
   lines.push('',`Total: ${money(total(b))} (approx.)`,`Build code: ${encodeBuild(b)}`);
   return lines.join('\n');
@@ -1395,7 +1583,7 @@ function renderPickList(){
       return `<article style="--i:${i}" class="card pick ${pr.bad.length?'bad':''} ${on?'selected':''}"><span class="thumb">${thumbFor(p)}</span>
       <div class="meta"><span class="by note">${esc(p.brand)}</span><b>${esc(p.name)}</b><span class="specs">${specChips(p)}</span><p>${esc(p.blurb||'')}</p>
         ${pr.bad.map(m=>`<span class="why">✕ ${esc(m)}</span>`).join('')}${pr.warn.map(m=>`<span class="why" style="color:var(--warn)">! ${esc(m)}</span>`).join('')}
-        <span class="links"><a href="${shopLink(p)}" target="_blank" rel="noopener">Seller site</a><a href="${searchLink(p)}" target="_blank" rel="noopener">Compare prices</a></span></div>
+        <span class="links">${slot==='switches'?listenBtn('part:'+p.id):''}<a href="${shopLink(p)}" target="_blank" rel="noopener">Seller site</a><a href="${searchLink(p)}" target="_blank" rel="noopener">Compare prices</a></span></div>
       <div class="side"><span class="p">${money(price)}</span>${sub?`<small>${esc(sub)}</small>`:''}
         ${slot==='extras'&&on?`<button class="btn small" data-unadd="${p.id}">Remove</button>`:`<button class="btn small ${on?'':'primary'}" data-add="${p.id}" ${on?'disabled':''}>${on?'Selected':'Add'}</button>`}</div></article>`}).join('')}`;
   const sel=list.querySelector('#pksort'); sel.value=pk.sort; sel.onchange=()=>{pk.sort=sel.value; renderPickList()};
