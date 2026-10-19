@@ -3,8 +3,8 @@
   "generatedAt": "2026-10-19T22:14:58.747Z",
   "listingCount": 4076,
   "inStockCount": 1921,
-  "builderSwitchCount": 57,
-  "builderExtraCount": 43,
+  "builderSwitchCount": 213,
+  "builderExtraCount": 57,
   "categories": {
     "keyboards": {
       "label": "Keyboards & kits",
@@ -168,5 +168,8 @@
     "parts/0049.json",
     "parts/0050.json"
   ],
-  "fingerprint": "f01eb957d32dd7b8718a8c14492d324ac64e89a9d5603af5798fb2ace11f0262"
+  "fingerprint": "f01eb957d32dd7b8718a8c14492d324ac64e89a9d5603af5798fb2ace11f0262",
+  "builderCaseCount": 128,
+  "builderKeycapCount": 290,
+  "builderStabCount": 38
 }

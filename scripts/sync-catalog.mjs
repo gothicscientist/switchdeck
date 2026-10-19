@@ -39,7 +39,9 @@ export async function syncCatalog({offline=false,log=console.log}={}) {
       let snapshot;
       if(offline)snapshot=JSON.parse(await readFile(file,'utf8'));
       else {
-        await allowed(source);const products=[],seen=new Set();let complete=false;
+        await allowed(source);
+        if(source.optional){const cart=await getJSON(source.url+'/cart.js');if(cart.currency!==source.currency)throw Error('Store currency is '+cart.currency)}
+        const products=[],seen=new Set();let complete=false;
         for(let page=1;page<=100;page++) {
           const body=await getJSON(source.url+'/products.json?limit=250&page='+page);
           if(!Array.isArray(body.products))throw Error('Invalid product feed');
@@ -54,10 +56,10 @@ export async function syncCatalog({offline=false,log=console.log}={}) {
       snapshots.push({source,snapshot,status:offline?'cached':'fresh'});log(source.name+': '+snapshot.products.length+' products');
     }catch(e){
       try{const snapshot=JSON.parse(await readFile(file,'utf8'));snapshots.push({source,snapshot,status:'stale',error:e.message});log(source.name+': using last good snapshot ('+e.message+')')}
-      catch{snapshots.push({source,snapshot:{products:[]},status:'failed',error:e.message});log(source.name+': '+e.message)}
+      catch{snapshots.push({source,snapshot:{products:[]},status:source.optional?'skipped':'failed',error:e.message});log(source.name+': '+e.message)}
     }
   }}));
-  if(snapshots.some(s=>s.status==='failed'||s.status==='stale'))throw Error('One or more sources failed. Existing published catalog was retained. Fix source or restore its snapshot before publishing.');
+  if(snapshots.some(s=>s.status==='failed'||(s.status==='stale'&&!s.source.optional)))throw Error('One or more sources failed. Existing published catalog was retained. Fix source or restore its snapshot before publishing.');
   const products=snapshots.flatMap(({source,snapshot})=>snapshot.products.map(p=>normalize(p,source,snapshot.checkedAt)).filter(Boolean)).sort((a,b)=>a.id.localeCompare(b.id));
   if(products.length<500)throw Error('Unexpectedly small catalog; existing catalog retained');
   const previous=await readFile(path.join(root,'data/catalog-manifest.json'),'utf8').then(JSON.parse).catch(()=>null);
@@ -68,18 +70,19 @@ export async function syncCatalog({offline=false,log=console.log}={}) {
     files.push({name,body:JSON.stringify(chunk)});
     for(const p of chunk)index.push({id:p.id,name:p.name,brand:p.brand,category:p.category,sourceId:p.sourceId,retailer:p.retailer,image:p.images[0],price:p.priceMin,priceMax:p.priceMax,currency:p.currency,available:p.available,url:p.url,specs:p.specs,missingFields:p.missingFields,shard:name});
   }
-  const builder=products.map(builderPart).filter(Boolean),switches=builder.filter(p=>p.cat==='switches'),extras=builder.filter(p=>p.cat==='extras');
+  const builder=products.map(builderPart).filter(Boolean),pick=c=>builder.filter(p=>p.cat===c);
+  const switches=pick('switches'),extras=pick('extras'),cases=pick('case'),keycaps=pick('keycaps'),stabs=pick('stabs');
   const matches=JSON.parse(await readFile(path.join(root,'scripts/curated-matches.json'),'utf8'));
   const curated=Object.fromEntries(Object.entries(matches).map(([id,ids])=>{
     const listings=ids.map(id=>products.find(p=>p.id===id)).filter(Boolean).sort((a,b)=>Number(b.available)-Number(a.available));
     return [id,{photo:listings[0]?{img:listings[0].images[0],page:listings[0].url}:null,retailers:listings.map(p=>({name:p.retailer,url:p.url,available:p.available}))}];
   }));
-  const manifest={schemaVersion:1,generatedAt:new Date().toISOString(),listingCount:products.length,inStockCount:products.filter(p=>p.available).length,builderSwitchCount:switches.length,builderExtraCount:extras.length,categories:Object.fromEntries(Object.entries(CATEGORIES).map(([id,label])=>[id,{label,count:products.filter(p=>p.category===id).length}])),sources:snapshots.map(({source,snapshot,status,error})=>({...source,status,checkedAt:snapshot.checkedAt,rawProducts:snapshot.products.length,listings:products.filter(p=>p.sourceId===source.id).length,...(error?{error}:{})})),shards:files.map(f=>f.name),fingerprint:digest(products)};
+  const manifest={schemaVersion:1,generatedAt:new Date().toISOString(),listingCount:products.length,inStockCount:products.filter(p=>p.available).length,builderSwitchCount:switches.length,builderExtraCount:extras.length,builderCaseCount:cases.length,builderKeycapCount:keycaps.length,builderStabCount:stabs.length,categories:Object.fromEntries(Object.entries(CATEGORIES).map(([id,label])=>[id,{label,count:products.filter(p=>p.category===id).length}])),sources:snapshots.map(({source,snapshot,status,error})=>({...source,status,checkedAt:snapshot.checkedAt,rawProducts:snapshot.products.length,listings:products.filter(p=>p.sourceId===source.id).length,...(error?{error}:{})})),shards:files.map(f=>f.name),fingerprint:digest(products)};
   // Write dependent data first and publish the manifest last.
   for(const f of files)await writeFile(path.join(dir,f.name),f.body+'\n');
   await writeFile(path.join(dir,'catalog-index.json'),JSON.stringify(index)+'\n');
-  await writeFile(path.join(dir,'builder-catalog.js'),'/* Generated by npm run catalog:sync; retailer facts, no invented compatibility. */\nwindow.SWITCHDECK_CATALOG = '+JSON.stringify({generatedAt:manifest.generatedAt,switches,extras,curated})+';\n');
+  await writeFile(path.join(dir,'builder-catalog.js'),'/* Generated by npm run catalog:sync; retailer facts, no invented compatibility. */\nwindow.SWITCHDECK_CATALOG = '+JSON.stringify({generatedAt:manifest.generatedAt,switches,extras,cases,keycaps,stabs,curated})+';\n');
   await writeFile(path.join(dir,'catalog-manifest.json'),JSON.stringify(manifest,null,2)+'\n');
-  log(JSON.stringify({listings:products.length,builderSwitches:switches.length,builderExtras:extras.length,categories:manifest.categories}));return manifest;
+  log(JSON.stringify({listings:products.length,builderSwitches:switches.length,builderExtras:extras.length,builderCases:cases.length,builderKeycaps:keycaps.length,builderStabs:stabs.length,categories:manifest.categories}));return manifest;
 }
 if(typeof process!=='undefined'&&process.argv[1]&&path.resolve(process.argv[1])===fileURLToPath(import.meta.url))await syncCatalog({offline:process.argv.includes('--offline')});

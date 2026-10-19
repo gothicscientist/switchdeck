@@ -699,9 +699,16 @@ const PHOTOS = {
 };
 for(const [id,ph] of Object.entries(PHOTOS)){const p=[...CASES,...SWITCHES,...KEYCAPS].find(x=>x.id===id); if(p) p.photo=ph}
 
-// Imported switches require explicit standard-MX specs and an unambiguous pack quantity.
-for(const p of window.SWITCHDECK_CATALOG?.switches||[]) if(!SWITCHES.some(s=>s.id===p.id)) SWITCHES.push(p);
-for(const p of window.SWITCHDECK_CATALOG?.extras||[]) if(!EXTRAS.some(s=>s.id===p.id)) EXTRAS.push(p);
+// The finder ranks curated parts only; imported retailer listings join the builder pickers.
+const FINDER_CASES=[...CASES];
+// Imported parts carry only retailer-published facts. Unknown fields stay null and the
+// compatibility panel asks the buyer to check them instead of assuming a fit.
+{const cat=window.SWITCHDECK_CATALOG||{}, add=(pool,list)=>{const have=new Set(pool.map(p=>p.id));for(const p of list||[]) if(!have.has(p.id)){pool.push(p);have.add(p.id)}};
+  for(const k of ['cases','switches','keycaps','stabs','extras']) for(const p of cat[k]||[]){
+    p.catalogId??=p.id; p.checkedAt??=cat.generatedAt; if(p.photo&&!p.photo.page) p.photo.page=p.retailers?.[0]?.url;
+    if(p.cat==='switches') p.col??={top:'#D6D3D1',bot:'#A8A29E',stem:'#78716C'};
+    if(p.cat==='case'){p.keys??=LAYOUT_KEYS[p.layout]; p.keysEstimated=true}}
+  add(CASES,cat.cases); add(SWITCHES,cat.switches); add(KEYCAPS,cat.keycaps); add(STABS,cat.stabs); add(EXTRAS,cat.extras);}
 const ALLPARTS = [...CASES,...PCBS,...PLATES,...SWITCHES,...KEYCAPS,...STABS,...EXTRAS];
 // Reviewed, version-specific matches enrich existing parts without replacing kit prices or fit rules.
 for(const [id,meta] of Object.entries(window.SWITCHDECK_CATALOG?.curated||{})){const p=ALLPARTS.find(p=>p.id===id);if(p&&meta.photo){p.photo={...p.photo,...meta.photo,clean:false};p.retailers=meta.retailers}}
@@ -764,7 +771,9 @@ function compat(b){
   const out=[], c=caseOf(b), pcb=effPcb(b), plate=effPlate(b), sw=BYID[b.switches], kc=BYID[b.keycaps], st=BYID[b.stabs], L=layoutOf(b);
   const add=(level,slot,msg,sub)=>out.push({level,slot,msg,sub});
   if(!c){add('info','case','Pick a case or kit to start','The case decides the layout and which parts fit.');return out}
-  if(c.kit) add('ok','case',`${c.name} is a kit`,`PCB, plate${c.kit.stabs?' and stabilizers':''} are included.`);
+  if(c.assembled) add('info','case',`${c.name} is sold assembled`,'It ships with switches and keycaps. What you pick here are swaps or upgrades.');
+  else if(c.kit&&c.catalogId) add('info','case',`${c.name} is a kit listing`,`Check ${storeOf(c)} for exactly what's included.`);
+  else if(c.kit) add('ok','case',`${c.name} is a kit`,`PCB, plate${c.kit.stabs?' and stabilizers':''} are included.`);
   if(!c.kit){
     const p=BYID[b.pcb], pl=BYID[b.plate];
     if(p && p.fit!==c.fit) add('fail','pcb',`${p.name} doesn't fit the ${c.name}`,`It's a ${LAYOUT_NAMES[p.layout]} board for a different mounting pattern.`);
@@ -772,7 +781,8 @@ function compat(b){
     if(pl && pl.fit!==c.fit) add('fail','plate',`${pl.name} doesn't fit the ${c.name}`);
     if(!pl && p) add('warn','plate','No plate selected','Plateless builds flex a lot and switches can wobble. 5-pin switches help.');
   }
-  if(kc){
+  if(kc&&!kc.covers) add('info','keycaps',`Check that ${kc.name} covers a ${LAYOUT_NAMES[L]} board`,`${storeOf(kc)} doesn't list a key count for this set.`);
+  else if(kc){
     if(!kc.covers.includes(L)){
       if(kc.addon&&kc.addon[L]) add('warn','keycaps',`${kc.brand} ${kc.name} base kit doesn't cover ${LAYOUT_NAMES[L]}`,`Added the numpad kit (+${money(kc.addon[L])}) to the price.`);
       else add('fail','keycaps',`${kc.name} doesn't include the keys for a ${LAYOUT_NAMES[L]} board`);
@@ -780,15 +790,17 @@ function compat(b){
   }
   if(sw && pcb){
     if(sw.pins===5 && pcb.pins===3) add('warn','switches','5-pin switches on a 3-pin PCB','Clip the two plastic side legs off each switch.');
-    if(!pcb.hotswap) add('warn','pcb','This PCB needs soldering',`You'll solder ${keyCount(b)} switches. Plan 1–2 hours and a soldering iron.`);
+    if(pcb.hotswap==null) add('info','pcb','Check whether the PCB is hot-swap',`${storeOf(c)} doesn't say. If it's solder-only you'll need an iron.`);
+    else if(!pcb.hotswap) add('warn','pcb','This PCB needs soldering',`You'll solder ${keyCount(b)} switches. Plan 1–2 hours and a soldering iron.`);
     else add('ok','switches','Hot-swap PCB: switches press in, no soldering');
     if(sw.pins===3 && !plate) add('fail','switches','3-pin switches need a plate','Without a plate they have nothing to hold them straight.');
   }
   if(pcb){
     const needStabs=!stabsIncluded(b);
-    if(needStabs && !st) add('info','stabs','Add stabilizers',`A ${LAYOUT_NAMES[L]} board needs ${L==='full'?'7':'5'} stabilizers for its long keys.`);
+    if(needStabs && !st) add('info','stabs',c.catalogId?'Check whether stabilizers are included':'Add stabilizers',c.catalogId?`Most kits include them. If this one doesn't, a ${LAYOUT_NAMES[L]} board needs ${L==='full'?'7':'5'}.`:`A ${LAYOUT_NAMES[L]} board needs ${L==='full'?'7':'5'} stabilizers for its long keys.`);
     if(st && needStabs){
       if(st.mount==='plate'){ if(!plate) add('fail','stabs','Plate-mount stabilizers need a plate'); else if(plate.material==='PC') add('warn','stabs','Plate-mount stabs on a PC plate','PC plates often skip stab cutouts. Check the plate before buying.'); else add('ok','stabs','Plate-mount stabilizers fit the plate'); }
+      else if(!pcb.stabs?.length) add('info','stabs','Check which stabilizers fit',`${storeOf(c)} doesn't list the stabilizer type for this PCB.`);
       else if(!pcb.stabs.includes(st.mount)) add('fail','stabs',`This PCB doesn't take ${st.mount==='clip'?'clip-in':'screw-in'} stabilizers`,`It supports ${pcb.stabs.map(m=>m==='clip'?'clip-in':'screw-in').join(' and ')}.`);
       else add('ok','stabs',`${st.mount==='clip'?'Clip-in':'Screw-in'} stabilizers fit the PCB`);
     }
@@ -808,7 +820,9 @@ function compat(b){
   if(missing.length) add('info','build',`Still needed: ${missing.join(', ')}`);
   return out;
 }
-function needed(b,key){const c=caseOf(b); if(key==='extras') return false; if(!c) return key==='case'; if(c.kit&&(key==='pcb'||key==='plate')) return false; if(key==='stabs'&&stabsIncluded(b)) return false; return true}
+function needed(b,key){const c=caseOf(b); if(key==='extras') return false; if(!c) return key==='case';
+  if(c.assembled&&(key==='switches'||key==='keycaps'||key==='stabs')) return false;
+  if(c.catalogId&&key==='stabs'&&!c.kit?.stabs) return false; if(c.kit&&(key==='pcb'||key==='plate')) return false; if(key==='stabs'&&stabsIncluded(b)) return false; return true}
 function verdict(issues){
   if(issues.some(i=>i.level==='fail')) return {level:'fail',text:'Parts conflict'};
   if(issues.some(i=>i.level==='warn')) return {level:'warn',text:'Works, with notes'};
@@ -1010,14 +1024,14 @@ function shopLink(p){if(p.photo&&p.photo.page) return p.photo.page; const u=SHOP
 function searchLink(p){return 'https://www.google.com/search?tbm=shop&q='+encodeURIComponent(`${p.brand==='Various'?'':p.brand+' '}${p.name}`)}
 function specChips(p){
   const ch=[];
-  if(p.cat==='case'){ch.push(LAYOUT_NAMES[p.layout],p.mount,p.material); if(p.kit) ch.push('Kit'); if(/Tri|Blue/.test(p.conn)) ch.push('Wireless')}
+  if(p.cat==='case'){ch.push(p.layoutLabel||LAYOUT_NAMES[p.layout],p.mount,p.material); if(p.kit&&!p.assembled) ch.push('Kit'); if(p.assembled) ch.push('Assembled'); if(p.kit?.pcb.hotswap) ch.push('Hot-swap'); if(/Tri|Blue|2\.4/.test(p.conn)) ch.push('Wireless')}
   if(p.cat==='pcb'){ch.push(LAYOUT_NAMES[p.layout],p.hotswap?'Hot-swap':'Solder',`${p.pins}-pin`, p.rgb?`RGB · ${p.led}-facing`:'No RGB')}
   if(p.cat==='plate'){ch.push(p.material,LAYOUT_NAMES[p.layout],`Flex ${flexWord(PLATE_MAT[p.material].flex).toLowerCase()}`)}
-  if(p.cat==='switches'){ch.push(p.type,`${p.force}g`,`${p.travel.toFixed(1)}mm`,`${p.pins}-pin`); if(p.factory) ch.push('Factory lubed')}
+  if(p.cat==='switches'){ch.push(p.type,p.force?`${p.force}g`:null,p.travel?`${p.travel.toFixed(1)}mm`:null,p.pins?`${p.pins}-pin`:null); if(p.factory) ch.push('Factory lubed')}
   if(p.cat==='keycaps'){ch.push(p.profile,p.material,p.legends); if(p.shine) ch.push('Shine-through')}
   if(p.cat==='stabs'){ch.push({screw:'PCB screw-in',clip:'PCB clip-in',plate:'Plate-mount'}[p.mount])}
   if(p.cat==='extras'){ch.push(p.kind)}
-  return ch.map(c=>`<span class="chip">${esc(c)}</span>`).join('');
+  return ch.filter(Boolean).map(c=>`<span class="chip">${esc(c)}</span>`).join('');
 }
 let toastT;
 function toast(msg){const t=document.getElementById('toast'); t.textContent=msg; t.hidden=false; clearTimeout(toastT); toastT=setTimeout(()=>t.hidden=true,2600)}
@@ -1252,10 +1266,10 @@ function evalAns(ans){
   // Sound-ranked recommendations use curated sound profiles; imported parts have no measured sound data.
   const sws=SWITCHES.filter(s=>!s.catalogId&&(!feel||(feel==='Silent'?/Silent/.test(s.type):s.type===feel)));
   const surprise=ans.look==='surprise';
-  const kcs=KEYCAPS.filter(k=>!ans.look||ans.look==='any'||surprise||k.mood.includes(ans.look));
+  const kcs=KEYCAPS.filter(k=>!k.catalogId).filter(k=>!ans.look||ans.look==='any'||surprise||k.mood.includes(ans.look));
   const T=SOUND_T[ans.sound]||{p:45,v:50};
   const list=[];
-  for(const c of CASES){
+  for(const c of FINDER_CASES){
     if(L&&c.layout!==L) continue;
     const wl=/Tri|Blue/.test(c.conn);
     if(ans.wireless==='yes'&&!wl) continue;
@@ -1300,7 +1314,7 @@ function fieldBoard(b){return caseVisual(b,'field')}
 function initField(){
   const field=document.getElementById('field'); if(field.childElementCount) return;
   const base=evalAns({});
-  for(const c of CASES){
+  for(const c of FINDER_CASES){
     const el=document.createElement('button'); el.className='fitem'; el.type='button';
     const r=base.byCase.get(c.id); const b=r?r.b:{case:c.id,color:0,keycaps:null,extras:[]};
     el.innerHTML=`<span class="art">${fieldBoard(b)}</span><span class="cap"></span>`; el.dataset.k=b.keycaps||'';
@@ -1318,7 +1332,7 @@ function layoutField(){
   const featW=mobile?Math.min(150,W*0.36):Math.max(160,Math.min(250,W*0.17)), othW=mobile?W*0.2:Math.max(90,Math.min(150,W*0.1));
   const featPos=mobile?[[50,.3],[25,.72],[75,.72]]:[[50,.28],[33,.68],[67,.68]];
   const top=res.list.slice(0,3).map(r=>r.b.case);
-  const rest=CASES.map(c=>c.id).filter(id=>!top.includes(id)).sort((a,b)=>(res.byCase.has(b)?1:0)-(res.byCase.has(a)?1:0));
+  const rest=FINDER_CASES.map(c=>c.id).filter(id=>!top.includes(id)).sort((a,b)=>(res.byCase.has(b)?1:0)-(res.byCase.has(a)?1:0));
   top.forEach((id,i)=>place(id,{x:featPos[i][0]/100*W,y:topBar+featPos[i][1]*avail,w:featW,cls:'feat',r:res.byCase.get(id)}));
   const MSLOTS=[[13,.06],[87,.06],[9,.5],[91,.5]];
   rest.forEach((id,i)=>{
@@ -1505,7 +1519,7 @@ function renderParts(){
       continue;
     }
     if(included){
-      const desc= s.key==='pcb'?`Hot-swap ${c.kit.pcb.pins}-pin${c.kit.pcb.rgb?`, RGB (${c.kit.pcb.led}-facing)`:''}`: s.key==='plate'?`${c.kit.plate} plate`:c.kit.stabs;
+      const kp=c.kit.pcb, desc= s.key==='pcb'?[kp.hotswap===true?'Hot-swap':kp.hotswap===false?'Solder':'PCB type not listed',kp.pins?`${kp.pins}-pin`:'',kp.rgb?`RGB${kp.led?` (${kp.led}-facing)`:''}`:''].filter(Boolean).join(', '): s.key==='plate'?(c.kit.plate?`${c.kit.plate} plate`:'Plate material not listed'):c.kit.stabs;
       const thumb = s.key==='pcb'?pcbSVG(c.kit.pcb): s.key==='plate'?plateSVG(c.kit.plate): stabSVG({mount:/Plate/.test(c.kit.stabs)?'plate':'screw'});
       h+=`<div class="prow included"><div class="slot">${s.label}<small>${s.hint}</small></div><div class="item"><span class="thumb">${thumb}</span><div class="meta"><b>Included with ${esc(c.name)}</b><span class="by">${esc(desc)}</span></div></div><div class="price"><span class="chip ok">Included</span></div><div class="acts"></div></div>`;
       continue;
@@ -1583,14 +1597,15 @@ document.getElementById('clearbuild').onclick=(e)=>{
    PICKER
    ========================================================= */
 const POOLS={case:CASES,pcb:PCBS,plate:PLATES,switches:SWITCHES,stabs:STABS,keycaps:KEYCAPS,extras:EXTRAS};
+const storeOf=p=>p.retailers?.[0]?.name||'Switchyard picks';
 const FACETS={
-  case:[['layout','Layout',p=>LAYOUT_NAMES[p.layout]],['type','Type',p=>p.kit?'Kit (PCB + plate included)':'Case only'],['conn','Connection',p=>/Tri|Blue/.test(p.conn)?'Wireless':'Wired'],['mount','Mount',p=>p.mount.split(' ')[0]],['brand','Brand',p=>p.brand]],
+  case:[['layout','Layout',p=>p.layoutLabel||LAYOUT_NAMES[p.layout]],['type','Type',p=>p.assembled?'Sold assembled':p.kit?'Kit (PCB + plate included)':'Case only'],['conn','Connection',p=>/Tri|Blue|2\.4/.test(p.conn)?'Wireless':p.conn==='Not listed'?'Not listed':'Wired'],['hs','PCB',p=>p.kit?(p.kit.pcb.hotswap===true?'Hot-swap':p.kit.pcb.hotswap===false?'Solder':'Not listed'):'Separate'],['mount','Mount',p=>p.mount?p.mount.split(' ')[0].replace(/^\w/,c=>c.toUpperCase()):'Not listed'],['store','Store',storeOf],['brand','Brand',p=>p.brand]],
   pcb:[['hs','Install',p=>p.hotswap?'Hot-swap':'Solder'],['rgb','Lighting',p=>p.rgb?'RGB':'None'],['brand','Brand',p=>p.brand]],
   plate:[['material','Material',p=>p.material],['layout','Layout',p=>LAYOUT_NAMES[p.layout]]],
-  switches:[['type','Type',p=>p.type],['pins','Pins',p=>p.pins+'-pin'],['brand','Brand',p=>p.brand],['factory','Lube',p=>p.factory===null?'Not published':p.factory?'Factory lubed':'Unlubed']],
-  keycaps:[['profile','Profile',p=>p.profile],['material','Material',p=>p.material],['legends','Legends',p=>p.legends],['brand','Brand',p=>p.brand]],
-  stabs:[['mount','Mount',p=>({screw:'PCB screw-in',clip:'PCB clip-in',plate:'Plate-mount'}[p.mount])]],
-  extras:[['kind','Kind',p=>p.kind]],
+  switches:[['type','Type',p=>p.type],['pins','Pins',p=>p.pins?p.pins+'-pin':'Not listed'],['factory','Lube',p=>p.factory==null?'Not published':p.factory?'Factory lubed':'Unlubed'],['store','Store',storeOf],['brand','Brand',p=>p.brand]],
+  keycaps:[['profile','Profile',p=>p.profile||'Not listed'],['material','Material',p=>p.material||'Not listed'],['legends','Legends',p=>p.legends||'Not listed'],['store','Store',storeOf],['brand','Brand',p=>p.brand]],
+  stabs:[['mount','Mount',p=>({screw:'PCB screw-in',clip:'PCB clip-in',plate:'Plate-mount'}[p.mount])],['store','Store',storeOf],['brand','Brand',p=>p.brand]],
+  extras:[['kind','Kind',p=>p.kind],['store','Store',storeOf]],
 };
 let pk={slot:null,q:'',f:{},compat:true,sort:'featured',maxPrice:null,minF:30,maxF:80};
 function partPrice(slot,p){
@@ -1611,30 +1626,33 @@ function partProblems(slot,p){
   return {bad:iss.filter(i=>i.level==='fail'&&(i.slot===slot||(slot==='plate'&&i.slot==='switches'&&false))).map(i=>i.msg), warn:iss.filter(i=>i.level==='warn'&&i.slot===slot).map(i=>i.msg)};
 }
 function openPicker(slot){
-  pk={slot,q:'',f:{},compat:true,sort:'featured',maxPrice:null};
+  pk={slot,q:'',f:{},compat:true,sort:'featured',maxPrice:null,limit:48};
   const el=document.getElementById('picker'); el.hidden=false; document.body.style.overflow='hidden';
   const s=SLOTS.find(x=>x.key===slot);
   const pool=POOLS[slot], prices=pool.map(p=>partPrice(slot,p)), maxP=Math.ceil(Math.max(...prices)/5)*5;
   pk.maxPrice=maxP;
   el.innerHTML=`<div class="scrim" id="scrim"><div class="drawer" role="dialog" aria-modal="true" aria-labelledby="pktitle">
-    <div class="dhead"><h2 id="pktitle">Choose ${esc(s.label.toLowerCase())}</h2><input type="search" id="pkq" placeholder="Search ${esc(s.label.toLowerCase())}" aria-label="Search"><button class="btn small filtbtn" id="pkfilt">Filters</button><button class="btn small" id="pkclose">Done</button></div>
+    <div class="dhead"><h2 id="pktitle">Choose ${esc(s.label.toLowerCase())} <span class="note" style="font-weight:500">${POOLS[slot].length.toLocaleString('en-US')}</span></h2><input type="search" id="pkq" placeholder="Search ${esc(s.label.toLowerCase())}" aria-label="Search"><button class="btn small filtbtn" id="pkfilt">Filters</button><button class="btn small" id="pkclose">Done</button></div>
     <div class="dbody"><div class="filters" id="pkfilters"></div><div class="dlist" id="pklist"></div></div></div></div>`;
   const fs=document.getElementById('pkfilters');
   const facets=FACETS[slot]||[];
   let fh=`<label class="toggle"><input type="checkbox" id="pkcompat" checked> Compatible with my build</label>`;
   fh+=`<fieldset><legend>Max price</legend><input type="range" id="pkprice" min="0" max="${maxP}" step="${maxP>100?5:1}" value="${maxP}" aria-label="Maximum price"><span class="mono note" id="pkpriceout">${money(maxP)}</span></fieldset>`;
   if(slot==='switches') fh+=`<fieldset><legend>Actuation force</legend><span class="mono note">Up to <b id="pkforceout">80</b> g</span><input type="range" id="pkforce" min="35" max="80" value="80" aria-label="Maximum actuation force"></fieldset>`;
-  for(const [k,label,fn] of facets){const vals=[...new Set(pool.map(fn))].sort(); fh+=`<fieldset><legend>${label}</legend>${vals.map(v=>`<label><input type="checkbox" data-facet="${k}" value="${esc(v)}"> ${esc(v)} <span class="note">(${pool.filter(p=>fn(p)===v).length})</span></label>`).join('')}</fieldset>`}
+  for(const [k,label,fn] of facets){
+    const n=new Map(); for(const p of pool){const v=fn(p); n.set(v,(n.get(v)||0)+1)}
+    const vals=[...n].sort((a,b)=>b[1]-a[1]||String(a[0]).localeCompare(String(b[0]))), top=vals.slice(0,12);
+    fh+=`<fieldset><legend>${label}</legend>${top.map(([v,c])=>`<label><input type="checkbox" data-facet="${k}" value="${esc(v)}"> ${esc(v)} <span class="note">(${c})</span></label>`).join('')}${vals.length>12?`<span class="note">${vals.length-12} more. Use search to find them.</span>`:''}</fieldset>`}
   fs.innerHTML=fh;
   fs.addEventListener('change',e=>{
     if(e.target.id==='pkcompat') pk.compat=e.target.checked;
     if(e.target.dataset.facet){const k=e.target.dataset.facet; pk.f[k]=[...fs.querySelectorAll(`[data-facet="${k}"]:checked`)].map(x=>x.value)}
-    renderPickList();
+    pk.limit=48; renderPickList();
   });
   fs.querySelector('#pkprice').addEventListener('input',e=>{pk.maxPrice=+e.target.value; fs.querySelector('#pkpriceout').textContent=money(pk.maxPrice); renderPickList()});
   const fr=fs.querySelector('#pkforce'); if(fr) fr.addEventListener('input',e=>{pk.maxF=+e.target.value; fs.querySelector('#pkforceout').textContent=pk.maxF; renderPickList()});
   pk.maxF=80;
-  document.getElementById('pkq').addEventListener('input',e=>{pk.q=e.target.value.toLowerCase(); renderPickList()});
+  document.getElementById('pkq').addEventListener('input',e=>{pk.q=e.target.value.toLowerCase().trim(); pk.limit=48; renderPickList()});
   document.getElementById('pkclose').onclick=closePicker;
   document.getElementById('pkfilt').onclick=()=>fs.classList.toggle('open');
   document.getElementById('scrim').addEventListener('click',e=>{if(e.target.id==='scrim') closePicker()});
@@ -1647,7 +1665,7 @@ function renderPickList(){
   const slot=pk.slot, pool=POOLS[slot], facets=FACETS[slot]||[];
   let rows=pool.map(p=>({p,price:partPrice(slot,p),pr:partProblems(slot,p)}));
   rows=rows.filter(({p,price})=>{
-    if(pk.q && !(`${p.brand} ${p.name} ${p.blurb||''}`.toLowerCase().includes(pk.q))) return false;
+    if(pk.q && !pk.q.split(/\s+/).every(w=>`${p.brand} ${p.name} ${p.profile||''} ${p.type||''} ${p.layoutLabel||''} ${storeOf(p)}`.toLowerCase().includes(w))) return false;
     if(price>pk.maxPrice+0.001) return false;
     if(slot==='switches'&&p.force>pk.maxF) return false;
     for(const [k,,fn] of facets){const sel=pk.f[k]; if(sel&&sel.length&&!sel.includes(fn(p))) return false}
@@ -1655,21 +1673,24 @@ function renderPickList(){
   });
   const hidden = pk.compat? rows.filter(r=>r.pr.bad.length).length : 0;
   if(pk.compat) rows=rows.filter(r=>!r.pr.bad.length);
-  const sorters={featured:()=>0,priceAsc:(a,b)=>a.price-b.price,priceDesc:(a,b)=>b.price-a.price,name:(a,b)=>a.p.name.localeCompare(b.p.name),force:(a,b)=>(a.p.force||0)-(b.p.force||0)};
+  const sorters={featured:(a,b)=>(!!a.p.catalogId-!!b.p.catalogId)||(!!b.p.verified-!!a.p.verified),priceAsc:(a,b)=>a.price-b.price,priceDesc:(a,b)=>b.price-a.price,name:(a,b)=>a.p.name.localeCompare(b.p.name),force:(a,b)=>(a.p.force||0)-(b.p.force||0)};
   rows.sort(sorters[pk.sort]||sorters.featured);
   const current = slot==='extras'? (build.extras||[]) : [build[slot]];
   const list=document.getElementById('pklist');
-  list.innerHTML=`<div class="dbar"><span>${rows.length} ${rows.length===1?'part':'parts'}${hidden?` · ${hidden} hidden because they don't fit your build`:''}</span>
+  const total=rows.length; rows=rows.slice(0,pk.limit);
+  list.innerHTML=`<div class="dbar"><span>${total.toLocaleString('en-US')} ${total===1?'part':'parts'}${hidden?` · ${hidden} hidden because they don't fit your build`:''}</span>
     <label>Sort <select id="pksort"><option value="featured">Featured</option><option value="priceAsc">Price: low to high</option><option value="priceDesc">Price: high to low</option><option value="name">Name</option>${slot==='switches'?'<option value="force">Force: light to heavy</option>':''}</select></label></div>
     ${rows.length?'':`<div class="card emptybox"><b>Nothing matches these filters.</b><span>Clear a filter or raise the max price.</span></div>`}
     ${rows.map(({p,price,pr},i)=>{const on=current.includes(p.id);
-      let sub=''; if(slot==='switches') sub=p.packQuantity?`${Math.ceil((switchQty(build)||70)/p.packQuantity)} packs × ${p.packQuantity} switches`: `${switchQty(build)||70} switches @ ${money(p.price)}`; else if(slot==='case'&&p.kit) sub='PCB + plate'+(p.kit.stabs?' + stabs':'')+' included';
+      let sub=''; if(slot==='switches') sub=p.packQuantity?`${Math.ceil((switchQty(build)||70)/p.packQuantity)} packs × ${p.packQuantity} switches`: `${switchQty(build)||70} switches @ ${money(p.price)}`; else if(slot==='case'&&p.assembled) sub='Sold assembled'; else if(slot==='case'&&p.catalogId) sub='Kit · check what\'s included'; else if(slot==='case'&&p.kit) sub='PCB + plate'+(p.kit.stabs?' + stabs':'')+' included';
       return `<article style="--i:${i}" class="card pick ${pr.bad.length?'bad':''} ${on?'selected':''}"><span class="thumb">${thumbFor(p)}</span>
       <div class="meta"><span class="by note">${esc(p.brand)}</span><b>${esc(p.name)}</b><span class="specs">${specChips(p)}</span><p>${esc(p.blurb||'')}</p>
         ${pr.bad.map(m=>`<span class="why">✕ ${esc(m)}</span>`).join('')}${pr.warn.map(m=>`<span class="why" style="color:var(--warn)">! ${esc(m)}</span>`).join('')}
-        <span class="links">${slot==='switches'?listenBtn('part:'+p.id)+soundSearchLink(p):''}<a href="${esc(shopLink(p))}" target="_blank" rel="noopener">Seller site</a><a href="${searchLink(p)}" target="_blank" rel="noopener">Compare prices</a></span></div>
+        <span class="links">${slot==='switches'?listenBtn('part:'+p.id)+soundSearchLink(p):''}<a href="${esc(shopLink(p))}" target="_blank" rel="noopener">${p.catalogId?'View at '+esc(storeOf(p)):'Seller site'}</a><a href="${searchLink(p)}" target="_blank" rel="noopener">Compare prices</a></span></div>
       <div class="side"><span class="p">${money(price)}</span>${sub?`<small>${esc(sub)}</small>`:''}
-        ${slot==='extras'&&on?`<button class="btn small" data-unadd="${p.id}">Remove</button>`:`<button class="btn small ${on?'':'primary'}" data-add="${p.id}" ${on?'disabled':''}>${on?'Selected':'Add'}</button>`}</div></article>`}).join('')}`;
+        ${slot==='extras'&&on?`<button class="btn small" data-unadd="${p.id}">Remove</button>`:`<button class="btn small ${on?'':'primary'}" data-add="${p.id}" ${on?'disabled':''}>${on?'Selected':'Add'}</button>`}</div></article>`}).join('')}
+    ${total>rows.length?`<button class="btn block" id="pkmore">Show more (${(total-rows.length).toLocaleString('en-US')} left)</button>`:''}`;
+  const more=list.querySelector('#pkmore'); if(more) more.onclick=()=>{const y=document.querySelector('.dbody')?.scrollTop; pk.limit+=48; renderPickList(); const d=document.querySelector('.dbody'); if(d&&y!=null) d.scrollTop=y};
   const sel=list.querySelector('#pksort'); sel.value=pk.sort; sel.onchange=()=>{pk.sort=sel.value; renderPickList()};
   list.querySelectorAll('[data-add]').forEach(b=>b.onclick=()=>choose(slot,BYID[b.dataset.add]));
   list.querySelectorAll('[data-unadd]').forEach(b=>b.onclick=()=>{build.extras=build.extras.filter(x=>x!==b.dataset.unadd); commit(); renderPickList()});

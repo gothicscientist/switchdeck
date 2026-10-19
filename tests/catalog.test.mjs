@@ -62,3 +62,21 @@ test('site scripts compile and builder rounds switch purchases to whole packs',a
   assert.equal(vm.runInContext('switchCost({price:.5},70)',ctx),35);
   assert.equal(vm.runInContext('cleanBuild({case:"missing",switches:"removed",extras:["puller","removed"]}).switches',ctx),null);
 });
+test('builder admits kits, keycap sets and stabilizers only with the facts it needs',()=>{
+  const kb=(changes={})=>normalize(raw({title:'Example65 Barebones Keyboard Kit',product_type:'Keyboard Kit',vendor:'Example',body_html:'<li>Layout: 65%</li><li>Hot-swap PCB</li><li>Mount: Gasket</li>',options:[{name:'Color',values:['Black','White']}],variants:[{id:1,title:'Black',price:'129',available:true},{id:2,title:'White',price:'129',available:true}],...changes}),source,'2026-10-19T00:00:00Z');
+  const k=builderPart(kb());assert.equal(k.cat,'case');assert.equal(k.layout,'65');assert.equal(k.kit.pcb.hotswap,true);assert.equal(k.kit.plate,null);assert.equal(k.kit.stabs,null);assert.deepEqual(k.colors.map(c=>c[0]),['Black','White']);
+  assert.equal(builderPart(kb({title:'Example40 Keyboard Kit',body_html:'40% layout'})),null);
+  assert.equal(builderPart(kb({title:'Example65 Magnetic HE Keyboard'})),null);
+  assert.equal(builderPart(kb({title:'Example65 Keyboard Kit (UK ISO Layout)'})),null);
+  assert.equal(builderPart(kb({variants:[{id:1,title:'Black',price:'129',available:false}]})),null);
+  const caps=(changes={})=>normalize(raw({title:'Example Keycap Set',product_type:'Keycaps',body_html:'Cherry profile, PBT, dye-sub, 129 keys',variants:[{id:1,title:'Base',price:'60',available:true},{id:2,title:'Numpad',price:'20',available:true}],...changes}),source,'2026-10-19T00:00:00Z');
+  const c=builderPart(caps());assert.equal(c.profile,'Cherry');assert.equal(c.price,60);assert.ok(c.covers.includes('full'));
+  assert.equal(builderPart(caps({variants:[{id:1,title:'Kit A',price:'60',available:true},{id:2,title:'Kit B',price:'20',available:true}]})),null,'ambiguous kit choice');
+  assert.equal(builderPart(caps({body_html:'PBT, dye-sub'})),null,'no profile');
+  const stab=normalize(raw({title:'Example Plate Mount Stabilizers',product_type:'Stabilizers',body_html:'Unlike screw-in stabilizers these clip into the plate'}),source,'2026-10-19T00:00:00Z');
+  assert.equal(builderPart(stab).mount,'plate');
+});
+test('switches with pack-size variants are admitted at the cheapest unit price',()=>{
+  const p=normalize(raw({options:[{name:'Quantity'}],body_html:'Linear. 5-pin.',variants:[{id:1,title:'10',price:'6',available:true},{id:2,title:'70',price:'35',available:true}]}),source,'2026-10-19T00:00:00Z');
+  const b=builderPart(p);assert.equal(b.packQuantity,70);assert.equal(b.price,.5);assert.equal(b.verified,false);assert.equal(b.force,null);
+});
