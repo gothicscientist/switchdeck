@@ -1108,9 +1108,10 @@ function playSnd(key,btn){
   const embed=recording?'https://www.youtube-nocookie.com/embed/'+recording.video+'?autoplay=1&playsinline=1&rel=0'+(recording.start?'&start='+recording.start:'')+(recording.end?'&end='+recording.end:''):'';
   d.innerHTML=`<header class="soundhead"><div><small>RECORDED SOUND TEST</small><h2 id="soundtitle">${esc(switchName(p))}</h2></div><button type="button" class="iconbtn" id="soundclose" autofocus aria-label="Close sound preview">×</button></header>
     <p id="soundcontext" class="note">${esc(context)} Case, plate, keycaps and mods change the sound; this is not a recording of your custom build. Recordings are not loudness-matched.</p>
-    ${recording?`<div class="soundvideo"><iframe src="${esc(embed)}" title="${esc(recording.title+' by '+recording.creator)}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div>
+    ${recording?`<div class="soundlinks"><a class="store maker" href="${esc(url)}" target="_blank" rel="noopener noreferrer">Open original recording ↗</a>${soundSearchLink(p,'More '+switchName(p)+' sound tests')}</div>
+    <p class="note">If the player below does not load, open the original recording above.</p>
+    <div class="soundvideo"><iframe src="${esc(embed)}" title="${esc(recording.title+' by '+recording.creator)}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div>
     <div class="soundmeta"><strong>${esc(recording.creator)}</strong><span>${esc(recording.title)}</span><p>${esc(recording.setup)}</p><p>${esc(recording.treatment)}</p></div>
-    <div class="soundlinks"><a class="store maker" href="${esc(url)}" target="_blank" rel="noopener noreferrer">Open original recording ↗</a>${soundSearchLink(p,'More '+switchName(p)+' sound tests')}</div>
     <p class="note">If playback is blocked or the video is unavailable, open the original recording or browse more tests. Press play in the player if it does not start.</p>`
     :`<p class="note">No curated recording for this exact model yet. Find real tests of ${esc(switchName(p))} on YouTube.</p><div class="soundlinks">${soundSearchLink(p)}</div>`}`;
   sndBtn=btn||null;
