@@ -1,46 +1,49 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-19T22:14:58.747Z",
-  "listingCount": 4076,
-  "inStockCount": 1921,
-  "builderSwitchCount": 213,
-  "builderExtraCount": 57,
+  "generatedAt": "2026-10-19T23:40:40.321Z",
+  "listingCount": 8863,
+  "inStockCount": 4797,
+  "builderSwitchCount": 268,
+  "builderExtraCount": 150,
+  "builderCaseCount": 344,
+  "builderKeycapCount": 650,
+  "builderStabCount": 88,
   "categories": {
     "keyboards": {
       "label": "Keyboards & kits",
-      "count": 896
+      "count": 2674
     },
     "cases": {
       "label": "Cases",
-      "count": 53
+      "count": 153
     },
     "pcb": {
       "label": "PCBs",
-      "count": 117
+      "count": 499
     },
     "plate": {
       "label": "Plates",
-      "count": 265
+      "count": 447
     },
     "switches": {
       "label": "Switches",
-      "count": 825
+      "count": 975
     },
     "keycaps": {
       "label": "Keycaps",
-      "count": 1087
+      "count": 2860
     },
     "stabs": {
       "label": "Stabilizers",
-      "count": 86
+      "count": 155
     },
     "extras": {
       "label": "Mods, tools & cables",
-      "count": 455
+      "count": 758
     },
     "deskmats": {
       "label": "Deskmats",
-      "count": 292
+      "count": 342
     }
   },
   "sources": [
@@ -49,8 +52,8 @@
       "name": "NovelKeys",
       "url": "https://novelkeys.com",
       "currency": "USD",
-      "status": "cached",
-      "checkedAt": "2026-10-19T22:04:54.051Z",
+      "status": "fresh",
+      "checkedAt": "2026-10-19T23:40:14.735Z",
       "rawProducts": 410,
       "listings": 346
     },
@@ -59,38 +62,48 @@
       "name": "CannonKeys",
       "url": "https://cannonkeys.com",
       "currency": "USD",
-      "status": "cached",
-      "checkedAt": "2026-10-19T22:04:57.523Z",
+      "status": "fresh",
+      "checkedAt": "2026-10-19T23:40:17.564Z",
       "rawProducts": 1185,
       "listings": 904
     },
     {
-      "id": "divinikey",
-      "name": "Divinikey",
-      "url": "https://divinikey.com",
+      "id": "kbdfans",
+      "name": "KBDfans",
+      "url": "https://kbdfans.com",
       "currency": "USD",
-      "status": "cached",
-      "checkedAt": "2026-10-19T22:04:58.923Z",
-      "rawProducts": 1478,
-      "listings": 1348
+      "status": "fresh",
+      "checkedAt": "2026-10-19T23:40:17.709Z",
+      "rawProducts": 466,
+      "listings": 382
     },
     {
       "id": "keebsforall",
       "name": "KeebsForAll",
       "url": "https://keebsforall.com",
       "currency": "USD",
-      "status": "cached",
-      "checkedAt": "2026-10-19T22:04:59.525Z",
+      "status": "fresh",
+      "checkedAt": "2026-10-19T23:40:19.722Z",
       "rawProducts": 452,
       "listings": 412
+    },
+    {
+      "id": "divinikey",
+      "name": "Divinikey",
+      "url": "https://divinikey.com",
+      "currency": "USD",
+      "status": "fresh",
+      "checkedAt": "2026-10-19T23:40:19.780Z",
+      "rawProducts": 1479,
+      "listings": 1349
     },
     {
       "id": "mode",
       "name": "Mode Designs",
       "url": "https://modedesigns.com",
       "currency": "USD",
-      "status": "cached",
-      "checkedAt": "2026-10-19T22:04:59.566Z",
+      "status": "fresh",
+      "checkedAt": "2026-10-19T23:40:20.271Z",
       "rawProducts": 73,
       "listings": 45
     },
@@ -99,20 +112,109 @@
       "name": "Keychron",
       "url": "https://www.keychron.com",
       "currency": "USD",
-      "status": "cached",
-      "checkedAt": "2026-10-19T22:05:00.731Z",
+      "status": "fresh",
+      "checkedAt": "2026-10-19T23:40:20.478Z",
       "rawProducts": 712,
       "listings": 639
     },
     {
-      "id": "kbdfans",
-      "name": "KBDfans",
-      "url": "https://kbdfans.com",
+      "id": "meletrix",
+      "name": "Meletrix",
+      "url": "https://meletrix.com",
       "currency": "USD",
-      "status": "cached",
-      "checkedAt": "2026-10-19T22:04:57.330Z",
-      "rawProducts": 466,
-      "listings": 382
+      "optional": true,
+      "status": "fresh",
+      "checkedAt": "2026-10-19T23:40:21.353Z",
+      "rawProducts": 205,
+      "listings": 96
+    },
+    {
+      "id": "qwertykeys",
+      "name": "QwertyKeys",
+      "url": "https://qwertykeys.com",
+      "currency": "USD",
+      "optional": true,
+      "status": "fresh",
+      "checkedAt": "2026-10-19T23:40:22.219Z",
+      "rawProducts": 107,
+      "listings": 72
+    },
+    {
+      "id": "wobkey",
+      "name": "Wobkey",
+      "url": "https://www.wobkey.com",
+      "currency": "USD",
+      "optional": true,
+      "status": "fresh",
+      "checkedAt": "2026-10-19T23:40:22.759Z",
+      "rawProducts": 31,
+      "listings": 23
+    },
+    {
+      "id": "epomaker",
+      "name": "Epomaker",
+      "url": "https://epomaker.com",
+      "currency": "USD",
+      "optional": true,
+      "status": "fresh",
+      "checkedAt": "2026-10-19T23:40:23.625Z",
+      "rawProducts": 122,
+      "listings": 108
+    },
+    {
+      "id": "kineticlabs",
+      "name": "Kinetic Labs",
+      "url": "https://kineticlabs.com",
+      "currency": "USD",
+      "optional": true,
+      "status": "skipped",
+      "rawProducts": 0,
+      "listings": 0,
+      "error": "Unexpected token '<', \"\n   <!DOCTYPE \"... is not valid JSON"
+    },
+    {
+      "id": "dangkeebs",
+      "name": "Dangkeebs",
+      "url": "https://dangkeebs.com",
+      "currency": "USD",
+      "optional": true,
+      "status": "fresh",
+      "checkedAt": "2026-10-19T23:40:25.193Z",
+      "rawProducts": 177,
+      "listings": 155
+    },
+    {
+      "id": "milktooth",
+      "name": "Milktooth",
+      "url": "https://milktooth.com",
+      "currency": "USD",
+      "optional": true,
+      "status": "skipped",
+      "rawProducts": 0,
+      "listings": 0,
+      "error": "https://milktooth.com/cart.js: HTTP 404"
+    },
+    {
+      "id": "kprepublic",
+      "name": "KPrepublic",
+      "url": "https://kprepublic.com",
+      "currency": "USD",
+      "optional": true,
+      "status": "fresh",
+      "checkedAt": "2026-10-19T23:40:26.320Z",
+      "rawProducts": 1380,
+      "listings": 1261
+    },
+    {
+      "id": "mechanicalkeyboards",
+      "name": "MechanicalKeyboards.com",
+      "url": "https://mechanicalkeyboards.com",
+      "currency": "USD",
+      "optional": true,
+      "status": "fresh",
+      "checkedAt": "2026-10-19T23:40:38.074Z",
+      "rawProducts": 5731,
+      "listings": 3071
     }
   ],
   "shards": [
@@ -166,10 +268,67 @@
     "parts/0047.json",
     "parts/0048.json",
     "parts/0049.json",
-    "parts/0050.json"
+    "parts/0050.json",
+    "parts/0051.json",
+    "parts/0052.json",
+    "parts/0053.json",
+    "parts/0054.json",
+    "parts/0055.json",
+    "parts/0056.json",
+    "parts/0057.json",
+    "parts/0058.json",
+    "parts/0059.json",
+    "parts/0060.json",
+    "parts/0061.json",
+    "parts/0062.json",
+    "parts/0063.json",
+    "parts/0064.json",
+    "parts/0065.json",
+    "parts/0066.json",
+    "parts/0067.json",
+    "parts/0068.json",
+    "parts/0069.json",
+    "parts/0070.json",
+    "parts/0071.json",
+    "parts/0072.json",
+    "parts/0073.json",
+    "parts/0074.json",
+    "parts/0075.json",
+    "parts/0076.json",
+    "parts/0077.json",
+    "parts/0078.json",
+    "parts/0079.json",
+    "parts/0080.json",
+    "parts/0081.json",
+    "parts/0082.json",
+    "parts/0083.json",
+    "parts/0084.json",
+    "parts/0085.json",
+    "parts/0086.json",
+    "parts/0087.json",
+    "parts/0088.json",
+    "parts/0089.json",
+    "parts/0090.json",
+    "parts/0091.json",
+    "parts/0092.json",
+    "parts/0093.json",
+    "parts/0094.json",
+    "parts/0095.json",
+    "parts/0096.json",
+    "parts/0097.json",
+    "parts/0098.json",
+    "parts/0099.json",
+    "parts/0100.json",
+    "parts/0101.json",
+    "parts/0102.json",
+    "parts/0103.json",
+    "parts/0104.json",
+    "parts/0105.json",
+    "parts/0106.json",
+    "parts/0107.json",
+    "parts/0108.json",
+    "parts/0109.json",
+    "parts/0110.json"
   ],
-  "fingerprint": "f01eb957d32dd7b8718a8c14492d324ac64e89a9d5603af5798fb2ace11f0262",
-  "builderCaseCount": 128,
-  "builderKeycapCount": 290,
-  "builderStabCount": 38
+  "fingerprint": "faf7fab531bfd1cd119db55f4b0251bac19c28d91391d90e4889196659c90423"
 }
