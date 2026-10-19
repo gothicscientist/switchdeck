@@ -5,7 +5,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
 <style>
-/* Layout: a field of keyboards fills the screen and reacts to each answer; a single white question card sits at the bottom. Builder and saved views reuse the same warm stone palette. */
+/* One deliberate light stone theme in every viewer setting. Layout: a field of keyboards fills the screen and reacts to each answer; a single white question card sits at the bottom. Builder and saved views reuse the same warm stone palette. */
 :root{
   --bg:#F5F5F4; --surface:#FFFFFF; --tile:#F5F5F4; --tile-hover:#EDEDEB; --ink:#292524; --ink-2:#44403C; --muted:#78716C; --faint:#A8A29E; --line:#E7E5E4;
   --dark:#44403C; --dark-hover:#292524; --on-dark:#FFFFFF;
@@ -20,24 +20,7 @@
   --r:20px; --r-tile:10px;
   --out:cubic-bezier(.16,1,.3,1); --ease:cubic-bezier(.4,0,.2,1); --spring:cubic-bezier(.34,1.56,.64,1);
 }
-@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
-  --bg:#141211; --surface:#1F1C1A; --tile:#2A2624; --tile-hover:#34302D; --ink:#F5F5F4; --ink-2:#D6D3D1; --muted:#A8A29E; --faint:#78716C; --line:#33302D;
-  --dark:#E7E5E4; --dark-hover:#FFFFFF; --on-dark:#1C1917;
-  --accent:#60A5FA; --accent-soft:rgba(96,165,250,.16);
-  --ok:#4ADE80; --warn:#FB923C; --fail:#F87171; --info:#60A5FA;
-  --ok-soft:rgba(74,222,128,.12); --warn-soft:rgba(251,146,60,.12); --fail-soft:rgba(248,113,113,.12); --info-soft:rgba(96,165,250,.12);
-  --glass:rgba(20,18,17,.78); --scrim:rgba(0,0,0,.5);
-  --shadow-card:0 1px 2px rgba(0,0,0,.4),0 12px 40px rgba(0,0,0,.45); --shadow-sm:0 1px 2px rgba(0,0,0,.4); --shadow-lg:0 24px 70px rgba(0,0,0,.6);
-  color-scheme:dark}}
-:root[data-theme="dark"]{
-  --bg:#141211; --surface:#1F1C1A; --tile:#2A2624; --tile-hover:#34302D; --ink:#F5F5F4; --ink-2:#D6D3D1; --muted:#A8A29E; --faint:#78716C; --line:#33302D;
-  --dark:#E7E5E4; --dark-hover:#FFFFFF; --on-dark:#1C1917;
-  --accent:#60A5FA; --accent-soft:rgba(96,165,250,.16);
-  --ok:#4ADE80; --warn:#FB923C; --fail:#F87171; --info:#60A5FA;
-  --ok-soft:rgba(74,222,128,.12); --warn-soft:rgba(251,146,60,.12); --fail-soft:rgba(248,113,113,.12); --info-soft:rgba(96,165,250,.12);
-  --glass:rgba(20,18,17,.78); --scrim:rgba(0,0,0,.5);
-  --shadow-card:0 1px 2px rgba(0,0,0,.4),0 12px 40px rgba(0,0,0,.45); --shadow-sm:0 1px 2px rgba(0,0,0,.4); --shadow-lg:0 24px 70px rgba(0,0,0,.6);
-  color-scheme:dark}
+:root,:root[data-theme="dark"]{color-scheme:light}
 *{box-sizing:border-box}
 html,body{background:var(--bg)}
 body{margin:0;color:var(--ink);font-family:var(--f);font-size:14px;line-height:1.45;-webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums}
