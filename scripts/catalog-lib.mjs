@@ -84,6 +84,8 @@ export function extractSpecs(p,cat) {
   }
   if(cat==='stabs') set('mount',/screw[ -]?in/i.test(all)?'screw':/clip[ -]?in/i.test(all)?'clip':/plate[ -]?mount/i.test(all)?'plate':null);
   if(result.totalTravelMm!==undefined&&(result.totalTravelMm<1||result.totalTravelMm>6))delete result.totalTravelMm;
+  // Out-of-range forces are parsing mistakes (a pack count or a spring length), not specs.
+  for(const k of ['actuationForceG','bottomOutForceG']) if(result[k]!==undefined&&(result[k]<10||result[k]>150)) delete result[k];
   return result;
 }
 export function packQuantity(p,v,cat) {
