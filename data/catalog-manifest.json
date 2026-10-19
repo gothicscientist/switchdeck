@@ -1,0 +1,172 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-10-19T22:14:58.747Z",
+  "listingCount": 4076,
+  "inStockCount": 1921,
+  "builderSwitchCount": 57,
+  "builderExtraCount": 43,
+  "categories": {
+    "keyboards": {
+      "label": "Keyboards & kits",
+      "count": 896
+    },
+    "cases": {
+      "label": "Cases",
+      "count": 53
+    },
+    "pcb": {
+      "label": "PCBs",
+      "count": 117
+    },
+    "plate": {
+      "label": "Plates",
+      "count": 265
+    },
+    "switches": {
+      "label": "Switches",
+      "count": 825
+    },
+    "keycaps": {
+      "label": "Keycaps",
+      "count": 1087
+    },
+    "stabs": {
+      "label": "Stabilizers",
+      "count": 86
+    },
+    "extras": {
+      "label": "Mods, tools & cables",
+      "count": 455
+    },
+    "deskmats": {
+      "label": "Deskmats",
+      "count": 292
+    }
+  },
+  "sources": [
+    {
+      "id": "novelkeys",
+      "name": "NovelKeys",
+      "url": "https://novelkeys.com",
+      "currency": "USD",
+      "status": "cached",
+      "checkedAt": "2026-10-19T22:04:54.051Z",
+      "rawProducts": 410,
+      "listings": 346
+    },
+    {
+      "id": "cannonkeys",
+      "name": "CannonKeys",
+      "url": "https://cannonkeys.com",
+      "currency": "USD",
+      "status": "cached",
+      "checkedAt": "2026-10-19T22:04:57.523Z",
+      "rawProducts": 1185,
+      "listings": 904
+    },
+    {
+      "id": "divinikey",
+      "name": "Divinikey",
+      "url": "https://divinikey.com",
+      "currency": "USD",
+      "status": "cached",
+      "checkedAt": "2026-10-19T22:04:58.923Z",
+      "rawProducts": 1478,
+      "listings": 1348
+    },
+    {
+      "id": "keebsforall",
+      "name": "KeebsForAll",
+      "url": "https://keebsforall.com",
+      "currency": "USD",
+      "status": "cached",
+      "checkedAt": "2026-10-19T22:04:59.525Z",
+      "rawProducts": 452,
+      "listings": 412
+    },
+    {
+      "id": "mode",
+      "name": "Mode Designs",
+      "url": "https://modedesigns.com",
+      "currency": "USD",
+      "status": "cached",
+      "checkedAt": "2026-10-19T22:04:59.566Z",
+      "rawProducts": 73,
+      "listings": 45
+    },
+    {
+      "id": "keychron",
+      "name": "Keychron",
+      "url": "https://www.keychron.com",
+      "currency": "USD",
+      "status": "cached",
+      "checkedAt": "2026-10-19T22:05:00.731Z",
+      "rawProducts": 712,
+      "listings": 639
+    },
+    {
+      "id": "kbdfans",
+      "name": "KBDfans",
+      "url": "https://kbdfans.com",
+      "currency": "USD",
+      "status": "cached",
+      "checkedAt": "2026-10-19T22:04:57.330Z",
+      "rawProducts": 466,
+      "listings": 382
+    }
+  ],
+  "shards": [
+    "parts/0000.json",
+    "parts/0001.json",
+    "parts/0002.json",
+    "parts/0003.json",
+    "parts/0004.json",
+    "parts/0005.json",
+    "parts/0006.json",
+    "parts/0007.json",
+    "parts/0008.json",
+    "parts/0009.json",
+    "parts/0010.json",
+    "parts/0011.json",
+    "parts/0012.json",
+    "parts/0013.json",
+    "parts/0014.json",
+    "parts/0015.json",
+    "parts/0016.json",
+    "parts/0017.json",
+    "parts/0018.json",
+    "parts/0019.json",
+    "parts/0020.json",
+    "parts/0021.json",
+    "parts/0022.json",
+    "parts/0023.json",
+    "parts/0024.json",
+    "parts/0025.json",
+    "parts/0026.json",
+    "parts/0027.json",
+    "parts/0028.json",
+    "parts/0029.json",
+    "parts/0030.json",
+    "parts/0031.json",
+    "parts/0032.json",
+    "parts/0033.json",
+    "parts/0034.json",
+    "parts/0035.json",
+    "parts/0036.json",
+    "parts/0037.json",
+    "parts/0038.json",
+    "parts/0039.json",
+    "parts/0040.json",
+    "parts/0041.json",
+    "parts/0042.json",
+    "parts/0043.json",
+    "parts/0044.json",
+    "parts/0045.json",
+    "parts/0046.json",
+    "parts/0047.json",
+    "parts/0048.json",
+    "parts/0049.json",
+    "parts/0050.json"
+  ],
+  "fingerprint": "f01eb957d32dd7b8718a8c14492d324ac64e89a9d5603af5798fb2ace11f0262"
+}

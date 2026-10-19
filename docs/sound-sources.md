@@ -1,5 +1,7 @@
 # Switch sound recordings
 
+The registry covers the 18 curated switches. Imported directory switches have an exact-model YouTube search and show an explicit missing-recording message until a source is reviewed; they never borrow a different switch's recording.
+
 The site uses real switch recordings through the original creators' YouTube
 players. It does not generate switch audio, rip or redistribute video soundtracks,
 or pitch-shift another switch's recording to stand in for a missing model.

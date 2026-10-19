@@ -1,0 +1,11 @@
+{
+  "name": "switchdeck",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "catalog:sync": "node scripts/sync-catalog.mjs",
+    "catalog:check": "node scripts/validate-catalog.mjs",
+    "test": "node --test tests/*.test.*"
+  },
+  "engines": {"node": ">=22"}
+}

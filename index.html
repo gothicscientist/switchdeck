@@ -1,3 +1,4 @@
+<meta charset="utf-8">
 <title>Switchyard Keyboard Builder</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -436,6 +437,7 @@ h1,h2,h3{text-wrap:balance;margin:0;font-weight:700;letter-spacing:-.02em}
 }
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-delay:0ms!important;transition-duration:.01ms!important}}
 </style>
+<link rel="stylesheet" href="assets/directory.css">
 
 <header class="top">
   <div class="bar">
@@ -446,6 +448,7 @@ h1,h2,h3{text-wrap:balance;margin:0;font-weight:700;letter-spacing:-.02em}
       <button data-go="finder" id="nav-finder" title="Finder" aria-label="Finder"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6"/><path d="M15 15l5 5"/></svg></button>
       <button data-go="build" id="nav-build" title="Builder" aria-label="Builder"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="6.5" width="19" height="11" rx="2"/><path d="M6 10h1M9.5 10h1M13 10h1M16.5 10h1M8 14h8" stroke-linecap="round"/></svg></button>
       <button data-go="saved" id="nav-saved" title="Saved builds" aria-label="Saved builds"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true"><path d="M7 3.5h10a1 1 0 0 1 1 1v16l-6-4-6 4v-16a1 1 0 0 1 1-1z"/></svg></button>
+      <button data-go="directory" id="nav-directory" title="Parts directory" aria-label="Parts directory"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></button>
     </nav>
     <div class="topright"><button class="pricepill" id="pricepill" data-go="build" title="Open your build"></button></div>
   </div>
@@ -469,6 +472,7 @@ h1,h2,h3{text-wrap:balance;margin:0;font-weight:700;letter-spacing:-.02em}
         </div>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
           <button class="btn ghost small" id="clearbuild">Start over</button>
+          <button class="btn small" data-go="directory">Browse all parts</button>
           <button class="btn primary small" id="savebuild">Save build</button>
         </div>
       </div>
@@ -502,12 +506,15 @@ h1,h2,h3{text-wrap:balance;margin:0;font-weight:700;letter-spacing:-.02em}
       </div>
     </div>
   </section>
+  <section class="view page" id="view-directory" hidden aria-label="Keyboard parts directory"><div class="wrap" id="directory-root"></div></section>
 </main>
 
 <div id="results" hidden></div>
 <div id="picker" hidden></div>
 <div class="toast" id="toast" hidden role="status"></div>
 
+<script src="data/builder-catalog.js"></script>
+<script src="assets/directory.js"></script>
 <script>
 /* =========================================================
    CATALOG
@@ -687,14 +694,17 @@ const PHOTOS = {
   'nk65e':{img:'https://cdn.shopify.com/s/files/1/3099/8088/products/NK65_EE_Top_Atomic.jpg',page:'https://novelkeys.com/products/nk65-entry-edition',clean:true,pos:'50% 50%'},
   'rainy75':{img:'https://cdn.shopify.com/s/files/1/0665/1484/5931/files/3500_dd7a8372-ed99-4a0a-a932-e4ed6e94d9bb.jpg',page:'https://www.wobkey.com/products/rainy75'},
   'zoom75':{img:'https://cdn.shopify.com/s/files/1/0607/2474/0287/files/02_0c6f20a4-1bf4-4915-90f2-2b432e8165c4.jpg',page:'https://meletrix.com/products/zoom75-tiga-e-white'},
-  'tofu65':{page:'https://kbdfans.com/products/tofu65-3-0-custom-color-edition'},
-  'tofu60':{page:'https://kbdfans.com/products/tofu60-3-0'},
   'bow':{page:'https://kbdfans.com/products/pbtfans-bow'},
   'nkcream':{page:'https://novelkeys.com/products/nk-cream-series'},
 };
 for(const [id,ph] of Object.entries(PHOTOS)){const p=[...CASES,...SWITCHES,...KEYCAPS].find(x=>x.id===id); if(p) p.photo=ph}
 
+// Imported switches require explicit standard-MX specs and an unambiguous pack quantity.
+for(const p of window.SWITCHDECK_CATALOG?.switches||[]) if(!SWITCHES.some(s=>s.id===p.id)) SWITCHES.push(p);
+for(const p of window.SWITCHDECK_CATALOG?.extras||[]) if(!EXTRAS.some(s=>s.id===p.id)) EXTRAS.push(p);
 const ALLPARTS = [...CASES,...PCBS,...PLATES,...SWITCHES,...KEYCAPS,...STABS,...EXTRAS];
+// Reviewed, version-specific matches enrich existing parts without replacing kit prices or fit rules.
+for(const [id,meta] of Object.entries(window.SWITCHDECK_CATALOG?.curated||{})){const p=ALLPARTS.find(p=>p.id===id);if(p&&meta.photo){p.photo={...p.photo,...meta.photo,clean:false};p.retailers=meta.retailers}}
 const BYID = Object.fromEntries(ALLPARTS.map(p=>[p.id,p]));
 
 const SLOTS = [
@@ -720,6 +730,9 @@ let saved = store.get('sy.saved', []);
 let quizAns = store.get('sy.quiz', {});
 let quizStep = 0;
 let quizDone = false;
+// Removed retailer listings must not break saved builds on the next catalog refresh.
+function cleanBuild(b){const out={...b};for(const key of ['case','pcb','plate','switches','stabs','keycaps'])if(out[key]&&!BYID[out[key]])out[key]=null;out.extras=(out.extras||[]).filter(id=>BYID[id]);return out}
+build=cleanBuild(build);saved=saved.map(cleanBuild);
 
 function persist(){store.set('sy.build',build)}
 
@@ -733,12 +746,13 @@ function stabsIncluded(b){const c=caseOf(b); return !!(c&&c.kit&&c.kit.stabs)}
 const layoutOf = b=>{const c=caseOf(b); return c?c.layout:null};
 const keyCount = b=>{const c=caseOf(b); return c?c.keys:0};
 function switchQty(b){const n=keyCount(b); return Math.ceil((n||0)/10)*10}
+function switchCost(s,q){return s.packQuantity?Math.ceil(q/s.packQuantity)*s.packPrice:+(s.price*q).toFixed(2)}
 
 function lineItems(b){
   const c=caseOf(b), L=layoutOf(b), items=[];
   if(c) items.push({slot:'case',part:c,price:c.price});
   if(!(c&&c.kit)){ if(b.pcb) items.push({slot:'pcb',part:BYID[b.pcb],price:BYID[b.pcb].price}); if(b.plate) items.push({slot:'plate',part:BYID[b.plate],price:BYID[b.plate].price}); }
-  if(b.switches){const s=BYID[b.switches], q=switchQty(b)||70; items.push({slot:'switches',part:s,price:+(s.price*q).toFixed(2),qty:q});}
+  if(b.switches){const s=BYID[b.switches], q=switchQty(b)||70; items.push({slot:'switches',part:s,price:switchCost(s,q),qty:s.packQuantity?Math.ceil(q/s.packQuantity)*s.packQuantity:q});}
   if(b.stabs && !stabsIncluded(b)){const s=BYID[b.stabs]; items.push({slot:'stabs',part:s,price:L==='full'?s.fullPrice:s.price});}
   if(b.keycaps){const k=BYID[b.keycaps]; let p=k.price, add=0; if(L&&!k.covers.includes(L)&&k.addon&&k.addon[L]) add=k.addon[L]; items.push({slot:'keycaps',part:k,price:p+add,addon:add});}
   for(const id of b.extras||[]){const e=BYID[id]; if(e) items.push({slot:'extras',part:e,price:e.price});}
@@ -961,6 +975,7 @@ function extraSVG(e){
 }
 function thumbFor(p,b){
   if(!p) return '';
+  if(p.photo?.img)return `<img class="catalog-thumb" src="${esc(p.photo.img)}" alt="${esc(p.name)}" loading="lazy" decoding="async" onerror="this.hidden=true">`;
   if(p.cat==='case') return caseVisual({case:p.id,color:0,keycaps:null,extras:[]},'thumb');
   if(p.cat==='switches') return switchSVG(p);
   if(p.cat==='keycaps') return capsSVG(p);
@@ -977,7 +992,8 @@ function caseVisual(b,kind){
   const svg=buildBoard(b,{legends:!small,u:small?20:40,cls:''});
   const p=c.photo; if(!p||!p.img||(small&&!p.clean)) return svg;
   const w={thumb:240,field:520,detail:1100,stage:1400}[kind];
-  return `<span class="ph ${kind} ${p.clean?'clean':'scene'}"><img src="${p.img}?width=${w}" alt="${esc(c.brand+' '+c.name)}" loading="lazy" decoding="async" style="object-position:${p.pos||'50% 50%'}" onerror="this.parentNode.classList.add('err')">${svg}</span>`;
+  const src=new URL(p.img);src.searchParams.set('width',w);
+  return `<span class="ph ${kind} ${p.clean?'clean':'scene'}"><img src="${esc(src.href)}" alt="${esc(c.brand+' '+c.name)}" loading="lazy" decoding="async" style="object-position:${p.pos||'50% 50%'}" onerror="this.parentNode.classList.add('err')">${svg}</span>`;
 }
 function buildBoard(b,opts={}){
   const c=caseOf(b); if(!c) return null;
@@ -1139,6 +1155,7 @@ const STORES_FOR={case:['amazon','divinikey','kbdfans'],pcb:['kbdfans','divinike
   switches:['divinikey','kfa','novelkeys','amazon'],keycaps:['divinikey','kbdfans','novelkeys','amazon'],stabs:['divinikey','cannonkeys','kbdfans','amazon'],extras:['amazon','divinikey','kfa']};
 const ARROW='<svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M3 2h5v5M8 2L2.5 7.5"/></svg>';
 function buyLinks(p){
+  if(p.retailers?.length)return p.retailers.map(r=>({n:r.name,u:r.url,maker:true}));
   const term=`${p.brand==='Various'?'':p.brand+' '}${p.name}`+(p.cat==='switches'?' switches':p.cat==='keycaps'&&!/keycap/i.test(p.name)?' keycaps':'');
   const q=encodeURIComponent(term.trim()), out=[], maker=shopLink(p);
   if(!/google\.com/.test(maker)) out.push({n:p.brand,u:maker,maker:true});
@@ -1154,13 +1171,14 @@ let view='finder';
 function go(v,push=true){
   closeSoundPreview();
   view=v;
-  for(const id of ['finder','build','saved']){
+  for(const id of ['finder','build','saved','directory']){
     const el=document.getElementById('view-'+id), on=id===v;
     el.hidden=!on;
     if(on){el.classList.remove('enter'); void el.offsetWidth; el.classList.add('enter')}
     document.getElementById('nav-'+id).setAttribute('aria-current',on?'page':'false');
   }
   if(v==='build') renderBuilder(); if(v==='saved') renderSaved(); if(v==='finder') renderFinder();
+  if(v==='directory') window.SwitchdeckDirectory.open();
   if(push){try{history.replaceState(null,'','#'+v)}catch(e){}}
   window.scrollTo({top:0}); onScroll();
 }
@@ -1231,7 +1249,8 @@ function evalAns(ans){
   const L=ans.layout&&ans.layout!=='any'?ans.layout:null;
   const budget=typeof ans.budget==='number'&&ans.budget<B_MAX?ans.budget:null;
   const feel=ans.feel&&ans.feel!=='any'?ans.feel:null;
-  const sws=SWITCHES.filter(s=>!feel||(feel==='Silent'?/Silent/.test(s.type):s.type===feel));
+  // Sound-ranked recommendations use curated sound profiles; imported parts have no measured sound data.
+  const sws=SWITCHES.filter(s=>!s.catalogId&&(!feel||(feel==='Silent'?/Silent/.test(s.type):s.type===feel)));
   const surprise=ans.look==='surprise';
   const kcs=KEYCAPS.filter(k=>!ans.look||ans.look==='any'||surprise||k.mood.includes(ans.look));
   const T=SOUND_T[ans.sound]||{p:45,v:50};
@@ -1568,14 +1587,14 @@ const FACETS={
   case:[['layout','Layout',p=>LAYOUT_NAMES[p.layout]],['type','Type',p=>p.kit?'Kit (PCB + plate included)':'Case only'],['conn','Connection',p=>/Tri|Blue/.test(p.conn)?'Wireless':'Wired'],['mount','Mount',p=>p.mount.split(' ')[0]],['brand','Brand',p=>p.brand]],
   pcb:[['hs','Install',p=>p.hotswap?'Hot-swap':'Solder'],['rgb','Lighting',p=>p.rgb?'RGB':'None'],['brand','Brand',p=>p.brand]],
   plate:[['material','Material',p=>p.material],['layout','Layout',p=>LAYOUT_NAMES[p.layout]]],
-  switches:[['type','Type',p=>p.type],['pins','Pins',p=>p.pins+'-pin'],['brand','Brand',p=>p.brand],['factory','Lube',p=>p.factory?'Factory lubed':'Unlubed']],
+  switches:[['type','Type',p=>p.type],['pins','Pins',p=>p.pins+'-pin'],['brand','Brand',p=>p.brand],['factory','Lube',p=>p.factory===null?'Not published':p.factory?'Factory lubed':'Unlubed']],
   keycaps:[['profile','Profile',p=>p.profile],['material','Material',p=>p.material],['legends','Legends',p=>p.legends],['brand','Brand',p=>p.brand]],
   stabs:[['mount','Mount',p=>({screw:'PCB screw-in',clip:'PCB clip-in',plate:'Plate-mount'}[p.mount])]],
   extras:[['kind','Kind',p=>p.kind]],
 };
 let pk={slot:null,q:'',f:{},compat:true,sort:'featured',maxPrice:null,minF:30,maxF:80};
 function partPrice(slot,p){
-  if(slot==='switches') return p.price*(switchQty(build)||70);
+  if(slot==='switches') return switchCost(p,switchQty(build)||70);
   if(slot==='stabs') return layoutOf(build)==='full'?p.fullPrice:p.price;
   if(slot==='keycaps'){const L=layoutOf(build); return p.price+((L&&!p.covers.includes(L)&&p.addon&&p.addon[L])||0)}
   return p.price;
@@ -1644,11 +1663,11 @@ function renderPickList(){
     <label>Sort <select id="pksort"><option value="featured">Featured</option><option value="priceAsc">Price: low to high</option><option value="priceDesc">Price: high to low</option><option value="name">Name</option>${slot==='switches'?'<option value="force">Force: light to heavy</option>':''}</select></label></div>
     ${rows.length?'':`<div class="card emptybox"><b>Nothing matches these filters.</b><span>Clear a filter or raise the max price.</span></div>`}
     ${rows.map(({p,price,pr},i)=>{const on=current.includes(p.id);
-      let sub=''; if(slot==='switches') sub=`${switchQty(build)||70} switches @ ${money(p.price)}`; else if(slot==='case'&&p.kit) sub='PCB + plate'+(p.kit.stabs?' + stabs':'')+' included';
+      let sub=''; if(slot==='switches') sub=p.packQuantity?`${Math.ceil((switchQty(build)||70)/p.packQuantity)} packs × ${p.packQuantity} switches`: `${switchQty(build)||70} switches @ ${money(p.price)}`; else if(slot==='case'&&p.kit) sub='PCB + plate'+(p.kit.stabs?' + stabs':'')+' included';
       return `<article style="--i:${i}" class="card pick ${pr.bad.length?'bad':''} ${on?'selected':''}"><span class="thumb">${thumbFor(p)}</span>
       <div class="meta"><span class="by note">${esc(p.brand)}</span><b>${esc(p.name)}</b><span class="specs">${specChips(p)}</span><p>${esc(p.blurb||'')}</p>
         ${pr.bad.map(m=>`<span class="why">✕ ${esc(m)}</span>`).join('')}${pr.warn.map(m=>`<span class="why" style="color:var(--warn)">! ${esc(m)}</span>`).join('')}
-        <span class="links">${slot==='switches'?listenBtn('part:'+p.id)+soundSearchLink(p):''}<a href="${shopLink(p)}" target="_blank" rel="noopener">Seller site</a><a href="${searchLink(p)}" target="_blank" rel="noopener">Compare prices</a></span></div>
+        <span class="links">${slot==='switches'?listenBtn('part:'+p.id)+soundSearchLink(p):''}<a href="${esc(shopLink(p))}" target="_blank" rel="noopener">Seller site</a><a href="${searchLink(p)}" target="_blank" rel="noopener">Compare prices</a></span></div>
       <div class="side"><span class="p">${money(price)}</span>${sub?`<small>${esc(sub)}</small>`:''}
         ${slot==='extras'&&on?`<button class="btn small" data-unadd="${p.id}">Remove</button>`:`<button class="btn small ${on?'':'primary'}" data-add="${p.id}" ${on?'disabled':''}>${on?'Selected':'Add'}</button>`}</div></article>`}).join('')}`;
   const sel=list.querySelector('#pksort'); sel.value=pk.sort; sel.onchange=()=>{pk.sort=sel.value; renderPickList()};
@@ -1700,7 +1719,8 @@ document.getElementById('importbtn').onclick=()=>{
    BOOT
    ========================================================= */
 const start=(location.hash||'').replace('#','');
-go(['finder','build','saved'].includes(start)?start:'finder',false);
+window.SwitchdeckBuilder={has:id=>!!BYID[id]?.catalogId,add:id=>{const p=BYID[id];if(!p?.catalogId)return;go('build');choose(p.cat,p)}};
+go(['finder','build','saved','directory'].includes(start)?start:'finder',false);
 renderPill();
 </script>
 
