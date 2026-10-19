@@ -1,0 +1,1195 @@
+<title>Switchyard Keyboard Builder</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Familjen+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: workshop bench. Sticky top bar, a guided finder on the landing, and a parts-list builder with a sticky summary rail. */
+:root{
+  --bg:#EEF1EE; --surface:#FFFFFF; --sunk:#E3E8E4; --ink:#17201C; --muted:#5A6661; --line:#D2DAD5;
+  --accent:#0E7A5C; --accent-ink:#FFFFFF; --accent-soft:#D5EDE4; --brass:#A97A1F;
+  --ok:#1E8A4C; --warn:#B26A00; --fail:#C2362B; --info:#3D6CA8;
+  --ok-soft:#DDF2E4; --warn-soft:#FBEBD2; --fail-soft:#F8DEDA; --info-soft:#DEE8F5;
+  --shadow:0 1px 2px rgba(20,32,28,.06),0 6px 24px rgba(20,32,28,.07);
+  --f-display:"Bricolage Grotesque","Familjen Grotesk",system-ui,sans-serif;
+  --f-body:"Familjen Grotesk",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --r:10px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#101513; --surface:#18201C; --sunk:#0C110F; --ink:#E4EBE7; --muted:#97A49E; --line:#2A3530;
+  --accent:#3CC495; --accent-ink:#06120D; --accent-soft:#163A2E; --brass:#D9A845;
+  --ok:#4CC97E; --warn:#F0A53C; --fail:#F26B5E; --info:#7FA8E0;
+  --ok-soft:#173326; --warn-soft:#3A2A12; --fail-soft:#3D1D1A; --info-soft:#1A2A40;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 28px rgba(0,0,0,.35); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#101513; --surface:#18201C; --sunk:#0C110F; --ink:#E4EBE7; --muted:#97A49E; --line:#2A3530;
+  --accent:#3CC495; --accent-ink:#06120D; --accent-soft:#163A2E; --brass:#D9A845;
+  --ok:#4CC97E; --warn:#F0A53C; --fail:#F26B5E; --info:#7FA8E0;
+  --ok-soft:#173326; --warn-soft:#3A2A12; --fail-soft:#3D1D1A; --info-soft:#1A2A40;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 28px rgba(0,0,0,.35); color-scheme:dark}
+*{box-sizing:border-box}
+html,body{background:var(--bg)}
+body{color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:60;background:var(--surface)}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+a{color:var(--accent)}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.wrap{max-width:1240px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0;letter-spacing:-.01em}
+.eyebrow{font-family:var(--f-mono);font-size:11.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+
+/* top bar */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:50;background:var(--surface);border-bottom:1px solid var(--line)}
+.top .wrap{display:flex;align-items:center;gap:16px;min-height:60px;flex-wrap:wrap;padding-block:8px}
+.brand{display:flex;align-items:center;gap:10px;font-family:var(--f-display);font-weight:800;font-size:19px;text-decoration:none;color:var(--ink)}
+.brand small{font-family:var(--f-mono);font-weight:400;font-size:11px;color:var(--muted);letter-spacing:.05em}
+.nav{display:flex;gap:4px;background:var(--sunk);padding:4px;border-radius:999px}
+.nav button{border:0;background:transparent;padding:6px 14px;border-radius:999px;font-weight:600;color:var(--muted)}
+.nav button[aria-current="page"]{background:var(--surface);color:var(--ink);box-shadow:var(--shadow)}
+.top .spacer{flex:1}
+.pricepill{font-family:var(--f-mono);font-weight:600;background:var(--accent-soft);color:var(--ink);padding:6px 12px;border-radius:999px;font-size:13.5px;border:0}
+.statusdot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:1px}
+
+/* generic */
+.btn{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--surface);padding:9px 16px;border-radius:8px;font-weight:600;text-decoration:none;color:var(--ink)}
+.btn:hover{border-color:var(--muted)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.primary:hover{filter:brightness(1.06)}
+.btn.ghost{background:transparent;border-color:transparent;color:var(--muted)}
+.btn.ghost:hover{color:var(--ink);background:var(--sunk)}
+.btn.small{padding:6px 11px;font-size:13.5px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.chip{display:inline-flex;align-items:center;gap:4px;font-family:var(--f-mono);font-size:11.5px;padding:2px 8px;border-radius:999px;background:var(--sunk);color:var(--muted);white-space:nowrap}
+.chip.ok{background:var(--ok-soft);color:var(--ok)}.chip.warn{background:var(--warn-soft);color:var(--warn)}.chip.fail{background:var(--fail-soft);color:var(--fail)}.chip.info{background:var(--info-soft);color:var(--info)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r)}
+main{padding-block:28px 64px}
+.view[hidden]{display:none!important}
+
+/* finder */
+.hero{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);gap:40px;align-items:center;padding-block:12px 36px}
+.hero h1{font-size:clamp(32px,4.6vw,54px);font-weight:800;line-height:1.02}
+.hero h1 em{font-style:normal;color:var(--accent)}
+.hero p{color:var(--muted);font-size:17px;max-width:46ch;margin:16px 0 22px}
+.hero .stats{display:flex;gap:24px;flex-wrap:wrap;margin-top:26px}
+.hero .stats div{display:flex;flex-direction:column}
+.hero .stats b{font-family:var(--f-display);font-size:26px}
+.hero .stats span{font-size:12.5px;color:var(--muted)}
+.hero-board{position:relative}
+.hero-board svg{width:100%;height:auto;display:block;filter:drop-shadow(0 18px 30px rgba(10,30,20,.18))}
+.hero-board .tag{position:absolute;left:8px;bottom:-14px;font-family:var(--f-mono);font-size:11.5px;color:var(--muted)}
+.quiz{padding:28px;display:grid;gap:22px}
+.quiz-head{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap}
+.quiz-head h2{font-size:26px}
+.progress{display:flex;gap:4px;width:100%}
+.progress i{flex:1;height:4px;border-radius:4px;background:var(--line)}
+.progress i.on{background:var(--accent)}
+.opts{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px}
+.opt{position:relative;text-align:left;border:1.5px solid var(--line);background:var(--surface);border-radius:var(--r);padding:14px;display:flex;flex-direction:column;gap:6px;transition:border-color .15s,transform .15s}
+.opt:hover{border-color:var(--muted)}
+.opt[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft)}
+.opt b{font-size:15.5px}
+.opt span{font-size:13px;color:var(--muted)}
+.opt .art{height:54px;display:flex;align-items:center}
+.opt .art svg{max-height:54px;max-width:100%}
+.quiz-foot{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center}
+.budget{display:grid;gap:10px;max-width:560px}
+.budget output{font-family:var(--f-display);font-size:40px;font-weight:800}
+.budget input{width:100%;accent-color:var(--accent)}
+.budget .ticks{display:flex;justify-content:space-between;font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+.results{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+.result{padding:18px;display:flex;flex-direction:column;gap:12px}
+.result .rank{display:flex;justify-content:space-between;align-items:center}
+.result .match{font-family:var(--f-display);font-weight:800;font-size:22px;color:var(--accent)}
+.result h3{font-size:19px}
+.result ul{margin:0;padding-left:18px;color:var(--muted);font-size:13.5px;display:grid;gap:3px}
+.result .parts{display:grid;gap:4px;font-size:13px;border-top:1px dashed var(--line);padding-top:10px}
+.result .parts div{display:flex;justify-content:space-between;gap:10px}
+.result .parts span:first-child{color:var(--muted);flex:none}
+.result .parts span:last-child{text-align:right;min-width:0}
+.result .total{display:flex;justify-content:space-between;align-items:baseline;margin-top:auto}
+.result .total b{font-family:var(--f-mono);font-size:20px}
+
+/* builder */
+.bgrid{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:24px;align-items:start}
+.stage{padding:22px 22px 16px;display:grid;gap:14px}
+.stage-head{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:flex-start}
+.stage-head h1{font-size:28px}
+.stage-head input{border:0;background:transparent;font-family:var(--f-display);font-size:28px;font-weight:800;width:100%;padding:0;color:var(--ink)}
+.stage-head input:hover,.stage-head input:focus{background:var(--sunk);border-radius:6px}
+.stage svg.board{width:100%;height:auto;display:block}
+.boardwrap{background:radial-gradient(ellipse at 50% 40%,var(--surface),var(--sunk));border-radius:8px;padding:26px 18px;min-height:180px;display:flex;align-items:center;justify-content:center}
+.boardwrap .empty{color:var(--muted);text-align:center}
+.swatches{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+.sw{width:24px;height:24px;border-radius:50%;border:2px solid var(--surface);box-shadow:0 0 0 1px var(--line);padding:0}
+.sw[aria-pressed="true"]{box-shadow:0 0 0 2px var(--accent)}
+.plist{margin-top:18px;overflow:hidden}
+.plist-head{display:grid;grid-template-columns:150px minmax(0,1fr) 130px 120px;gap:14px;padding:10px 18px;border-bottom:1px solid var(--line);background:var(--sunk)}
+.prow{display:grid;grid-template-columns:150px minmax(0,1fr) 130px 120px;gap:14px;padding:14px 18px;border-bottom:1px solid var(--line);align-items:center}
+.prow:last-child{border-bottom:0}
+.prow .slot{font-weight:600;display:flex;flex-direction:column;gap:2px}
+.prow .slot small{font-weight:400;color:var(--muted);font-size:12px}
+.prow .item{display:flex;gap:12px;align-items:center;min-width:0}
+.thumb{flex:none;width:64px;height:48px;border-radius:7px;background:var(--sunk);display:flex;align-items:center;justify-content:center;overflow:hidden}
+.thumb svg{width:100%;height:100%}
+.item .meta{min-width:0;display:flex;flex-direction:column;gap:4px}
+.item .meta b{font-size:14.5px;line-height:1.25}
+.item .meta .by{font-size:12.5px;color:var(--muted)}
+.item .specs{display:flex;gap:4px;flex-wrap:wrap}
+.prow .price{font-family:var(--f-mono);text-align:right;font-size:14px;display:flex;flex-direction:column;align-items:flex-end}
+.prow .price small{color:var(--muted);font-size:11.5px}
+.prow .acts{display:flex;gap:4px;justify-content:flex-end}
+.prow.included{background:repeating-linear-gradient(135deg,transparent 0 10px,color-mix(in srgb,var(--sunk) 60%,transparent) 10px 20px)}
+.addbtn{border:1.5px dashed var(--line);background:transparent;border-radius:8px;padding:10px 14px;color:var(--accent);font-weight:600;text-align:left;width:100%}
+.addbtn:hover{border-color:var(--accent);background:var(--accent-soft)}
+.extras-list{display:grid;gap:8px}
+.extra-line{display:flex;justify-content:space-between;gap:8px;align-items:center;font-size:13.5px}
+.rail{display:grid;gap:16px;position:sticky;top:calc(env(safe-area-inset-top,0px) + 76px)}
+.rail section{padding:16px 18px;display:grid;gap:12px}
+.rail h3{font-size:16px}
+.verdict{display:flex;gap:10px;align-items:center;padding:10px 12px;border-radius:8px;font-weight:600}
+.verdict.ok{background:var(--ok-soft);color:var(--ok)}.verdict.warn{background:var(--warn-soft);color:var(--warn)}.verdict.fail{background:var(--fail-soft);color:var(--fail)}.verdict.info{background:var(--info-soft);color:var(--info)}
+.issues{list-style:none;margin:0;padding:0;display:grid;gap:8px;font-size:13.5px}
+.issues li{display:grid;grid-template-columns:14px 1fr;gap:8px;align-items:start}
+.issues li i{width:10px;height:10px;border-radius:3px;margin-top:5px}
+.issues .ok i{background:var(--ok)}.issues .warn i{background:var(--warn)}.issues .fail i{background:var(--fail)}.issues .info i{background:var(--info)}
+.issues small{color:var(--muted)}
+.totals{display:grid;gap:6px;font-size:13.5px}
+.totals div{display:flex;justify-content:space-between}
+.totals .grand{font-size:18px;font-weight:700;border-top:1px solid var(--line);padding-top:8px;margin-top:4px}
+.meter{display:grid;gap:4px}
+.meter .lbl{display:flex;justify-content:space-between;font-size:12.5px;color:var(--muted)}
+.meter .lbl b{color:var(--ink);font-weight:600}
+.meter .bar{position:relative;height:8px;border-radius:8px;background:linear-gradient(90deg,var(--sunk),var(--line))}
+.meter .bar i{position:absolute;top:-4px;width:16px;height:16px;border-radius:50%;background:var(--accent);border:3px solid var(--surface);box-shadow:0 0 0 1px var(--accent);transform:translateX(-50%)}
+.meter .ends{display:flex;justify-content:space-between;font-family:var(--f-mono);font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.railacts{display:flex;gap:8px;flex-wrap:wrap}
+.note{font-size:12px;color:var(--muted)}
+
+/* picker */
+.scrim{position:fixed;inset:0;background:rgba(8,14,11,.48);z-index:80;display:flex;justify-content:flex-end}
+.drawer{background:var(--bg);width:min(980px,100%);height:100%;display:grid;grid-template-rows:auto 1fr;box-shadow:var(--shadow);padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);padding-right:env(safe-area-inset-right,0px)}
+.dhead{background:var(--surface);border-bottom:1px solid var(--line);padding:14px 20px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.dhead h2{font-size:22px;flex:1;min-width:160px}
+.dhead input[type=search]{flex:1 1 220px;min-width:0;border:1px solid var(--line);border-radius:8px;padding:8px 12px;background:var(--bg)}
+.dbody{display:grid;grid-template-columns:220px minmax(0,1fr);min-height:0}
+.filters{border-right:1px solid var(--line);padding:16px;overflow:auto;display:grid;gap:18px;align-content:start}
+.filters fieldset{border:0;padding:0;margin:0;display:grid;gap:6px}
+.filters legend{font-family:var(--f-mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.filters label{display:flex;gap:8px;align-items:center;font-size:13.5px}
+.filters input[type=checkbox]{accent-color:var(--accent)}
+.filters input[type=range]{width:100%;accent-color:var(--accent)}
+.toggle{display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:600}
+.dlist{overflow:auto;padding:14px 20px 40px;display:grid;gap:10px;align-content:start}
+.dbar{display:flex;justify-content:space-between;gap:10px;align-items:center;font-size:13px;color:var(--muted);flex-wrap:wrap}
+.dbar select{border:1px solid var(--line);border-radius:7px;padding:5px 8px;background:var(--surface)}
+.pick{display:grid;grid-template-columns:96px minmax(0,1fr) auto;gap:16px;padding:14px;align-items:center}
+.pick .thumb{width:96px;height:72px}
+.pick .meta{display:flex;flex-direction:column;gap:5px;min-width:0}
+.pick .meta b{font-size:15.5px}
+.pick .meta p{margin:0;font-size:13px;color:var(--muted)}
+.pick .side{display:flex;flex-direction:column;align-items:flex-end;gap:6px;text-align:right}
+.pick .side .p{font-family:var(--f-mono);font-weight:600;font-size:16px}
+.pick .side small{font-size:11.5px;color:var(--muted)}
+.pick.bad{opacity:.62}
+.pick .why{font-size:12.5px;color:var(--fail)}
+.pick .links{display:flex;gap:10px;font-size:12.5px;flex-wrap:wrap}
+.pick.selected{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.filtbtn{display:none}
+
+/* saved */
+.saved-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:16px}
+.saved{padding:16px;display:grid;gap:10px}
+.saved .row{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.emptybox{padding:36px;text-align:center;color:var(--muted);display:grid;gap:12px;justify-items:center}
+.codebox{display:grid;gap:8px;padding:18px;margin-top:20px}
+.codebox textarea{width:100%;min-height:70px;border:1px solid var(--line);border-radius:8px;padding:10px;background:var(--bg);font-family:var(--f-mono);font-size:12px;color:var(--ink);resize:vertical}
+
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:8px;font-size:14px;z-index:100;box-shadow:var(--shadow);max-width:calc(100% - 32px)}
+.foot{border-top:1px solid var(--line);padding-block:22px;color:var(--muted);font-size:12.5px}
+.foot .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+
+@media (max-width:1020px){
+  .bgrid{grid-template-columns:minmax(0,1fr)}
+  .rail{position:static}
+  .hero{grid-template-columns:minmax(0,1fr)}
+}
+@media (max-width:760px){
+  .plist-head{display:none}
+  .prow{grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"slot price" "item item" "acts acts";gap:8px}
+  .prow .slot{grid-area:slot;flex-direction:row;gap:8px;align-items:baseline}
+  .prow .item{grid-area:item}
+  .prow .price{grid-area:price}
+  .prow .acts{grid-area:acts;justify-content:flex-start}
+  .dbody{grid-template-columns:minmax(0,1fr)}
+  .filters{display:none;border-right:0;border-bottom:1px solid var(--line);max-height:46vh}
+  .filters.open{display:grid}
+  .filtbtn{display:inline-flex}
+  .pick{grid-template-columns:72px minmax(0,1fr)}
+  .pick .thumb{width:72px;height:54px}
+  .pick .side{grid-column:1 / -1;flex-direction:row;justify-content:space-between;align-items:center;text-align:left}
+  .quiz{padding:18px}
+  .nav button{padding:6px 10px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="#finder" id="brandlink" aria-label="Switchyard home">
+      <svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><rect x="1" y="3" width="28" height="25" rx="6" fill="var(--accent)"/><rect x="5" y="5" width="20" height="17" rx="4" fill="var(--surface)" opacity=".92"/><path d="M15 9v9M10.5 13.5h9" stroke="var(--accent)" stroke-width="2.6" stroke-linecap="round"/></svg>
+      <span>Switchyard<br><small>custom keyboard builder</small></span>
+    </a>
+    <nav class="nav" aria-label="Sections">
+      <button data-go="finder" id="nav-finder">Finder</button>
+      <button data-go="build" id="nav-build">Builder</button>
+      <button data-go="saved" id="nav-saved">Saved</button>
+    </nav>
+    <span class="spacer"></span>
+    <button class="pricepill" id="pricepill" data-go="build" title="Open your build"></button>
+  </div>
+</header>
+
+<main class="wrap">
+  <!-- FINDER -->
+  <section class="view" id="view-finder">
+    <div class="hero">
+      <div>
+        <div class="eyebrow">Keyboard finder · 8 questions</div>
+        <h1>Find the board that fits <em>how you type.</em></h1>
+        <p>Tell us your layout, the feel and sound you like, and your budget. We'll match you with complete builds from real parts, check that everything fits together, and hand you a parts list.</p>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <a class="btn primary" href="#quiz" id="startquiz">Start the finder</a>
+          <button class="btn" data-go="build" id="skipquiz">Build from scratch</button>
+        </div>
+        <div class="stats" id="herostats"></div>
+      </div>
+      <div class="hero-board" id="heroboard"></div>
+    </div>
+    <div class="card quiz" id="quiz"></div>
+  </section>
+
+  <!-- BUILDER -->
+  <section class="view" id="view-build" hidden>
+    <div class="bgrid">
+      <div>
+        <div class="card stage">
+          <div class="stage-head">
+            <div style="flex:1;min-width:220px">
+              <div class="eyebrow" id="buildeyebrow">Your build</div>
+              <input id="buildname" aria-label="Build name" value="My keyboard">
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button class="btn small" id="savebuild">Save build</button>
+              <button class="btn small ghost" id="clearbuild">Start over</button>
+            </div>
+          </div>
+          <div class="boardwrap" id="stageboard"></div>
+          <div class="swatches" id="swatches"></div>
+        </div>
+        <div class="card plist" id="plist"></div>
+      </div>
+      <aside class="rail" id="rail" aria-label="Build summary"></aside>
+    </div>
+  </section>
+
+  <!-- SAVED -->
+  <section class="view" id="view-saved" hidden>
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap;margin-bottom:18px">
+      <div><div class="eyebrow">On this device</div><h1 style="font-size:30px">Saved builds</h1></div>
+      <button class="btn primary" data-go="build">Open builder</button>
+    </div>
+    <div id="savedlist"></div>
+    <div class="card codebox">
+      <h3 style="font-size:16px">Share a build</h3>
+      <p class="note" style="margin:0">Every build has a build code. Copy it from the builder and paste one here to load it.</p>
+      <textarea id="importcode" aria-label="Build code" placeholder="Paste a build code, e.g. SY1:..."></textarea>
+      <div><button class="btn small" id="importbtn">Load build code</button></div>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <div class="wrap">
+    <span>Prices are approximate US list prices for the base product and change often. Check the seller before you buy.</span>
+    <span>Product renders are illustrations generated from each part's specs, not photos.</span>
+  </div>
+</footer>
+
+<div id="picker" hidden></div>
+<div class="toast" id="toast" hidden role="status"></div>
+
+<script>
+/* =========================================================
+   CATALOG
+   ========================================================= */
+const SHOPS = {
+  Keychron:'https://www.keychron.com/', KBDfans:'https://kbdfans.com/', NovelKeys:'https://novelkeys.com/',
+  'Mode Designs':'https://modedesigns.com/', Meletrix:'https://meletrix.com/', Wobkey:'https://www.wobkey.com/',
+  MonsGeek:'https://www.monsgeek.com/', QwertyKeys:'https://qwertykeys.com/', Gateron:'https://www.gateron.com/',
+  Akko:'https://en.akkogear.com/', Cherry:'https://www.cherry.de/', Kailh:'https://www.kailh.com/',
+  Gazzew:'https://www.google.com/search?q=Gazzew+Boba', Glorious:'https://www.gloriousgaming.com/',
+  Drop:'https://drop.com/', GMK:'https://www.gmk.net/', PBTfans:'https://kbdfans.com/', Ducky:'https://www.duckychannel.com.tw/',
+  'HK Gaming':'https://www.google.com/search?q=HK+Gaming+keycaps', Domikey:'https://www.google.com/search?q=Domikey+keycaps',
+  YMDK:'https://www.google.com/search?q=YMDK+keycaps', Durock:'https://www.google.com/search?q=Durock+stabilizers',
+  TX:'https://www.google.com/search?q=TX+AP+stabilizers', Hineybush:'https://www.google.com/search?q=Hineybush+h60',
+  Krytox:'https://www.google.com/search?q=Krytox+205g0', Various:'https://www.google.com/search?q=mechanical+keyboard+'
+};
+const LAYOUT_NAMES = {'60':'60%','65':'65%','75':'75%','tkl':'TKL','full':'Full-size'};
+const LAYOUT_KEYS  = {'60':61,'65':68,'75':84,'tkl':87,'full':104};
+
+const C = (o)=>Object.assign({cat:'case'},o);
+const CASES = [
+  C({id:'kc-q1max',brand:'Keychron',name:'Q1 Max',layout:'75',keys:82,knob:true,mount:'Gasket',material:'CNC aluminum',conn:'Tri-mode',price:199,
+     colors:[['Carbon Black','#2B2D31'],['Shell White','#E7E5DF'],['Silver Grey','#A9AEB3']],
+     kit:{pcb:{hotswap:true,pins:5,led:'south',rgb:true,stabs:['screw']},plate:'POM',stabs:'Screw-in (lubed)'},
+     blurb:'Heavy aluminum 75% with a volume knob and a soft gasket mount. A popular first premium board.'}),
+  C({id:'kc-q3max',brand:'Keychron',name:'Q3 Max',layout:'tkl',keys:87,knob:true,mount:'Gasket',material:'CNC aluminum',conn:'Tri-mode',price:209,
+     colors:[['Carbon Black','#2B2D31'],['Shell White','#E7E5DF'],['Silver Grey','#A9AEB3']],
+     kit:{pcb:{hotswap:true,pins:5,led:'south',rgb:true,stabs:['screw']},plate:'POM',stabs:'Screw-in (lubed)'},
+     blurb:'Tenkeyless with a knob, wireless and wired. Full function row and nav cluster.'}),
+  C({id:'kc-q6max',brand:'Keychron',name:'Q6 Max',layout:'full',keys:104,knob:true,mount:'Gasket',material:'CNC aluminum',conn:'Tri-mode',price:219,
+     colors:[['Carbon Black','#2B2D31'],['Shell White','#E7E5DF'],['Silver Grey','#A9AEB3']],
+     kit:{pcb:{hotswap:true,pins:5,led:'south',rgb:true,stabs:['screw']},plate:'POM',stabs:'Screw-in (lubed)'},
+     blurb:'Full-size with numpad. The one to get if you live in spreadsheets.'}),
+  C({id:'kc-v1max',brand:'Keychron',name:'V1 Max',layout:'75',keys:82,knob:true,mount:'Gasket',material:'ABS plastic',conn:'Tri-mode',price:84,
+     colors:[['Carbon Black','#2E3033'],['Frosted Black','#4A4D52'],['Shell White','#ECE9E2']],
+     kit:{pcb:{hotswap:true,pins:5,led:'south',rgb:true,stabs:['screw']},plate:'PC',stabs:'Screw-in'},
+     blurb:'Budget plastic 75% that still gets you hot-swap, a knob and wireless.'}),
+  C({id:'kc-q4pro',brand:'Keychron',name:'Q4 Pro',layout:'60',keys:61,knob:false,mount:'Gasket',material:'CNC aluminum',conn:'Bluetooth + wired',price:169,
+     colors:[['Carbon Black','#2B2D31'],['Shell White','#E7E5DF']],
+     kit:{pcb:{hotswap:true,pins:5,led:'south',rgb:true,stabs:['screw']},plate:'Aluminum',stabs:'Screw-in'},
+     blurb:'Compact 60% in aluminum with Bluetooth. Arrows live on a layer.'}),
+  C({id:'kbd67lite',brand:'KBDfans',name:'KBD67 Lite R4 Kit',layout:'65',keys:68,knob:false,mount:'Gasket',material:'Polycarbonate / ABS',conn:'Wired',price:99,
+     colors:[['Black','#26272A'],['White','#ECEBE6'],['Translucent','#C9D4DA']],
+     kit:{pcb:{hotswap:true,pins:5,led:'south',rgb:true,stabs:['screw','clip']},plate:'PC',stabs:null},
+     blurb:'Plastic 65% known for a deep, poppy sound for the money. Bring your own stabilizers.'}),
+  C({id:'nk65e',brand:'NovelKeys',name:'NK65 Entry Edition',layout:'65',keys:68,knob:false,mount:'Tray',material:'Polycarbonate',conn:'Wired',price:95,
+     colors:[['Milk','#ECE7DC'],['Smoke','#5B5F66'],['Aqua','#7FC6CF']],
+     kit:{pcb:{hotswap:true,pins:5,led:'north',rgb:true,stabs:['screw']},plate:'Aluminum',stabs:'Plate-mount (included)'},
+     blurb:'Translucent tray-mount 65%. Simple to build and easy to mod.'}),
+  C({id:'qk65v2',brand:'QwertyKeys',name:'QK65 v2',layout:'65',keys:68,knob:false,mount:'Gasket',material:'Aluminum',conn:'Wired',price:139,
+     colors:[['E-White','#E9E7E2'],['Navy','#2F3A56'],['Pink','#E6B9BF']],
+     kit:{pcb:{hotswap:true,pins:5,led:'south',rgb:true,stabs:['screw']},plate:'FR4',stabs:null},
+     blurb:'Aluminum 65% with a mirror weight at an entry price. Stabilizers not included.'}),
+  C({id:'modeenvoy',brand:'Mode Designs',name:'Envoy',layout:'65',keys:68,knob:false,mount:'Top mount',material:'Aluminum',conn:'Wired',price:219,
+     colors:[['Moonlight','#D8D9DD'],['Midnight','#262A33'],['Bourbon','#7C4A2D']],
+     kit:{pcb:{hotswap:true,pins:5,led:'none',rgb:false,stabs:['screw']},plate:'Aluminum',stabs:null},
+     blurb:'Boutique 65% with a crisp, firm top-mount feel.'}),
+  C({id:'modesonnet',brand:'Mode Designs',name:'Sonnet',layout:'75',keys:84,knob:false,mount:'Top mount',material:'Aluminum',conn:'Wired',price:299,
+     colors:[['Moonlight','#D8D9DD'],['Midnight','#262A33'],['Sage','#8E9F86']],
+     kit:{pcb:{hotswap:true,pins:5,led:'none',rgb:false,stabs:['screw']},plate:'Aluminum',stabs:null},
+     blurb:'Premium 75% with modular mounting. Built to be tinkered with.'}),
+  C({id:'zoom75',brand:'Meletrix',name:'Zoom75 Essential',layout:'75',keys:84,knob:true,mount:'Gasket',material:'Aluminum',conn:'Tri-mode',price:179,
+     colors:[['Milk White','#ECEAE4'],['Anodized Black','#24262A'],['Navy','#2E3B5B']],
+     kit:{pcb:{hotswap:true,pins:5,led:'south',rgb:true,stabs:['screw']},plate:'PC',stabs:'Screw-in (included)'},
+     blurb:'Wireless aluminum 75% with a soft, bouncy typing feel.'}),
+  C({id:'rainy75',brand:'Wobkey',name:'Rainy75 Standard',layout:'75',keys:81,knob:true,mount:'Gasket',material:'Aluminum',conn:'Tri-mode',price:129,
+     colors:[['Purple','#6B5A8E'],['Black','#26272B'],['White','#ECEBE6']],
+     kit:{pcb:{hotswap:true,pins:5,led:'south',rgb:true,stabs:['screw']},plate:'FR4',stabs:'Screw-in (included)'},
+     blurb:'Very heavy aluminum 75% that punches far above its price.'}),
+  C({id:'m1w',brand:'MonsGeek',name:'M1W',layout:'75',keys:83,knob:true,mount:'Gasket',material:'Aluminum',conn:'Tri-mode',price:99,
+     colors:[['Black','#26272B'],['Grey','#8C9096'],['Purple','#6E5F94']],
+     kit:{pcb:{hotswap:true,pins:5,led:'south',rgb:true,stabs:['screw']},plate:'POM',stabs:'Screw-in (included)'},
+     blurb:'The cheapest way into a wireless aluminum 75%.'}),
+  C({id:'tofu60',brand:'KBDfans',name:'Tofu60 2.0 Case',layout:'60',keys:61,knob:false,mount:'Tray',material:'Aluminum',conn:'Depends on PCB',price:119,fit:'gh60',
+     colors:[['Grey','#9EA3A8'],['Black','#26272B'],['Silver','#C7CBCF']],kit:null,
+     blurb:'Case only. Takes any GH60-style PCB and plate, so you choose every part.'}),
+  C({id:'tofu65',brand:'KBDfans',name:'Tofu65 2.0 Case',layout:'65',keys:68,knob:false,mount:'Tray / gasket',material:'Aluminum',conn:'Depends on PCB',price:135,fit:'tofu65',
+     colors:[['Grey','#9EA3A8'],['Black','#26272B'],['E-White','#E6E5E0']],kit:null,
+     blurb:'Case only. Pick your own PCB and plate material.'}),
+  C({id:'kbd8x',brand:'KBDfans',name:'KBD8X MKIII Case',layout:'tkl',keys:87,knob:false,mount:'Top mount / gasket',material:'Aluminum',conn:'Depends on PCB',price:259,fit:'kbd8x',
+     colors:[['Black','#26272B'],['Grey','#9EA3A8'],['Red','#9C2F2A']],kit:null,
+     blurb:'Case only. A heavy TKL that takes a range of plates and PCBs.'}),
+];
+
+const PCBS = [
+  {id:'dz60rgb',cat:'pcb',brand:'KBDfans',name:'DZ60RGB-ANSI V2',fit:'gh60',layout:'60',hotswap:true,pins:5,led:'south',rgb:true,stabs:['screw','clip'],conn:'Wired',price:59,blurb:'Hot-swap 60% PCB with per-key RGB and QMK/VIA support.'},
+  {id:'h60',cat:'pcb',brand:'Hineybush',name:'h60',fit:'gh60',layout:'60',hotswap:false,pins:5,led:'none',rgb:false,stabs:['screw'],conn:'Wired',price:55,blurb:'Solder PCB with many layout options (split backspace, stepped caps).'},
+  {id:'dz65rgb',cat:'pcb',brand:'KBDfans',name:'DZ65RGB V3',fit:'tofu65',layout:'65',hotswap:true,pins:5,led:'south',rgb:true,stabs:['screw','clip'],conn:'Wired',price:65,blurb:'Hot-swap 65% PCB with per-key RGB.'},
+  {id:'kbd8xhs',cat:'pcb',brand:'KBDfans',name:'KBD8X MKIII Hot-swap PCB',fit:'kbd8x',layout:'tkl',hotswap:true,pins:5,led:'north',rgb:true,stabs:['screw'],conn:'Wired',price:59,blurb:'Hot-swap TKL PCB. North-facing LEDs.'},
+  {id:'kbd8xsol',cat:'pcb',brand:'KBDfans',name:'KBD8X MKIII Solder PCB',fit:'kbd8x',layout:'tkl',hotswap:false,pins:5,led:'none',rgb:false,stabs:['screw'],conn:'Wired',price:49,blurb:'Solder TKL PCB with extra layout support.'},
+];
+
+const PLATE_MAT = {
+  'Aluminum':      {price:25,flex:28,pitch:10,color:'#BEC4CA',desc:'Stiff and bright. The safe default.'},
+  'Brass':         {price:45,flex:10,pitch:22,color:'#C9A24A',desc:'Very stiff and heavy. Sharp, high-pitched clack.'},
+  'FR4':           {price:25,flex:48,pitch:0,color:'#2E3B33',desc:'Fiberglass. A balanced middle with a little give.'},
+  'Carbon fiber':  {price:40,flex:36,pitch:8,color:'#2A2B2F',desc:'Light and crisp with moderate stiffness.'},
+  'POM':           {price:28,flex:70,pitch:-12,color:'#EEEDE7',desc:'Soft and flexy. Muted, deeper sound.'},
+  'PC':            {price:30,flex:80,pitch:-15,color:'#D6E2EA',desc:'Polycarbonate. The flexiest, deepest-sounding option.'},
+};
+const PLATE_FITS = {gh60:['60','GH60-style 60%'],tofu65:['65','Tofu65 2.0'],kbd8x:['tkl','KBD8X MKIII']};
+const PLATES = [];
+for (const [fit,[layout,label]] of Object.entries(PLATE_FITS)) for (const [mat,m] of Object.entries(PLATE_MAT))
+  PLATES.push({id:`plate-${fit}-${mat.replace(/\s/g,'').toLowerCase()}`,cat:'plate',brand:'KBDfans',name:`${label} Plate · ${mat}`,fit,layout,material:mat,price:m.price + (layout==='tkl'?10:0),plateStabs:mat!=='PC',blurb:m.desc});
+
+const S = (o)=>Object.assign({cat:'switches'},o);
+const SWITCHES = [
+  S({id:'milkyyp',brand:'Gateron',name:'Milky Yellow Pro',type:'Linear',force:50,travel:4.0,pins:5,price:0.22,sound:'mid',vol:50,factory:true,col:{top:'#EDE6D5',bot:'#EDE6D5',stem:'#F2C230'},blurb:'The budget linear everyone recommends. Smooth out of the box.'}),
+  S({id:'ks3yellow',brand:'Gateron',name:'Yellow KS-3',type:'Linear',force:50,travel:4.0,pins:5,price:0.18,sound:'bright',vol:55,factory:false,col:{top:'#2B2C30',bot:'#2B2C30',stem:'#F2C230'},blurb:'Cheapest decent linear. Lube them for the best feel.'}),
+  S({id:'oilking',brand:'Gateron',name:'Oil King',type:'Linear',force:55,travel:4.0,pins:5,price:0.65,sound:'deep',vol:45,factory:true,col:{top:'#3A3C40',bot:'#2A2B2E',stem:'#27282B'},blurb:'Deep, heavily factory-lubed linear with a rich bottom-out.'}),
+  S({id:'blackink',brand:'Gateron',name:'Black Ink V2',type:'Linear',force:60,travel:4.0,pins:5,price:0.75,sound:'mid',vol:50,factory:true,col:{top:'#4A5058',bot:'#3B3F45',stem:'#202124'},blurb:'Smoky-housing classic with a slightly heavier spring.'}),
+  S({id:'akkocream',brand:'Akko',name:'V3 Cream Yellow Pro',type:'Linear',force:50,travel:3.8,pins:5,price:0.30,sound:'mid',vol:50,factory:true,col:{top:'#F1E8D2',bot:'#F1E8D2',stem:'#F4C542'},blurb:'Smooth, inexpensive linear with a muted sound.'}),
+  S({id:'nkcream',brand:'NovelKeys',name:'Cream',type:'Linear',force:55,travel:4.0,pins:5,price:0.65,sound:'deep',vol:50,factory:false,col:{top:'#EADFC6',bot:'#EADFC6',stem:'#EADFC6'},blurb:'Self-lubricating POM housing. Scratchy at first, smooth after break-in.'}),
+  S({id:'mx2ared',brand:'Cherry',name:'MX2A Red',type:'Linear',force:45,travel:4.0,pins:3,price:0.45,sound:'bright',vol:55,factory:true,col:{top:'#1F2023',bot:'#1F2023',stem:'#D23B32'},blurb:'The reference light linear, now factory lubed.'}),
+  S({id:'alpacav2',brand:'Various',name:'Alpaca V2',type:'Linear',force:62,travel:4.0,pins:5,price:0.65,sound:'mid',vol:50,factory:true,col:{top:'#E9A9C0',bot:'#F2F0EC',stem:'#8C6BC7'},blurb:'Enthusiast linear with a slightly heavier, poppy feel.'}),
+  S({id:'u4t',brand:'Gazzew',name:'Boba U4T',type:'Tactile',force:62,travel:4.0,pins:5,price:0.65,sound:'deep',vol:60,factory:false,col:{top:'#F2F0EC',bot:'#2B2C30',stem:'#8B5FBF'},blurb:'Big, rounded tactile bump with a famously thocky sound.'}),
+  S({id:'panda',brand:'Glorious',name:'Panda',type:'Tactile',force:67,travel:4.0,pins:5,price:0.70,sound:'mid',vol:60,factory:false,col:{top:'#DCE3E8',bot:'#F2F0EC',stem:'#E8B83A'},blurb:'Sharp, strong bump right at the top of the press.'}),
+  S({id:'kangaroo',brand:'Gateron',name:'Baby Kangaroo',type:'Tactile',force:59,travel:3.6,pins:5,price:0.55,sound:'mid',vol:55,factory:true,col:{top:'#F3E7D2',bot:'#F3E7D2',stem:'#D9A24B'},blurb:'Long, rounded tactile with a full POM-blend housing.'}),
+  S({id:'lavender',brand:'Akko',name:'V3 Lavender Purple Pro',type:'Tactile',force:36,travel:4.0,pins:5,price:0.32,sound:'mid',vol:50,factory:true,col:{top:'#B9A6E0',bot:'#B9A6E0',stem:'#7D5FC2'},blurb:'Very light tactile. Good for long typing sessions.'}),
+  S({id:'banana',brand:'Keychron',name:'K Pro Banana',type:'Tactile',force:57,travel:4.0,pins:5,price:0.28,sound:'mid',vol:55,factory:true,col:{top:'#F2D25C',bot:'#F2F0EC',stem:'#F2D25C'},blurb:'Mild, budget-friendly tactile.'}),
+  S({id:'u4',brand:'Gazzew',name:'Boba U4 Silent',type:'Silent tactile',force:62,travel:4.0,pins:5,price:0.65,sound:'deep',vol:18,factory:false,col:{top:'#2B2C30',bot:'#2B2C30',stem:'#B23A6B'},blurb:'Dampened on both strokes. Bump without the noise.'}),
+  S({id:'silentred',brand:'Cherry',name:'MX Silent Red',type:'Silent linear',force:45,travel:3.7,pins:3,price:0.55,sound:'mid',vol:15,factory:false,col:{top:'#1F2023',bot:'#1F2023',stem:'#E46A88'},blurb:'Office-friendly linear. Quietest option here.'}),
+  S({id:'mx2ablue',brand:'Cherry',name:'MX2A Blue',type:'Clicky',force:50,travel:4.0,pins:3,price:0.45,sound:'bright',vol:88,factory:true,col:{top:'#1F2023',bot:'#1F2023',stem:'#2F6FD0'},blurb:'The classic clicky. Loud click jacket on every press.'}),
+  S({id:'boxjade',brand:'Kailh',name:'Box Jade',type:'Clicky',force:50,travel:3.6,pins:3,price:0.45,sound:'bright',vol:92,factory:false,col:{top:'#F2F0EC',bot:'#F2F0EC',stem:'#2FA27A'},blurb:'Click bar instead of a jacket. Crisp, sharp and very loud.'}),
+  S({id:'boxwhite',brand:'Kailh',name:'Box White',type:'Clicky',force:45,travel:3.6,pins:3,price:0.35,sound:'bright',vol:85,factory:false,col:{top:'#F2F0EC',bot:'#F2F0EC',stem:'#F7F7F5'},blurb:'Lighter, gentler click bar switch.'}),
+];
+
+const K = (o)=>Object.assign({cat:'keycaps'},o);
+const ALL = ['60','65','75','tkl','full'];
+const KEYCAPS = [
+  K({id:'gmkolivia',brand:'GMK',name:'Olivia++ Dark',profile:'Cherry',material:'ABS',legends:'Doubleshot',covers:['60','65','75','tkl'],addon:{full:45},price:140,mood:['dark','colorful'],
+     pal:{alpha:'#2C2B2D',mod:'#2C2B2D',accent:'#E7B5AC',leg:'#E7B5AC',modleg:'#E7B5AC',accleg:'#2C2B2D'},blurb:'Charcoal with rose-pink legends and accents.'}),
+  K({id:'gmklaser',brand:'GMK',name:'Laser',profile:'Cherry',material:'ABS',legends:'Doubleshot',covers:['60','65','75','tkl'],addon:{full:45},price:140,mood:['colorful','dark'],
+     pal:{alpha:'#2D1E46',mod:'#3E2E62',accent:'#E14E9B',leg:'#E14E9B',modleg:'#4FD3E3',accleg:'#16102A'},blurb:'Cyberpunk purple, magenta and cyan.'}),
+  K({id:'gmkwob',brand:'GMK',name:'WoB',profile:'Cherry',material:'ABS',legends:'Doubleshot',covers:['60','65','75','tkl'],addon:{full:40},price:120,mood:['dark'],
+     pal:{alpha:'#222326',mod:'#222326',accent:'#222326',leg:'#ECECEA',modleg:'#ECECEA',accleg:'#ECECEA'},blurb:'White legends on black. Goes on anything.'}),
+  K({id:'bow',brand:'PBTfans',name:'BOW',profile:'Cherry',material:'PBT',legends:'Dye-sub',covers:ALL,price:59,mood:['light'],
+     pal:{alpha:'#F4F3EE',mod:'#F4F3EE',accent:'#F4F3EE',leg:'#202124',modleg:'#202124',accleg:'#202124'},blurb:'Black legends on white PBT. Clean and textured.'}),
+  K({id:'susuwatari',brand:'Drop',name:'MiTo MT3 Susuwatari',profile:'MT3',material:'ABS',legends:'Doubleshot',covers:ALL,price:110,mood:['light','retro'],
+     pal:{alpha:'#ECE8DE',mod:'#1F1F21',accent:'#1F1F21',leg:'#1F1F21',modleg:'#ECE8DE',accleg:'#ECE8DE'},blurb:'Tall, sculpted, scooped caps in cream and black.'}),
+  K({id:'devtty',brand:'Drop',name:'MT3 /dev/tty',profile:'MT3',material:'ABS',legends:'Doubleshot',covers:ALL,price:110,mood:['retro','light'],
+     pal:{alpha:'#E6E1D3',mod:'#7F8186',accent:'#E07A34',leg:'#2A2A2A',modleg:'#F1EEE6',accleg:'#2A2A2A'},blurb:'Terminal-inspired beige and grey with an orange Enter.'}),
+  K({id:'saretro',brand:'Domikey',name:'SA Classic Retro',profile:'SA',material:'ABS',legends:'Doubleshot',covers:ALL,price:89,mood:['retro'],
+     pal:{alpha:'#E7DDC4',mod:'#A39A85',accent:'#C2452D',leg:'#3A342A',modleg:'#2E2A22',accleg:'#F4EEE0'},blurb:'Tall spherical SA caps in vintage beige.'}),
+  K({id:'pudding',brand:'Ducky',name:'Pudding Black',profile:'OEM',material:'PBT',legends:'Doubleshot',covers:ALL,price:35,mood:['dark','colorful'],shine:true,
+     pal:{alpha:'#1D1E20',mod:'#1D1E20',accent:'#1D1E20',leg:'#DADADA',modleg:'#DADADA',accleg:'#DADADA'},blurb:'Translucent skirts that let RGB glow through.'}),
+  K({id:'hk9009',brand:'HK Gaming',name:'9009 Dye-Sub PBT',profile:'Cherry',material:'PBT',legends:'Dye-sub',covers:ALL,price:30,mood:['retro','light'],
+     pal:{alpha:'#E9E3D3',mod:'#9C9A93',accent:'#4D8A7A',leg:'#3B3A36',modleg:'#2E2D2A',accleg:'#F2EFE6'},blurb:'Budget retro set with mint accents.'}),
+  K({id:'xdablank',brand:'YMDK',name:'XDA Blank PBT White',profile:'XDA',material:'PBT',legends:'Blank',covers:ALL,price:25,mood:['light'],
+     pal:{alpha:'#F2F1EC',mod:'#F2F1EC',accent:'#F2F1EC',leg:null,modleg:null,accleg:null},blurb:'Flat, uniform blank caps. For touch typists.'}),
+];
+
+const STABS = [
+  {id:'durockv2',cat:'stabs',brand:'Durock',name:'V2 Screw-in Stabilizers',mount:'screw',price:22,fullPrice:30,blurb:'Reliable screw-in stabs. Clip and lube for best results.'},
+  {id:'txap',cat:'stabs',brand:'TX',name:'AP Stabilizers Rev. 4',mount:'screw',price:32,fullPrice:44,blurb:'Tight tolerances, very little rattle.'},
+  {id:'cherryclip',cat:'stabs',brand:'Cherry',name:'Clip-in PCB Stabilizers',mount:'clip',price:12,fullPrice:16,blurb:'Cheap clip-in stabs. Need tuning to stop rattle.'},
+  {id:'cherryplate',cat:'stabs',brand:'Cherry',name:'Plate-mount Stabilizers',mount:'plate',price:12,fullPrice:16,blurb:'Snap into the plate. Works with any PCB.'},
+];
+
+const EXTRAS = [
+  {id:'casefoam',cat:'extras',brand:'Various',name:'Poron case foam',kind:'Foam',price:12,fx:{pitch:-6,vol:-10},blurb:'Fills the case cavity. Cuts hollow ping.'},
+  {id:'pefoam',cat:'extras',brand:'Various',name:'PE foam sheet (switch pad mod)',kind:'Foam',price:8,fx:{pitch:5,vol:-2,poppy:true},blurb:'Thin layer under the switches for a poppier, marbly sound.'},
+  {id:'tapemod',cat:'extras',brand:'Various',name:'Tape mod (painter\'s tape)',kind:'Mod',price:5,fx:{pitch:-5,vol:-4},blurb:'Two or three layers on the back of the PCB. Deepens the sound.'},
+  {id:'krytox',cat:'extras',brand:'Krytox',name:'205g0 switch lube, 5 ml',kind:'Lube',price:10,fx:{pitch:-3,vol:-3},blurb:'Standard grease for linear switches. Plan an evening to lube a set.'},
+  {id:'opener',cat:'extras',brand:'Various',name:'Switch opener',kind:'Tool',price:9,fx:{},blurb:'Opens switches for lubing or spring swaps.'},
+  {id:'puller',cat:'extras',brand:'Various',name:'Switch + keycap puller',kind:'Tool',price:6,fx:{},blurb:'You need one to swap switches on a hot-swap board.'},
+  {id:'coiled',cat:'extras',brand:'Various',name:'Coiled USB-C cable with aviator',kind:'Cable',price:35,fx:{},blurb:'Coiled cable with a detachable aviator connector.'},
+];
+
+const ALLPARTS = [...CASES,...PCBS,...PLATES,...SWITCHES,...KEYCAPS,...STABS,...EXTRAS];
+const BYID = Object.fromEntries(ALLPARTS.map(p=>[p.id,p]));
+
+const SLOTS = [
+  {key:'case',label:'Case or kit',hint:'Sets the layout'},
+  {key:'pcb',label:'PCB',hint:'The circuit board'},
+  {key:'plate',label:'Plate',hint:'Holds the switches'},
+  {key:'switches',label:'Switches',hint:'The feel'},
+  {key:'stabs',label:'Stabilizers',hint:'For long keys'},
+  {key:'keycaps',label:'Keycaps',hint:'The look'},
+  {key:'extras',label:'Extras',hint:'Mods, tools, cables',multi:true},
+];
+
+/* =========================================================
+   STATE
+   ========================================================= */
+const store = {
+  get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},
+  set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+};
+const EXAMPLE = {name:'Example: Wireless 75% thock',case:'rainy75',color:1,pcb:null,plate:null,switches:'oilking',stabs:null,keycaps:'gmkolivia',extras:['puller'],example:true};
+let build = store.get('sy.build', null) || {...EXAMPLE};
+let saved = store.get('sy.saved', []);
+let quizAns = store.get('sy.quiz', {});
+let quizStep = 0;
+let quizDone = false;
+
+function persist(){store.set('sy.build',build)}
+
+/* =========================================================
+   DERIVED BUILD INFO
+   ========================================================= */
+const caseOf = b=>BYID[b.case]||null;
+function effPcb(b){const c=caseOf(b); if(c&&c.kit) return {...c.kit.pcb,name:'Included hot-swap PCB',kit:true,conn:c.conn}; return BYID[b.pcb]||null}
+function effPlate(b){const c=caseOf(b); if(c&&c.kit) return {material:c.kit.plate,kit:true,plateStabs:true}; return BYID[b.plate]||null}
+function stabsIncluded(b){const c=caseOf(b); return !!(c&&c.kit&&c.kit.stabs)}
+const layoutOf = b=>{const c=caseOf(b); return c?c.layout:null};
+const keyCount = b=>{const c=caseOf(b); return c?c.keys:0};
+function switchQty(b){const n=keyCount(b); return Math.ceil((n||0)/10)*10}
+
+function lineItems(b){
+  const c=caseOf(b), L=layoutOf(b), items=[];
+  if(c) items.push({slot:'case',part:c,price:c.price});
+  if(!(c&&c.kit)){ if(b.pcb) items.push({slot:'pcb',part:BYID[b.pcb],price:BYID[b.pcb].price}); if(b.plate) items.push({slot:'plate',part:BYID[b.plate],price:BYID[b.plate].price}); }
+  if(b.switches){const s=BYID[b.switches], q=switchQty(b)||70; items.push({slot:'switches',part:s,price:+(s.price*q).toFixed(2),qty:q});}
+  if(b.stabs && !stabsIncluded(b)){const s=BYID[b.stabs]; items.push({slot:'stabs',part:s,price:L==='full'?s.fullPrice:s.price});}
+  if(b.keycaps){const k=BYID[b.keycaps]; let p=k.price, add=0; if(L&&!k.covers.includes(L)&&k.addon&&k.addon[L]) add=k.addon[L]; items.push({slot:'keycaps',part:k,price:p+add,addon:add});}
+  for(const id of b.extras||[]){const e=BYID[id]; if(e) items.push({slot:'extras',part:e,price:e.price});}
+  return items;
+}
+const total = b=>lineItems(b).reduce((s,i)=>s+i.price,0);
+
+function compat(b){
+  const out=[], c=caseOf(b), pcb=effPcb(b), plate=effPlate(b), sw=BYID[b.switches], kc=BYID[b.keycaps], st=BYID[b.stabs], L=layoutOf(b);
+  const add=(level,slot,msg,sub)=>out.push({level,slot,msg,sub});
+  if(!c){add('info','case','Pick a case or kit to start','The case decides the layout and which parts fit.');return out}
+  if(c.kit) add('ok','case',`${c.name} is a kit`,`PCB, plate${c.kit.stabs?' and stabilizers':''} are included.`);
+  if(!c.kit){
+    const p=BYID[b.pcb], pl=BYID[b.plate];
+    if(p && p.fit!==c.fit) add('fail','pcb',`${p.name} doesn't fit the ${c.name}`,`It's a ${LAYOUT_NAMES[p.layout]} board for a different mounting pattern.`);
+    else if(p) add('ok','pcb',`${p.name} fits the ${c.name}`);
+    if(pl && pl.fit!==c.fit) add('fail','plate',`${pl.name} doesn't fit the ${c.name}`);
+    if(!pl && p) add('warn','plate','No plate selected','Plateless builds flex a lot and switches can wobble. 5-pin switches help.');
+  }
+  if(kc){
+    if(!kc.covers.includes(L)){
+      if(kc.addon&&kc.addon[L]) add('warn','keycaps',`${kc.brand} ${kc.name} base kit doesn't cover ${LAYOUT_NAMES[L]}`,`Added the numpad kit (+${money(kc.addon[L])}) to the price.`);
+      else add('fail','keycaps',`${kc.name} doesn't include the keys for a ${LAYOUT_NAMES[L]} board`);
+    } else add('ok','keycaps',`${kc.name} covers the ${LAYOUT_NAMES[L]} layout`);
+  }
+  if(sw && pcb){
+    if(sw.pins===5 && pcb.pins===3) add('warn','switches','5-pin switches on a 3-pin PCB','Clip the two plastic side legs off each switch.');
+    if(!pcb.hotswap) add('warn','pcb','This PCB needs soldering',`You'll solder ${keyCount(b)} switches. Plan 1–2 hours and a soldering iron.`);
+    else add('ok','switches','Hot-swap PCB: switches press in, no soldering');
+    if(sw.pins===3 && !plate) add('fail','switches','3-pin switches need a plate','Without a plate they have nothing to hold them straight.');
+  }
+  if(pcb){
+    const needStabs=!stabsIncluded(b);
+    if(needStabs && !st) add('info','stabs','Add stabilizers',`A ${LAYOUT_NAMES[L]} board needs ${L==='full'?'7':'5'} stabilizers for its long keys.`);
+    if(st && needStabs){
+      if(st.mount==='plate'){ if(!plate) add('fail','stabs','Plate-mount stabilizers need a plate'); else if(plate.material==='PC') add('warn','stabs','Plate-mount stabs on a PC plate','PC plates often skip stab cutouts. Check the plate before buying.'); else add('ok','stabs','Plate-mount stabilizers fit the plate'); }
+      else if(!pcb.stabs.includes(st.mount)) add('fail','stabs',`This PCB doesn't take ${st.mount==='clip'?'clip-in':'screw-in'} stabilizers`,`It supports ${pcb.stabs.map(m=>m==='clip'?'clip-in':'screw-in').join(' and ')}.`);
+      else add('ok','stabs',`${st.mount==='clip'?'Clip-in':'Screw-in'} stabilizers fit the PCB`);
+    }
+  }
+  if(kc && pcb){
+    if(kc.profile==='Cherry' && pcb.led==='north' && sw && sw.type!=='Silent linear') add('warn','keycaps','Cherry-profile caps can hit north-facing switches','Some Cherry-profile keys (mostly the number row) can rub the switch housing. Test a few before installing all.');
+    if(kc.shine && !pcb.rgb) add('info','keycaps','Shine-through caps, but no RGB','The board has no lighting, so the translucent sides stay dark.');
+    if(pcb.rgb && !kc.shine && kc.legends!=='Blank') add('info','keycaps','RGB will only glow under the caps','These legends are not shine-through.');
+  }
+  if(sw && (b.extras||[]).includes('krytox')){
+    if(sw.factory) add('info','extras',`${sw.name} come factory lubed`,'Extra lube is optional.');
+    if(!(b.extras||[]).includes('opener')) add('info','extras','Lubing needs a switch opener','Add one from Extras.');
+  }
+  if(pcb && pcb.hotswap && !(b.extras||[]).includes('puller')) add('info','extras','Get a switch puller','Swapping switches on a hot-swap board needs one.');
+  if(/Tri-mode|Bluetooth/.test(c.conn)) add('ok','case',`${c.conn} wireless`, 'Use the cable for the lowest latency.');
+  const missing=SLOTS.filter(s=>needed(b,s.key)&&!b[s.key]).map(s=>s.label.toLowerCase());
+  if(missing.length) add('info','build',`Still needed: ${missing.join(', ')}`);
+  return out;
+}
+function needed(b,key){const c=caseOf(b); if(key==='extras') return false; if(!c) return key==='case'; if(c.kit&&(key==='pcb'||key==='plate')) return false; if(key==='stabs'&&stabsIncluded(b)) return false; return true}
+function verdict(issues){
+  if(issues.some(i=>i.level==='fail')) return {level:'fail',text:'Parts conflict'};
+  if(issues.some(i=>i.level==='warn')) return {level:'warn',text:'Works, with notes'};
+  if(issues.some(i=>i.level==='info'&&i.slot==='build')||issues.some(i=>i.slot==='case'&&i.level==='info')) return {level:'info',text:'In progress'};
+  return {level:'ok',text:'All parts compatible'};
+}
+
+function estimate(b){
+  const c=caseOf(b), plate=effPlate(b), sw=BYID[b.switches], kc=BYID[b.keycaps];
+  let pitch=50, vol=50, flex=35;
+  if(plate){const m=PLATE_MAT[plate.material]; if(m){pitch+=m.pitch; flex=m.flex}}
+  if(c){ if(/Gasket/.test(c.mount)){pitch-=5;vol-=4;flex+=10} if(/Tray/.test(c.mount)){pitch+=6;flex-=8} if(/plastic|Polycarbonate|ABS/i.test(c.material)){vol+=6;pitch-=3} }
+  if(kc){ if(kc.material==='PBT') pitch-=7; else pitch+=6; if(kc.profile==='SA'||kc.profile==='MT3'){pitch-=8;vol+=6} if(kc.profile==='XDA') pitch-=2 }
+  if(sw){ pitch+= sw.sound==='deep'?-12: sw.sound==='bright'?10:0; vol = vol*0.4 + sw.vol*0.6 }
+  for(const id of b.extras||[]){const e=BYID[id]; if(e&&e.fx){pitch+=e.fx.pitch||0; vol+=e.fx.vol||0}}
+  const cl=v=>Math.max(3,Math.min(97,Math.round(v)));
+  return {pitch:cl(pitch),vol:cl(vol),flex:cl(flex),force:sw?sw.force:null};
+}
+const pitchWord=p=>p<32?'Deep thock':p<46?'Muted, creamy':p<62?'Balanced':p<76?'Crisp clack':'Sharp, high';
+const volWord=v=>v<25?'Quiet':v<45?'Soft':v<65?'Moderate':v<82?'Loud':'Very loud';
+const flexWord=f=>f<25?'Stiff':f<45?'Firm':f<65?'Some give':'Bouncy';
+
+/* =========================================================
+   SVG RENDERING
+   ========================================================= */
+const LAYOUTS = {
+  '60':['1*13 2','1.5 1*12 1.5','1.75 1*11 2.25','2.25 1*10 2.75','1.25*3 6.25 1.25*4'],
+  '65':['1*13 2 1','1.5 1*12 1.5 1','1.75 1*11 2.25 1','2.25 1*10 1.75 1 1','1.25*3 6.25 1*3 1*3'],
+  '75':['1 g.25 1*4 g.25 1*4 g.25 1*4 g.25 1 1','|.25','1*13 2 1','1.5 1*12 1.5 1','1.75 1*11 2.25 1','2.25 1*10 1.75 1 1','1.25*3 6.25 1*3 1*3'],
+  'tkl':['1 g1 1*4 g.5 1*4 g.5 1*4 g.25 1*3','|.25','1*13 2 g.25 1*3','1.5 1*12 1.5 g.25 1*3','1.75 1*11 2.25','2.25 1*10 2.75 g1.25 1','1.25*3 6.25 1.25*4 g.25 1*3'],
+  'full':['1 g1 1*4 g.5 1*4 g.5 1*4 g.25 1*3','|.25','1*13 2 g.25 1*3 g.25 1*4','1.5 1*12 1.5 g.25 1*3 g.25 1*4','1.75 1*11 2.25 g3.5 1*4','2.25 1*10 2.75 g1.25 1 g1.25 1*4','1.25*3 6.25 1.25*4 g.25 1*3 g.25 2 1 1'],
+};
+const LEG_MAIN = [
+  ['Esc','1','2','3','4','5','6','7','8','9','0','-','=','⌫'],
+  ['Tab','Q','W','E','R','T','Y','U','I','O','P','[',']','\\'],
+  ['Caps','A','S','D','F','G','H','J','K','L',';',"'",'Enter'],
+  ['Shift','Z','X','C','V','B','N','M',',','.','/','Shift'],
+  ['Ctrl','Win','Alt','','Alt','Fn','Ctrl'],
+];
+const LEG_F = ['Esc','F1','F2','F3','F4','F5','F6','F7','F8','F9','F10','F11','F12','Del','Ins','Home','PgUp'];
+function parseLayout(key){
+  const rows=LAYOUTS[key], keys=[]; let y=0, maxX=0, mainRow=0; const hasF=key!=='60'&&key!=='65';
+  rows.forEach((r,ri)=>{
+    if(r[0]==='|'){y+=parseFloat(r.slice(1));return}
+    let x=0, idx=0; const isF = hasF && ri===0;
+    for(const tok of r.split(' ')){
+      if(tok[0]==='g'){x+=parseFloat(tok.slice(1));continue}
+      const [w,n]=tok.split('*'); const cnt=n?+n:1;
+      for(let i=0;i<cnt;i++){
+        const W=parseFloat(w);
+        let leg='';
+        if(isF) leg=LEG_F[idx]||'';
+        else { const lr=LEG_MAIN[mainRow]||[]; leg = idx<lr.length ? lr[idx] : ''; if(mainRow===0&&idx===0&&hasF) leg='`'; }
+        keys.push({x,y,w:W,row:ri,f:isF,main:isF?-1:mainRow,idx,leg});
+        x+=W; idx++;
+      }
+    }
+    if(!isF) mainRow++;
+    maxX=Math.max(maxX,x); y+=1;
+  });
+  return {keys,width:maxX,height:y};
+}
+const LAYOUT_CACHE={}; const lay=k=>LAYOUT_CACHE[k]||(LAYOUT_CACHE[k]=parseLayout(k));
+
+function shade(hex,amt){
+  const n=parseInt(hex.slice(1),16); let r=n>>16,g=(n>>8)&255,b=n&255;
+  const f=v=>Math.max(0,Math.min(255,Math.round(amt<0?v*(1+amt):v+(255-v)*amt)));
+  return '#'+[f(r),f(g),f(b)].map(v=>v.toString(16).padStart(2,'0')).join('');
+}
+const lum=hex=>{const n=parseInt(hex.slice(1),16);return (0.299*(n>>16)+0.587*((n>>8)&255)+0.114*(n&255))/255};
+
+const NEUTRAL_PAL={alpha:'#D9DCDF',mod:'#B8BDC2',accent:'#8FA39A',leg:null,modleg:null,accleg:null};
+function keyRole(k,layoutKey){
+  if(k.f) return k.idx===0?'accent':'mod';
+  if(k.leg==='Enter') return 'accent';
+  if(k.main===0&&k.idx===0&&(layoutKey==='60'||layoutKey==='65')) return 'accent';
+  if(k.w===6.25) return 'alpha';
+  const inNav = (layoutKey==='tkl'||layoutKey==='full') && k.x>=15.2 && k.x<18.4;
+  const rightCol = (layoutKey==='65'||layoutKey==='75') && k.x>=15;
+  if(k.w!==1||inNav||rightCol) return 'mod';
+  if(k.main===4) return 'mod';
+  return 'alpha';
+}
+let uid=0;
+function boardSVG(opts){
+  const {layout:lk='75',caseColor='#9EA3A8',pal=NEUTRAL_PAL,profile='Cherry',legends=true,knob=false,u=40,cls='board',glow=false,label='Keyboard preview'}=opts;
+  const L=lay(lk), pad=u*0.42, W=L.width*u+pad*2, H=L.height*u+pad*2, id='g'+(uid++);
+  const inset = {Cherry:.15,OEM:.15,SA:.2,MT3:.22,XDA:.12}[profile]??.15;
+  const rx = {SA:.18,MT3:.16,XDA:.12}[profile]??.1;
+  let s=`<svg class="${cls}" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(label)}" xmlns="http://www.w3.org/2000/svg">`;
+  s+=`<defs><linearGradient id="${id}c" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${shade(caseColor,.16)}"/><stop offset="1" stop-color="${shade(caseColor,-.14)}"/></linearGradient>`;
+  s+=`<linearGradient id="${id}t" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".14"/><stop offset="1" stop-color="#000" stop-opacity=".05"/></linearGradient></defs>`;
+  s+=`<rect x="1" y="1" width="${W-2}" height="${H-2}" rx="${u*.34}" fill="url(#${id}c)" stroke="${shade(caseColor,-.3)}" stroke-width="1.5"/>`;
+  s+=`<rect x="${pad*.55}" y="${pad*.55}" width="${W-pad*1.1}" height="${H-pad*1.1}" rx="${u*.16}" fill="${shade(caseColor,-.42)}"/>`;
+  if(glow) s+=`<rect x="${pad*.6}" y="${pad*.6}" width="${W-pad*1.2}" height="${H-pad*1.2}" rx="${u*.16}" fill="#7d5cff" opacity=".25"/>`;
+  for(const k of L.keys){
+    const x=pad+k.x*u, y=pad+k.y*u, w=k.w*u;
+    const role=keyRole(k,lk), base=pal[role]||pal.alpha, legc = role==='accent'?pal.accleg:role==='mod'?pal.modleg:pal.leg;
+    const last = knob && k.f && k===L.keys.filter(q=>q.f).slice(-1)[0];
+    if(last){ const cx=x+w/2, cy=y+u/2; s+=`<circle cx="${cx}" cy="${cy}" r="${u*.42}" fill="${shade(caseColor,-.2)}" stroke="${shade(caseColor,-.45)}"/><circle cx="${cx}" cy="${cy}" r="${u*.32}" fill="${shade(caseColor,.1)}"/><line x1="${cx}" y1="${cy-u*.28}" x2="${cx}" y2="${cy-u*.12}" stroke="${shade(caseColor,-.5)}" stroke-width="2" stroke-linecap="round"/>`; continue }
+    const g=u*.04;
+    s+=`<rect x="${x+g}" y="${y+g}" width="${w-g*2}" height="${u-g*2}" rx="${u*rx*.8}" fill="${shade(base,-.22)}"/>`;
+    const ti=u*inset, tx=x+ti*.8, ty=y+ti*.45, tw=w-ti*1.6, th=u-ti*1.5;
+    s+=`<rect x="${tx}" y="${ty}" width="${tw}" height="${th}" rx="${u*rx}" fill="${base}"/><rect x="${tx}" y="${ty}" width="${tw}" height="${th}" rx="${u*rx}" fill="url(#${id}t)"/>`;
+    if(legends && legc && k.leg){
+      const fs = k.leg.length>2? u*.17 : u*.24;
+      const lx = k.leg.length>2 ? tx+u*.09 : tx+tw/2, anchor=k.leg.length>2?'start':'middle';
+      s+=`<text x="${lx}" y="${ty+th*.5+fs*.36}" font-size="${fs}" font-family="Familjen Grotesk, system-ui, sans-serif" font-weight="500" fill="${legc}" text-anchor="${anchor}">${esc(k.leg)}</text>`;
+    }
+  }
+  return s+'</svg>';
+}
+function switchSVG(sw){
+  const c=sw.col, tr=lum(c.top)>.85?.9:1;
+  return `<svg viewBox="0 0 96 72" aria-hidden="true"><ellipse cx="48" cy="64" rx="30" ry="4" fill="#000" opacity=".12"/>
+  <path d="M22 40h52l-3 20H25z" fill="${c.bot}" stroke="${shade(c.bot,-.3)}"/>
+  <rect x="38" y="60" width="4" height="7" fill="#C9A44A"/><rect x="54" y="60" width="4" height="7" fill="#C9A44A"/>
+  ${sw.pins===5?`<rect x="28" y="60" width="3" height="5" fill="${shade(c.bot,-.2)}"/><rect x="65" y="60" width="3" height="5" fill="${shade(c.bot,-.2)}"/>`:''}
+  <path d="M24 40l5-18h38l5 18z" fill="${c.top}" opacity="${tr}" stroke="${shade(c.top,-.32)}"/>
+  <rect x="41" y="10" width="14" height="14" rx="1.5" fill="${c.stem}" stroke="${shade(c.stem,-.3)}"/>
+  <rect x="46" y="6" width="4" height="9" fill="${c.stem}" stroke="${shade(c.stem,-.3)}"/><rect x="42" y="8" width="12" height="4" fill="${c.stem}" stroke="${shade(c.stem,-.3)}"/>
+  </svg>`;
+}
+function capsSVG(k){
+  const p=k.pal, keys=[['accent',p.accent,p.accleg,'Esc'],['alpha',p.alpha,p.leg,'A'],['alpha',p.alpha,p.leg,'S'],['mod',p.mod,p.modleg,'⇧']];
+  const prof={Cherry:[8,4],OEM:[8,4],SA:[10,8],MT3:[11,9],XDA:[5,6]}[k.profile]||[8,4];
+  let s=`<svg viewBox="0 0 96 72" aria-hidden="true">`;
+  keys.forEach(([r,base,leg,t],i)=>{
+    const x=6+i*21.5, y=i%2?26:20;
+    s+=`<rect x="${x}" y="${y}" width="20" height="24" rx="${prof[1]/2}" fill="${shade(base,-.25)}"/>`;
+    s+=`<rect x="${x+3}" y="${y+2}" width="14" height="${24-prof[0]}" rx="${prof[1]/2}" fill="${base}"/>`;
+    if(leg) s+=`<text x="${x+10}" y="${y+12}" font-size="${t.length>1?5.5:8}" text-anchor="middle" fill="${leg}" font-family="system-ui">${esc(t)}</text>`;
+  });
+  if(k.shine) s+=`<rect x="4" y="50" width="88" height="3" rx="1.5" fill="#8F6BFF" opacity=".55"/>`;
+  return s+'</svg>';
+}
+function plateSVG(mat){
+  const m=PLATE_MAT[mat]||PLATE_MAT.Aluminum, hole=lum(m.color)>.5?shade(m.color,-.45):shade(m.color,.35);
+  let s=`<svg viewBox="0 0 96 72" aria-hidden="true"><rect x="6" y="12" width="84" height="48" rx="3" fill="${m.color}" stroke="${shade(m.color,-.3)}"/>`;
+  if(mat==='Carbon fiber') for(let i=0;i<14;i++) s+=`<line x1="${6+i*7}" y1="12" x2="${i*7-6}" y2="60" stroke="#3a3b40" stroke-width="2"/>`;
+  for(let r=0;r<4;r++) for(let c=0;c<7;c++) s+=`<rect x="${11+c*11.2+(r%2)*2}" y="${16+r*11}" width="7" height="7" fill="${hole}"/>`;
+  return s+'</svg>';
+}
+function pcbSVG(p){
+  const col=p.rgb?'#1F2A24':'#1E4D35';
+  let s=`<svg viewBox="0 0 96 72" aria-hidden="true"><rect x="6" y="12" width="84" height="48" rx="3" fill="${col}" stroke="#0d1511"/>`;
+  for(let r=0;r<4;r++) for(let c=0;c<7;c++){const x=12+c*11.2+(r%2)*2, y=17+r*11; s+= p.hotswap?`<rect x="${x}" y="${y}" width="7" height="5" rx="1" fill="#E6E2D8"/>`:`<circle cx="${x+2}" cy="${y+3}" r="1.6" fill="#D8B45A"/><circle cx="${x+6}" cy="${y+1}" r="1.6" fill="#D8B45A"/>`; if(p.rgb) s+=`<rect x="${x+2}" y="${p.led==='north'?y-2:y+6}" width="3" height="1.6" fill="#FFFFFF" opacity=".9"/>`}
+  return s+`<rect x="44" y="12" width="8" height="4" fill="#9aa"/></svg>`;
+}
+function stabSVG(st){
+  const h=st.mount==='plate'?'#2A2B2F':'#ECEBE6';
+  return `<svg viewBox="0 0 96 72" aria-hidden="true"><path d="M20 46h56" stroke="#9AA2A9" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M20 46v-8M76 46v-8" stroke="#9AA2A9" stroke-width="3"/>
+  <rect x="12" y="24" width="16" height="22" rx="2" fill="${h}" stroke="#555"/><rect x="68" y="24" width="16" height="22" rx="2" fill="${h}" stroke="#555"/>
+  <rect x="16" y="16" width="8" height="10" fill="${h}" stroke="#555"/><rect x="72" y="16" width="8" height="10" fill="${h}" stroke="#555"/>
+  ${st.mount==='screw'?'<circle cx="20" cy="52" r="3" fill="#888"/><circle cx="76" cy="52" r="3" fill="#888"/>':''}</svg>`;
+}
+function extraSVG(e){
+  const ic={Foam:`<rect x="14" y="22" width="68" height="30" rx="3" fill="#D9D3C2"/><g fill="#C2BBA6">${[...Array(12)].map((_,i)=>`<circle cx="${20+(i%6)*11}" cy="${30+Math.floor(i/6)*12}" r="2.5"/>`).join('')}</g>`,
+    Mod:`<rect x="18" y="20" width="60" height="32" rx="3" fill="#1E4D35"/><rect x="14" y="30" width="68" height="12" fill="#E8D47A" opacity=".85"/>`,
+    Lube:`<rect x="38" y="14" width="20" height="44" rx="4" fill="#E9E9EC" stroke="#888"/><rect x="42" y="8" width="12" height="8" fill="#3B6FD0"/><text x="48" y="40" font-size="7" text-anchor="middle" fill="#333" font-family="system-ui">205</text>`,
+    Tool:`<path d="M30 14v36a6 6 0 0 0 6 6M66 14v36a6 6 0 0 1-6 6" stroke="#8C9399" stroke-width="5" fill="none" stroke-linecap="round"/>`,
+    Cable:`<path d="M10 36c8-14 12 14 20 0s12 14 20 0 12 14 20 0" stroke="#7E66C7" stroke-width="4" fill="none"/><rect x="70" y="30" width="18" height="12" rx="3" fill="#C9A44A"/>`}[e.kind]||'';
+  return `<svg viewBox="0 0 96 72" aria-hidden="true">${ic}</svg>`;
+}
+function thumbFor(p,b){
+  if(!p) return '';
+  if(p.cat==='case') return boardSVG({layout:p.layout,caseColor:p.colors[0][1],legends:false,u:20,cls:'',knob:p.knob,label:p.name});
+  if(p.cat==='switches') return switchSVG(p);
+  if(p.cat==='keycaps') return capsSVG(p);
+  if(p.cat==='plate') return plateSVG(p.material);
+  if(p.cat==='pcb') return pcbSVG(p);
+  if(p.cat==='stabs') return stabSVG(p);
+  if(p.cat==='extras') return extraSVG(p);
+  return '';
+}
+function buildBoard(b,opts={}){
+  const c=caseOf(b); if(!c) return null;
+  const kc=BYID[b.keycaps], col=(c.colors[b.color||0]||c.colors[0])[1], pcb=effPcb(b);
+  return boardSVG({layout:c.layout,caseColor:col,pal:kc?kc.pal:NEUTRAL_PAL,profile:kc?kc.profile:'Cherry',legends:!!kc,knob:c.knob,glow:!!(kc&&kc.shine&&pcb&&pcb.rgb),label:`${c.name} with ${kc?kc.name:'no keycaps yet'}`,...opts});
+}
+
+/* =========================================================
+   HELPERS
+   ========================================================= */
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function money(n){return '$'+(Math.round(n*100)/100).toLocaleString('en-US',{minimumFractionDigits:n%1?2:0,maximumFractionDigits:2})}
+function shopLink(p){const u=SHOPS[p.brand]||SHOPS.Various; return u.includes('google.com/search')&&p.brand==='Various'?u+encodeURIComponent(p.name):u}
+function searchLink(p){return 'https://www.google.com/search?tbm=shop&q='+encodeURIComponent(`${p.brand==='Various'?'':p.brand+' '}${p.name}`)}
+function specChips(p){
+  const ch=[];
+  if(p.cat==='case'){ch.push(LAYOUT_NAMES[p.layout],p.mount,p.material); if(p.kit) ch.push('Kit'); if(/Tri|Blue/.test(p.conn)) ch.push('Wireless')}
+  if(p.cat==='pcb'){ch.push(LAYOUT_NAMES[p.layout],p.hotswap?'Hot-swap':'Solder',`${p.pins}-pin`, p.rgb?`RGB · ${p.led}-facing`:'No RGB')}
+  if(p.cat==='plate'){ch.push(p.material,LAYOUT_NAMES[p.layout],`Flex ${flexWord(PLATE_MAT[p.material].flex).toLowerCase()}`)}
+  if(p.cat==='switches'){ch.push(p.type,`${p.force}g`,`${p.travel.toFixed(1)}mm`,`${p.pins}-pin`); if(p.factory) ch.push('Factory lubed')}
+  if(p.cat==='keycaps'){ch.push(p.profile,p.material,p.legends); if(p.shine) ch.push('Shine-through')}
+  if(p.cat==='stabs'){ch.push({screw:'PCB screw-in',clip:'PCB clip-in',plate:'Plate-mount'}[p.mount])}
+  if(p.cat==='extras'){ch.push(p.kind)}
+  return ch.map(c=>`<span class="chip">${esc(c)}</span>`).join('');
+}
+let toastT;
+function toast(msg){const t=document.getElementById('toast'); t.textContent=msg; t.hidden=false; clearTimeout(toastT); toastT=setTimeout(()=>t.hidden=true,2600)}
+function encodeBuild(b){const o={n:b.name,c:b.case,k:b.color||0,p:b.pcb,l:b.plate,s:b.switches,t:b.stabs,y:b.keycaps,e:b.extras||[]};return 'SY1:'+btoa(unescape(encodeURIComponent(JSON.stringify(o))))}
+function decodeBuild(code){const raw=code.trim().replace(/^SY1:/,''); const o=JSON.parse(decodeURIComponent(escape(atob(raw)))); const b={name:o.n||'Imported build',case:o.c,color:o.k||0,pcb:o.p||null,plate:o.l||null,switches:o.s||null,stabs:o.t||null,keycaps:o.y||null,extras:(o.e||[]).filter(id=>BYID[id])}; for(const k of ['case','pcb','plate','switches','stabs','keycaps']) if(b[k]&&!BYID[b[k]]) b[k]=null; return b}
+async function copyText(txt,fallbackEl){
+  try{await navigator.clipboard.writeText(txt); toast('Copied to clipboard')}
+  catch(e){ if(fallbackEl){fallbackEl.hidden=false; fallbackEl.value=txt; fallbackEl.select()} toast('Select the text and copy it') }
+}
+
+/* =========================================================
+   ROUTING
+   ========================================================= */
+let view='finder';
+function go(v,push=true){
+  view=v;
+  for(const id of ['finder','build','saved']){document.getElementById('view-'+id).hidden = id!==v; document.getElementById('nav-'+id).setAttribute('aria-current', id===v?'page':'false')}
+  if(v==='build') renderBuilder(); if(v==='saved') renderSaved(); if(v==='finder') renderFinder();
+  if(push){try{history.replaceState(null,'','#'+v)}catch(e){}}
+  window.scrollTo({top:0});
+}
+document.addEventListener('click',e=>{const g=e.target.closest('[data-go]'); if(g){e.preventDefault(); go(g.dataset.go)}});
+document.getElementById('brandlink').addEventListener('click',e=>{e.preventDefault();go('finder')});
+
+function renderPill(){
+  const pill=document.getElementById('pricepill'), v=verdict(compat(build)), col={ok:'var(--ok)',warn:'var(--warn)',fail:'var(--fail)',info:'var(--info)'}[v.level];
+  pill.innerHTML=`<span class="statusdot" style="background:${col}"></span>${caseOf(build)?esc(caseOf(build).name)+' · ':''}${money(total(build))}`;
+}
+
+/* =========================================================
+   FINDER
+   ========================================================= */
+const miniBoard=l=>boardSVG({layout:l,caseColor:'#A7ADB2',legends:false,u:12,cls:'',label:LAYOUT_NAMES[l]});
+const QUESTIONS = [
+  {key:'layout',title:'What size board?',sub:'Smaller boards drop keys you can reach with a function layer.',opts:[
+    {v:'60',b:'60%',s:'No arrows or F-row. Smallest.',art:()=>miniBoard('60')},
+    {v:'65',b:'65%',s:'Adds arrows and a nav column.',art:()=>miniBoard('65')},
+    {v:'75',b:'75%',s:'Adds the F-row, still compact.',art:()=>miniBoard('75')},
+    {v:'tkl',b:'Tenkeyless',s:'Full board minus the numpad.',art:()=>miniBoard('tkl')},
+    {v:'full',b:'Full-size',s:'Everything, numpad included.',art:()=>miniBoard('full')},
+    {v:'any',b:'Not sure',s:'Show the best match at any size.'}]},
+  {key:'use',title:'What will you mostly do on it?',sub:'This nudges switch weight and type.',opts:[
+    {v:'typing',b:'Writing and email',s:'Long sessions, comfort first.'},{v:'gaming',b:'Gaming',s:'Fast, light presses.'},
+    {v:'coding',b:'Coding',s:'Lots of modifiers and shortcuts.'},{v:'mixed',b:'A bit of everything',s:'Balanced picks.'}]},
+  {key:'feel',title:'How should a keypress feel?',sub:'This is the biggest choice in the build.',opts:[
+    {v:'Linear',b:'Smooth (linear)',s:'Straight down, no bump.',art:()=>switchSVG(BYID.milkyyp)},
+    {v:'Tactile',b:'Bumpy (tactile)',s:'A bump tells you the key registered.',art:()=>switchSVG(BYID.u4t)},
+    {v:'Clicky',b:'Clicky',s:'Bump plus an audible click.',art:()=>switchSVG(BYID.mx2ablue)},
+    {v:'Silent',b:'Silent',s:'Dampened for shared spaces.',art:()=>switchSVG(BYID.silentred)},
+    {v:'any',b:'Not sure',s:'Pick what suits the rest.'}]},
+  {key:'sound',title:'Which sound do you want?',sub:'Plate, keycaps, switches and foam all change it. We estimate the result.',opts:[
+    {v:'thock',b:'Deep thock',s:'Low and rounded.'},{v:'creamy',b:'Creamy',s:'Muted, smooth, soft.'},
+    {v:'clack',b:'Crisp clack',s:'Bright and sharp.'},{v:'quiet',b:'As quiet as possible',s:'For calls and offices.'}]},
+  {key:'wireless',title:'Do you need wireless?',sub:'Wireless boards also work over a cable.',opts:[
+    {v:'yes',b:'Yes, wireless',s:'Bluetooth or 2.4 GHz.'},{v:'no',b:'Cable is fine',s:'Opens up more boards.'}]},
+  {key:'solder',title:'Are you comfortable soldering?',sub:'Hot-swap boards let you press switches in by hand.',opts:[
+    {v:'hotswap',b:'No, hot-swap only',s:'Switches press in. Swap any time.'},{v:'either',b:'Soldering is fine',s:'Include solder PCBs.'}]},
+  {key:'budget',title:"What's your budget?",sub:'For the whole build: case, switches, keycaps and all.',budget:true},
+  {key:'look',title:'Pick a look.',sub:'This picks the keycap set.',opts:[
+    {v:'dark',b:'Dark',s:'Black and charcoal.',art:()=>capsSVG(BYID.gmkwob)},{v:'light',b:'Light',s:'White and cream.',art:()=>capsSVG(BYID.bow)},
+    {v:'colorful',b:'Colorful',s:'Bold accents.',art:()=>capsSVG(BYID.gmklaser)},{v:'retro',b:'Retro',s:'Beige, vintage terminals.',art:()=>capsSVG(BYID.devtty)}]},
+];
+
+function renderFinder(){
+  const hb=document.getElementById('heroboard');
+  hb.innerHTML = boardSVG({layout:'75',caseColor:'#6B5A8E',pal:BYID.gmkolivia.pal,profile:'Cherry',knob:true,u:40,cls:'',label:'Example 75% keyboard with charcoal and pink keycaps'})+`<span class="tag">Wobkey Rainy75 · GMK Olivia++ Dark · rendered from specs</span>`;
+  document.getElementById('herostats').innerHTML=`<div><b>${ALLPARTS.length}</b><span>parts in the catalog</span></div><div><b>${SWITCHES.length}</b><span>switches</span></div><div><b>5</b><span>layouts, 60% to full</span></div>`;
+  renderQuiz();
+}
+function renderQuiz(){
+  const q=document.getElementById('quiz');
+  if(quizDone){renderResults(q);return}
+  const Q=QUESTIONS[quizStep], ans=quizAns[Q.key];
+  let body;
+  if(Q.budget){
+    const v=ans??300;
+    body=`<div class="budget"><output id="budgetout" class="mono">${money(v)}</output><input id="budget" type="range" min="120" max="700" step="10" value="${v}" aria-label="Budget in US dollars"><div class="ticks"><span>$120</span><span>$300</span><span>$500</span><span>$700</span></div><p class="note" style="margin:0">Most first builds land between $180 and $350.</p></div>`;
+  } else {
+    body=`<div class="opts">${Q.opts.map(o=>`<button class="opt" aria-pressed="${ans===o.v}" data-v="${o.v}">${o.art?`<span class="art">${o.art()}</span>`:''}<b>${esc(o.b)}</b><span>${esc(o.s)}</span></button>`).join('')}</div>`;
+  }
+  q.innerHTML=`<div class="progress" aria-hidden="true">${QUESTIONS.map((_,i)=>`<i class="${i<=quizStep?'on':''}"></i>`).join('')}</div>
+    <div class="quiz-head"><div><div class="eyebrow">Question ${quizStep+1} of ${QUESTIONS.length}</div><h2>${esc(Q.title)}</h2><p class="note" style="margin:4px 0 0;font-size:14px">${esc(Q.sub)}</p></div></div>
+    ${body}
+    <div class="quiz-foot"><button class="btn ghost" id="qback" ${quizStep===0?'disabled':''}>Back</button>
+    <div style="display:flex;gap:8px"><button class="btn ghost" id="qskip">Skip to results</button><button class="btn primary" id="qnext" ${(!Q.budget&&ans==null)?'disabled':''}>${quizStep===QUESTIONS.length-1?'See my builds':'Next'}</button></div></div>`;
+  q.querySelectorAll('.opt').forEach(b=>b.addEventListener('click',()=>{quizAns[Q.key]=b.dataset.v; store.set('sy.quiz',quizAns); if(quizStep<QUESTIONS.length-1){quizStep++;renderQuiz()} else {quizDone=true;renderQuiz()}}));
+  const r=q.querySelector('#budget'); if(r){r.addEventListener('input',()=>{q.querySelector('#budgetout').textContent=money(+r.value); quizAns.budget=+r.value; store.set('sy.quiz',quizAns)}); if(quizAns.budget==null){quizAns.budget=300}}
+  q.querySelector('#qback').onclick=()=>{if(quizStep>0){quizStep--;renderQuiz()}};
+  q.querySelector('#qnext').onclick=()=>{if(quizStep<QUESTIONS.length-1){quizStep++;renderQuiz()}else{quizDone=true;renderQuiz()}};
+  q.querySelector('#qskip').onclick=()=>{quizDone=true;renderQuiz()};
+}
+document.getElementById('startquiz').addEventListener('click',e=>{e.preventDefault(); quizDone=false; quizStep=0; renderQuiz(); document.getElementById('quiz').scrollIntoView({behavior:'smooth',block:'start'})});
+
+const SOUND_T={thock:{p:25,v:50},creamy:{p:40,v:38},clack:{p:74,v:62},quiet:{p:40,v:15}};
+function recommend(ans){
+  const budget=ans.budget||300, L=ans.layout&&ans.layout!=='any'?ans.layout:null;
+  const configs=[];
+  for(const c of CASES){
+    if(L&&c.layout!==L) continue;
+    if(ans.wireless==='yes'&&!/Tri|Blue/.test(c.conn)) continue;
+    if(c.kit){configs.push({case:c.id,pcb:null,plate:null}); continue}
+    for(const p of PCBS.filter(p=>p.fit===c.fit)){ if(ans.solder==='hotswap'&&!p.hotswap) continue; for(const pl of PLATES.filter(pl=>pl.fit===c.fit)) configs.push({case:c.id,pcb:p.id,plate:pl.id}) }
+  }
+  const feel=ans.feel&&ans.feel!=='any'?ans.feel:null;
+  let sws=SWITCHES.filter(s=>!feel||(feel==='Silent'?/Silent/.test(s.type):s.type===feel));
+  if(ans.sound==='quiet'&&!feel) sws=SWITCHES.filter(s=>/Silent/.test(s.type)||s.vol<50);
+  const kcs=KEYCAPS.filter(k=>!ans.look||k.mood.includes(ans.look));
+  const T=SOUND_T[ans.sound]||{p:45,v:50};
+  const results=[];
+  for(const cf of configs){
+    const c=BYID[cf.case];
+    for(const s of sws) for(const k of kcs){
+      const b={case:cf.case,color:0,pcb:cf.pcb,plate:cf.plate,switches:s.id,keycaps:k.id,stabs:null,extras:['puller']};
+      if(!stabsIncluded(b)){const pcb=effPcb(b); b.stabs= pcb.stabs.includes('screw')?'durockv2':'cherryclip'}
+      if(ans.sound==='thock'||ans.sound==='creamy') b.extras.push('casefoam');
+      const iss=compat(b); if(iss.some(i=>i.level==='fail')) continue;
+      const t=total(b), e=estimate(b);
+      let sc=100;
+      if(t>budget) sc-= (t-budget)/budget*220; else sc-= Math.max(0,(budget*0.55-t)/budget)*30;
+      sc-= Math.abs(e.pitch-T.p)*0.7 + Math.abs(e.vol-T.v)*0.45;
+      if(ans.use==='gaming'){ if(s.type==='Linear'&&s.force<=55) sc+=8; if(/Tri/.test(c.conn)) sc+=2 }
+      if(ans.use==='typing'&&/Tactile/.test(s.type)) sc+=5;
+      if(ans.use==='coding'&&(c.layout==='65'||c.layout==='75')) sc+=4;
+      if(!L && (c.layout==='75'||c.layout==='65')) sc+=3;
+      sc-= iss.filter(i=>i.level==='warn').length*6;
+      if(!effPcb(b).hotswap) sc-=8;
+      results.push({b,sc,t,e});
+    }
+  }
+  results.sort((a,b)=>b.sc-a.sc);
+  const picks=[], seen=new Set();
+  for(const r of results){ if(seen.has(r.b.case)) continue; seen.add(r.b.case); picks.push(r); if(picks.length===3) break }
+  return picks;
+}
+function reasonsFor(r,ans){
+  const c=caseOf(r.b), s=BYID[r.b.switches], k=BYID[r.b.keycaps], pcb=effPcb(r.b), out=[];
+  const budget=ans.budget||300;
+  out.push(r.t<=budget?`${money(r.t)}, inside your ${money(budget)} budget`:`${money(r.t-budget)} over your budget`);
+  if(/Tri|Blue/.test(c.conn)) out.push(`${c.conn} wireless`);
+  out.push(pcb.hotswap?'Hot-swap: no soldering needed':'Solder PCB');
+  out.push(`${s.name}: ${s.type.toLowerCase()}, ${s.force}g`);
+  out.push(`Estimated sound: ${pitchWord(r.e.pitch).toLowerCase()}, ${volWord(r.e.vol).toLowerCase()}`);
+  out.push(`${k.brand} ${k.name} keycaps in ${k.profile} profile`);
+  return out;
+}
+let lastPicks=[];
+function renderResults(q){
+  const picks=recommend(quizAns); lastPicks=picks;
+  const summary=QUESTIONS.filter(Q=>quizAns[Q.key]!=null).map(Q=>{const v=quizAns[Q.key]; if(Q.budget) return money(v); const o=Q.opts.find(o=>o.v===v); return o?o.b:v});
+  q.innerHTML=`<div class="quiz-head"><div><div class="eyebrow">Your matches</div><h2>${picks.length?`${picks.length} builds that fit what you told us`:'No builds match every answer'}</h2>
+    <p class="note" style="margin:6px 0 0;font-size:14px">${summary.length?'Based on: '+summary.map(esc).join(' · '):'You skipped the questions, so these are good all-round picks.'}</p></div>
+    <button class="btn" id="qredo">Change answers</button></div>
+    ${picks.length?`<div class="results">${picks.map((r,i)=>{const c=caseOf(r.b),k=BYID[r.b.keycaps],s=BYID[r.b.switches];const pct=Math.max(42,Math.min(98,Math.round(r.sc)));
+      return `<article class="card result"><div class="rank"><span class="eyebrow">${i===0?'Best match':'Match '+(i+1)}</span><span class="match">${pct}%</span></div>
+      <div class="boardwrap" style="padding:14px">${buildBoard(r.b,{cls:'',u:30})}</div>
+      <h3>${esc(c.brand)} ${esc(c.name)}</h3>
+      <ul>${reasonsFor(r,quizAns).map(x=>`<li>${esc(x)}</li>`).join('')}</ul>
+      <div class="parts">${lineItems(r.b).filter(li=>li.slot!=='extras').map(li=>`<div><span>${SLOTS.find(s=>s.key===li.slot).label}</span><span>${esc(li.part.name)}</span></div>`).join('')}</div>
+      <div class="total"><span class="note">Total</span><b>${money(r.t)}</b></div>
+      <button class="btn primary" data-use="${i}">Customize this build</button></article>`}).join('')}</div>`
+    :`<p>Try a bigger budget or set layout or wireless to "Not sure".</p>`}`;
+  q.querySelector('#qredo').onclick=()=>{quizDone=false;quizStep=0;renderQuiz()};
+  q.querySelectorAll('[data-use]').forEach(b=>b.onclick=()=>{const r=lastPicks[+b.dataset.use]; const c=caseOf(r.b); build={...r.b,name:`My ${c.name} build`}; persist(); go('build'); toast('Loaded into the builder')});
+}
+
+/* =========================================================
+   BUILDER
+   ========================================================= */
+function renderBuilder(){
+  const c=caseOf(build);
+  document.getElementById('buildname').value=build.name||'My keyboard';
+  document.getElementById('buildeyebrow').textContent = build.example?'Example build · edit anything':'Your build';
+  const sb=document.getElementById('stageboard');
+  sb.innerHTML = c? buildBoard(build) : `<div class="empty"><p style="margin:0 0 10px">Start with a case or kit. It sets the layout for everything else.</p><button class="btn primary" data-pick="case">Choose a case</button></div>`;
+  const sw=document.getElementById('swatches');
+  sw.innerHTML = c? `<span>Case color</span>${c.colors.map(([n,h],i)=>`<button class="sw" style="background:${h}" title="${esc(n)}" aria-label="${esc(n)}" aria-pressed="${(build.color||0)===i}" data-color="${i}"></button>`).join('')}<span class="mono" style="margin-left:auto">${LAYOUT_NAMES[c.layout]} · ${c.keys} keys${c.knob?' + knob':''}</span>`:'';
+  sw.querySelectorAll('[data-color]').forEach(b=>b.onclick=()=>{build.color=+b.dataset.color; commit()});
+  renderParts(); renderRail(); renderPill();
+}
+function renderParts(){
+  const items=lineItems(build), c=caseOf(build);
+  let h=`<div class="plist-head eyebrow"><span>Part</span><span>Selection</span><span style="text-align:right">Price</span><span></span></div>`;
+  for(const s of SLOTS){
+    const included = c&&c.kit&&(s.key==='pcb'||s.key==='plate'||(s.key==='stabs'&&c.kit.stabs));
+    if(s.key==='extras'){
+      const ex=items.filter(i=>i.slot==='extras');
+      h+=`<div class="prow"><div class="slot">${s.label}<small>${s.hint}</small></div><div class="item" style="display:block"><div class="extras-list">${ex.map(i=>`<div class="extra-line"><span class="item" style="gap:10px"><span class="thumb" style="width:44px;height:33px">${thumbFor(i.part)}</span><span>${esc(i.part.name)}</span></span><span style="display:flex;gap:6px;align-items:center"><span class="mono">${money(i.price)}</span><button class="btn small ghost" data-rmextra="${i.part.id}" aria-label="Remove ${esc(i.part.name)}">✕</button></span></div>`).join('')}<button class="addbtn" data-pick="extras">+ Add extras</button></div></div><div class="price mono">${ex.length?money(ex.reduce((a,b)=>a+b.price,0)):'—'}</div><div class="acts"></div></div>`;
+      continue;
+    }
+    if(included){
+      const desc= s.key==='pcb'?`Hot-swap ${c.kit.pcb.pins}-pin${c.kit.pcb.rgb?`, RGB (${c.kit.pcb.led}-facing)`:''}`: s.key==='plate'?`${c.kit.plate} plate`:c.kit.stabs;
+      const thumb = s.key==='pcb'?pcbSVG(c.kit.pcb): s.key==='plate'?plateSVG(c.kit.plate): stabSVG({mount:/Plate/.test(c.kit.stabs)?'plate':'screw'});
+      h+=`<div class="prow included"><div class="slot">${s.label}<small>${s.hint}</small></div><div class="item"><span class="thumb">${thumb}</span><div class="meta"><b>Included with ${esc(c.name)}</b><span class="by">${esc(desc)}</span></div></div><div class="price"><span class="chip ok">Included</span></div><div class="acts"></div></div>`;
+      continue;
+    }
+    const li=items.find(i=>i.slot===s.key);
+    if(!li){
+      const disabled = !c && s.key!=='case';
+      h+=`<div class="prow"><div class="slot">${s.label}<small>${s.hint}</small></div><div class="item"><button class="addbtn" data-pick="${s.key}" ${disabled?'disabled title="Pick a case first"':''}>+ Choose ${s.label.toLowerCase()}</button></div><div class="price mono">—</div><div class="acts"></div></div>`;
+      continue;
+    }
+    const p=li.part, iss=compat(build).filter(i=>i.slot===s.key&&(i.level==='fail'||i.level==='warn'));
+    let sub='';
+    if(s.key==='switches') sub=`<small>${keyCount(build)} needed · ${li.qty} @ ${money(p.price)}</small>`;
+    if(s.key==='keycaps'&&li.addon) sub=`<small>incl. numpad kit ${money(li.addon)}</small>`;
+    if(s.key==='stabs') sub=`<small>${layoutOf(build)==='full'?'7':'5'}-stab set</small>`;
+    h+=`<div class="prow"><div class="slot">${s.label}<small>${s.hint}</small></div>
+      <div class="item"><span class="thumb">${thumbFor(p)}</span><div class="meta"><b>${esc(p.name)}</b><span class="by">${esc(p.brand)} · <a href="${shopLink(p)}" target="_blank" rel="noopener">seller</a> · <a href="${searchLink(p)}" target="_blank" rel="noopener">compare prices</a></span><span class="specs">${specChips(p)}${iss.map(i=>`<span class="chip ${i.level}">${i.level==='fail'?'Conflict':'Note'}</span>`).join('')}</span></div></div>
+      <div class="price"><span>${money(li.price)}</span>${sub}</div>
+      <div class="acts"><button class="btn small" data-pick="${s.key}">Change</button><button class="btn small ghost" data-rm="${s.key}" aria-label="Remove ${esc(p.name)}">✕</button></div></div>`;
+  }
+  const el=document.getElementById('plist'); el.innerHTML=h;
+  el.querySelectorAll('[data-rm]').forEach(b=>b.onclick=()=>{const k=b.dataset.rm; build[k]=null; if(k==='case'){build.pcb=null;build.plate=null;build.stabs=build.stabs} commit()});
+  el.querySelectorAll('[data-rmextra]').forEach(b=>b.onclick=()=>{build.extras=build.extras.filter(x=>x!==b.dataset.rmextra); commit()});
+}
+document.addEventListener('click',e=>{const p=e.target.closest('[data-pick]'); if(p&&!p.disabled) openPicker(p.dataset.pick)});
+
+function renderRail(){
+  const iss=compat(build), v=verdict(iss), e=estimate(build), items=lineItems(build), t=total(build);
+  const order={fail:0,warn:1,info:2,ok:3};
+  const sorted=[...iss].sort((a,b)=>order[a.level]-order[b.level]);
+  const meter=(label,val,word,l,r)=>`<div class="meter"><div class="lbl"><span>${label}</span><b>${word}</b></div><div class="bar"><i style="left:${val}%"></i></div><div class="ends"><span>${l}</span><span>${r}</span></div></div>`;
+  const rail=document.getElementById('rail');
+  rail.innerHTML=`
+  <section class="card"><h3>Compatibility</h3><div class="verdict ${v.level}">${v.text}</div>
+    <ul class="issues">${sorted.map(i=>`<li class="${i.level}"><i></i><span>${esc(i.msg)}${i.sub?`<br><small>${esc(i.sub)}</small>`:''}</span></li>`).join('')}</ul></section>
+  <section class="card"><h3>Price</h3><div class="totals">${items.map(i=>`<div><span>${SLOTS.find(s=>s.key===i.slot).label}${i.slot==='extras'?': '+esc(i.part.name):''}</span><span class="mono">${money(i.price)}</span></div>`).join('')||'<div><span class="note">Nothing yet</span></div>'}
+    <div class="grand"><span>Total</span><span class="mono">${money(t)}</span></div></div><p class="note" style="margin:0">Approximate list prices, before shipping and tax.</p></section>
+  <section class="card"><h3>Sound and feel estimate</h3>
+    ${meter('Pitch',e.pitch,pitchWord(e.pitch),'Deep','Bright')}
+    ${meter('Volume',e.vol,volWord(e.vol),'Quiet','Loud')}
+    ${meter('Typing feel',e.flex,flexWord(e.flex),'Stiff','Bouncy')}
+    <div class="totals"><div><span>Actuation force</span><span class="mono">${e.force?e.force+' g':'—'}</span></div></div>
+    <p class="note" style="margin:0">A rough guide from plate, mount, switches, keycaps and mods. Real boards vary.</p></section>
+  <section class="card"><h3>Share</h3><div class="railacts"><button class="btn small" id="copylist">Copy parts list</button><button class="btn small" id="copycode">Copy build code</button></div>
+    <textarea id="copyfallback" hidden aria-label="Copy text" style="width:100%;min-height:80px;font-family:var(--f-mono);font-size:12px;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:6px"></textarea></section>`;
+  rail.querySelector('#copylist').onclick=()=>copyText(partsText(build),rail.querySelector('#copyfallback'));
+  rail.querySelector('#copycode').onclick=()=>copyText(encodeBuild(build),rail.querySelector('#copyfallback'));
+}
+function partsText(b){
+  const lines=[`${b.name||'My keyboard'} (Switchyard)`,''];
+  const c=caseOf(b);
+  for(const i of lineItems(b)) lines.push(`${SLOTS.find(s=>s.key===i.slot).label}: ${i.part.brand} ${i.part.name}${i.qty?` x${i.qty}`:''} - ${money(i.price)}`);
+  if(c&&c.kit) lines.push(`Included with kit: PCB, ${c.kit.plate} plate${c.kit.stabs?', stabilizers':''}`);
+  lines.push('',`Total: ${money(total(b))} (approx.)`,`Build code: ${encodeBuild(b)}`);
+  return lines.join('\n');
+}
+function commit(){build.example=false; persist(); renderBuilder()}
+document.getElementById('buildname').addEventListener('input',e=>{build.name=e.target.value; persist()});
+document.getElementById('savebuild').onclick=()=>{
+  if(!caseOf(build)){toast('Pick a case before saving');return}
+  const entry={...build,example:false,savedAt:Date.now(),sid:build.sid||('b'+Date.now())};
+  build.sid=entry.sid; const i=saved.findIndex(s=>s.sid===entry.sid); if(i>=0) saved[i]=entry; else saved.unshift(entry);
+  store.set('sy.saved',saved); persist(); toast(i>=0?'Build updated':'Build saved');
+};
+let clearArm=0;
+document.getElementById('clearbuild').onclick=(e)=>{
+  const b=e.currentTarget;
+  if(Date.now()-clearArm>3000){clearArm=Date.now(); b.textContent='Tap again to clear'; setTimeout(()=>b.textContent='Start over',3000); return}
+  build={name:'My keyboard',case:null,color:0,pcb:null,plate:null,switches:null,stabs:null,keycaps:null,extras:[]}; clearArm=0; b.textContent='Start over'; persist(); renderBuilder(); toast('Build cleared');
+};
+
+/* =========================================================
+   PICKER
+   ========================================================= */
+const POOLS={case:CASES,pcb:PCBS,plate:PLATES,switches:SWITCHES,stabs:STABS,keycaps:KEYCAPS,extras:EXTRAS};
+const FACETS={
+  case:[['layout','Layout',p=>LAYOUT_NAMES[p.layout]],['type','Type',p=>p.kit?'Kit (PCB + plate included)':'Case only'],['conn','Connection',p=>/Tri|Blue/.test(p.conn)?'Wireless':'Wired'],['mount','Mount',p=>p.mount.split(' ')[0]],['brand','Brand',p=>p.brand]],
+  pcb:[['hs','Install',p=>p.hotswap?'Hot-swap':'Solder'],['rgb','Lighting',p=>p.rgb?'RGB':'None'],['brand','Brand',p=>p.brand]],
+  plate:[['material','Material',p=>p.material],['layout','Layout',p=>LAYOUT_NAMES[p.layout]]],
+  switches:[['type','Type',p=>p.type],['pins','Pins',p=>p.pins+'-pin'],['brand','Brand',p=>p.brand],['factory','Lube',p=>p.factory?'Factory lubed':'Unlubed']],
+  keycaps:[['profile','Profile',p=>p.profile],['material','Material',p=>p.material],['legends','Legends',p=>p.legends],['brand','Brand',p=>p.brand]],
+  stabs:[['mount','Mount',p=>({screw:'PCB screw-in',clip:'PCB clip-in',plate:'Plate-mount'}[p.mount])]],
+  extras:[['kind','Kind',p=>p.kind]],
+};
+let pk={slot:null,q:'',f:{},compat:true,sort:'featured',maxPrice:null,minF:30,maxF:80};
+function partPrice(slot,p){
+  if(slot==='switches') return p.price*(switchQty(build)||70);
+  if(slot==='stabs') return layoutOf(build)==='full'?p.fullPrice:p.price;
+  if(slot==='keycaps'){const L=layoutOf(build); return p.price+((L&&!p.covers.includes(L)&&p.addon&&p.addon[L])||0)}
+  return p.price;
+}
+function tryPart(slot,p){
+  const b={...build,extras:[...(build.extras||[])]};
+  if(slot==='extras'){ if(!b.extras.includes(p.id)) b.extras.push(p.id) } else b[slot]=p.id;
+  if(slot==='case'){b.color=0; if(p.kit){b.pcb=null;b.plate=null}}
+  return b;
+}
+function partProblems(slot,p){
+  const b=tryPart(slot,p); const iss=compat(b);
+  if(slot==='case'){ return {bad:[], warn:iss.filter(i=>i.level==='fail').map(i=>i.msg)} }
+  return {bad:iss.filter(i=>i.level==='fail'&&(i.slot===slot||(slot==='plate'&&i.slot==='switches'&&false))).map(i=>i.msg), warn:iss.filter(i=>i.level==='warn'&&i.slot===slot).map(i=>i.msg)};
+}
+function openPicker(slot){
+  pk={slot,q:'',f:{},compat:true,sort:'featured',maxPrice:null};
+  const el=document.getElementById('picker'); el.hidden=false; document.body.style.overflow='hidden';
+  const s=SLOTS.find(x=>x.key===slot);
+  const pool=POOLS[slot], prices=pool.map(p=>partPrice(slot,p)), maxP=Math.ceil(Math.max(...prices)/5)*5;
+  pk.maxPrice=maxP;
+  el.innerHTML=`<div class="scrim" id="scrim"><div class="drawer" role="dialog" aria-modal="true" aria-labelledby="pktitle">
+    <div class="dhead"><h2 id="pktitle">Choose ${esc(s.label.toLowerCase())}</h2><input type="search" id="pkq" placeholder="Search ${esc(s.label.toLowerCase())}" aria-label="Search"><button class="btn small filtbtn" id="pkfilt">Filters</button><button class="btn small" id="pkclose">Done</button></div>
+    <div class="dbody"><div class="filters" id="pkfilters"></div><div class="dlist" id="pklist"></div></div></div></div>`;
+  const fs=document.getElementById('pkfilters');
+  const facets=FACETS[slot]||[];
+  let fh=`<label class="toggle"><input type="checkbox" id="pkcompat" checked> Compatible with my build</label>`;
+  fh+=`<fieldset><legend>Max price</legend><input type="range" id="pkprice" min="0" max="${maxP}" step="${maxP>100?5:1}" value="${maxP}" aria-label="Maximum price"><span class="mono note" id="pkpriceout">${money(maxP)}</span></fieldset>`;
+  if(slot==='switches') fh+=`<fieldset><legend>Actuation force</legend><span class="mono note">Up to <b id="pkforceout">80</b> g</span><input type="range" id="pkforce" min="35" max="80" value="80" aria-label="Maximum actuation force"></fieldset>`;
+  for(const [k,label,fn] of facets){const vals=[...new Set(pool.map(fn))].sort(); fh+=`<fieldset><legend>${label}</legend>${vals.map(v=>`<label><input type="checkbox" data-facet="${k}" value="${esc(v)}"> ${esc(v)} <span class="note">(${pool.filter(p=>fn(p)===v).length})</span></label>`).join('')}</fieldset>`}
+  fs.innerHTML=fh;
+  fs.addEventListener('change',e=>{
+    if(e.target.id==='pkcompat') pk.compat=e.target.checked;
+    if(e.target.dataset.facet){const k=e.target.dataset.facet; pk.f[k]=[...fs.querySelectorAll(`[data-facet="${k}"]:checked`)].map(x=>x.value)}
+    renderPickList();
+  });
+  fs.querySelector('#pkprice').addEventListener('input',e=>{pk.maxPrice=+e.target.value; fs.querySelector('#pkpriceout').textContent=money(pk.maxPrice); renderPickList()});
+  const fr=fs.querySelector('#pkforce'); if(fr) fr.addEventListener('input',e=>{pk.maxF=+e.target.value; fs.querySelector('#pkforceout').textContent=pk.maxF; renderPickList()});
+  pk.maxF=80;
+  document.getElementById('pkq').addEventListener('input',e=>{pk.q=e.target.value.toLowerCase(); renderPickList()});
+  document.getElementById('pkclose').onclick=closePicker;
+  document.getElementById('pkfilt').onclick=()=>fs.classList.toggle('open');
+  document.getElementById('scrim').addEventListener('click',e=>{if(e.target.id==='scrim') closePicker()});
+  renderPickList();
+  setTimeout(()=>document.getElementById('pkq').focus(),30);
+}
+function closePicker(){const el=document.getElementById('picker'); el.hidden=true; el.innerHTML=''; document.body.style.overflow=''}
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!document.getElementById('picker').hidden) closePicker()});
+function renderPickList(){
+  const slot=pk.slot, pool=POOLS[slot], facets=FACETS[slot]||[];
+  let rows=pool.map(p=>({p,price:partPrice(slot,p),pr:partProblems(slot,p)}));
+  rows=rows.filter(({p,price})=>{
+    if(pk.q && !(`${p.brand} ${p.name} ${p.blurb||''}`.toLowerCase().includes(pk.q))) return false;
+    if(price>pk.maxPrice+0.001) return false;
+    if(slot==='switches'&&p.force>pk.maxF) return false;
+    for(const [k,,fn] of facets){const sel=pk.f[k]; if(sel&&sel.length&&!sel.includes(fn(p))) return false}
+    return true;
+  });
+  const hidden = pk.compat? rows.filter(r=>r.pr.bad.length).length : 0;
+  if(pk.compat) rows=rows.filter(r=>!r.pr.bad.length);
+  const sorters={featured:()=>0,priceAsc:(a,b)=>a.price-b.price,priceDesc:(a,b)=>b.price-a.price,name:(a,b)=>a.p.name.localeCompare(b.p.name),force:(a,b)=>(a.p.force||0)-(b.p.force||0)};
+  rows.sort(sorters[pk.sort]||sorters.featured);
+  const current = slot==='extras'? (build.extras||[]) : [build[slot]];
+  const list=document.getElementById('pklist');
+  list.innerHTML=`<div class="dbar"><span>${rows.length} ${rows.length===1?'part':'parts'}${hidden?` · ${hidden} hidden because they don't fit your build`:''}</span>
+    <label>Sort <select id="pksort"><option value="featured">Featured</option><option value="priceAsc">Price: low to high</option><option value="priceDesc">Price: high to low</option><option value="name">Name</option>${slot==='switches'?'<option value="force">Force: light to heavy</option>':''}</select></label></div>
+    ${rows.length?'':`<div class="card emptybox"><b>Nothing matches these filters.</b><span>Clear a filter or raise the max price.</span></div>`}
+    ${rows.map(({p,price,pr})=>{const on=current.includes(p.id);
+      let sub=''; if(slot==='switches') sub=`${switchQty(build)||70} switches @ ${money(p.price)}`; else if(slot==='case'&&p.kit) sub='PCB + plate'+(p.kit.stabs?' + stabs':'')+' included';
+      return `<article class="card pick ${pr.bad.length?'bad':''} ${on?'selected':''}"><span class="thumb">${thumbFor(p)}</span>
+      <div class="meta"><span class="by note">${esc(p.brand)}</span><b>${esc(p.name)}</b><span class="specs">${specChips(p)}</span><p>${esc(p.blurb||'')}</p>
+        ${pr.bad.map(m=>`<span class="why">✕ ${esc(m)}</span>`).join('')}${pr.warn.map(m=>`<span class="why" style="color:var(--warn)">! ${esc(m)}</span>`).join('')}
+        <span class="links"><a href="${shopLink(p)}" target="_blank" rel="noopener">Seller site</a><a href="${searchLink(p)}" target="_blank" rel="noopener">Compare prices</a></span></div>
+      <div class="side"><span class="p">${money(price)}</span>${sub?`<small>${esc(sub)}</small>`:''}
+        ${slot==='extras'&&on?`<button class="btn small" data-unadd="${p.id}">Remove</button>`:`<button class="btn small ${on?'':'primary'}" data-add="${p.id}" ${on?'disabled':''}>${on?'Selected':'Add'}</button>`}</div></article>`}).join('')}`;
+  const sel=list.querySelector('#pksort'); sel.value=pk.sort; sel.onchange=()=>{pk.sort=sel.value; renderPickList()};
+  list.querySelectorAll('[data-add]').forEach(b=>b.onclick=()=>choose(slot,BYID[b.dataset.add]));
+  list.querySelectorAll('[data-unadd]').forEach(b=>b.onclick=()=>{build.extras=build.extras.filter(x=>x!==b.dataset.unadd); commit(); renderPickList()});
+}
+function choose(slot,p){
+  const notes=[];
+  if(slot==='extras'){ build.extras=[...new Set([...(build.extras||[]),p.id])]; commit(); renderPickList(); toast(`Added ${p.name}`); return }
+  build[slot]=p.id;
+  if(slot==='case'){
+    build.color=0;
+    if(p.kit){ if(build.pcb||build.plate) notes.push('PCB and plate are now included with the kit'); build.pcb=null; build.plate=null; if(p.kit.stabs&&build.stabs){notes.push('stabilizers are included'); build.stabs=null} }
+    else {
+      if(build.pcb&&BYID[build.pcb].fit!==p.fit){build.pcb=null; notes.push('removed a PCB that doesn\'t fit')}
+      if(build.plate&&BYID[build.plate].fit!==p.fit){build.plate=null; notes.push('removed a plate that doesn\'t fit')}
+    }
+  }
+  commit(); closePicker();
+  toast(notes.length?`${p.name} added. ${notes.join('; ')}.`:`${p.name} added`);
+  const next=SLOTS.find(s=>needed(build,s.key)&&!build[s.key]);
+  if(next && slot==='case') setTimeout(()=>openPicker(next.key),250);
+}
+
+/* =========================================================
+   SAVED
+   ========================================================= */
+function renderSaved(){
+  const el=document.getElementById('savedlist');
+  if(!saved.length){el.innerHTML=`<div class="card emptybox"><b>No saved builds yet.</b><span>Use “Save build” in the builder. Builds are saved in this browser only.</span><button class="btn primary" data-go="build">Open builder</button></div>`;return}
+  el.innerHTML=`<div class="saved-grid">${saved.map((b,i)=>{const c=caseOf(b),v=verdict(compat(b));return `<article class="card saved">
+    <div class="boardwrap" style="padding:12px;min-height:0">${buildBoard(b,{u:24,cls:''})||''}</div>
+    <div class="row"><b>${esc(b.name||'Untitled')}</b><span class="chip ${v.level}">${v.text}</span></div>
+    <div class="row note"><span>${c?esc(c.brand+' '+c.name):''}</span><span class="mono">${money(total(b))}</span></div>
+    <div class="row"><button class="btn small primary" data-load="${i}">Open</button><button class="btn small ghost" data-del="${i}">Delete</button></div></article>`}).join('')}</div>`;
+  el.querySelectorAll('[data-load]').forEach(b=>b.onclick=()=>{build={...saved[+b.dataset.load]}; persist(); go('build')});
+  el.querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>{
+    if(b.dataset.armed){saved.splice(+b.dataset.del,1); store.set('sy.saved',saved); renderSaved(); toast('Build deleted')}
+    else {b.dataset.armed='1'; b.textContent='Tap again to delete'; setTimeout(()=>{if(b.isConnected){delete b.dataset.armed; b.textContent='Delete'}},3000)}
+  });
+}
+document.getElementById('importbtn').onclick=()=>{
+  const v=document.getElementById('importcode').value; if(!v.trim()){toast('Paste a build code first');return}
+  try{build=decodeBuild(v); persist(); go('build'); toast('Build loaded')}catch(e){toast("That code couldn't be read. Check it was copied in full.")}
+};
+
+/* =========================================================
+   BOOT
+   ========================================================= */
+const start=(location.hash||'').replace('#','');
+go(['finder','build','saved'].includes(start)?start:'finder',false);
+renderPill();
+</script>
