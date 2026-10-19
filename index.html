@@ -307,6 +307,24 @@ h1,h2,h3{text-wrap:balance;margin:0;font-weight:700;letter-spacing:-.02em}
 .foot{color:var(--faint);font-size:12px;padding-block:24px}
 .foot .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
 
+
+.soundpreview{width:min(640px,calc(100vw - 24px));max-height:calc(100dvh - 32px);padding:22px;border:1px solid var(--line);border-radius:20px;background:var(--surface);color:var(--ink);box-shadow:var(--shadow-lg);overflow:auto}
+.soundpreview::backdrop{background:rgba(41,37,36,.48);backdrop-filter:blur(5px)}
+.soundhead{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.soundhead small{color:var(--muted);font-size:10px;letter-spacing:.1em}
+.soundhead h2{margin:5px 0 12px;font-size:21px}
+.soundhead .iconbtn{flex-shrink:0;font-size:24px}
+.soundvideo{aspect-ratio:16/9;border-radius:12px;overflow:hidden;background:#1C1917}
+.soundvideo iframe{display:block;width:100%;height:100%;border:0}
+.soundmeta{display:grid;gap:5px;margin:15px 0;font-size:12px;line-height:1.55;color:var(--muted)}
+.soundmeta strong{color:var(--ink)}
+.soundmeta p{margin:0}
+.soundlinks{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.sound-search{white-space:normal}
+.rsum>.soundlinks{margin:0}
+@media(max-width:480px){.soundpreview{padding:16px}.soundhead h2{font-size:18px}.soundlinks .store{font-size:11px}}
+
+
 /* sound preview buttons */
 .optw{position:relative;display:grid}
 .optw>.opt{height:100%}
@@ -995,74 +1013,114 @@ async function copyText(txt,fallbackEl){
 }
 
 /* =========================================================
-   SOUND: switch previews synthesized with Web Audio (no recordings)
+   SOUND: real, credited recordings; never synthesize a switch
    ========================================================= */
-const SND_PRESETS={
-  Linear:{pitch:46,vol:50,kind:'linear'}, Tactile:{pitch:44,vol:56,kind:'tactile'},
-  Clicky:{pitch:70,vol:86,kind:'clicky'}, Silent:{pitch:38,vol:16,kind:'silent'},
-  thock:{pitch:18,vol:58,kind:'linear'}, creamy:{pitch:38,vol:36,kind:'linear',soft:true},
-  clack:{pitch:82,vol:64,kind:'linear'}, quiet:{pitch:38,vol:14,kind:'silent'},
+// Each entry names the actual recorded switch. Do not map a missing model
+// to a different switch or change playback speed, pitch, EQ or loudness.
+// Chapter offsets below come from creator-published timestamps.
+// Source details and maintenance policy: docs/sound-sources.md.
+const SOUND_TESTS={
+  milkyyp:{video:'rAw8qIYDc5A',creator:'Jur1cek',title:'Gateron Milky Yellow Pro | GMK67 | sound test',setup:'GMK67; Cherry-profile PBT keycaps; three layers of tape and extra case foam.',treatment:'Factory prelubed switches.'},
+  ks3yellow:{video:'hXtLZ3WEX_0',start:46,end:71,creator:'issey83',title:'Gateron KS 3 Full Nylon Yellow Switch Sound Test, Stock/Lubed/Filmed',setup:'Stock typing chapter. The full video also compares lubrication and switch films.',treatment:'Stock, unlubed switches.'},
+  oilking:{video:'-A_M_hvjVNY',start:92,end:127,creator:'Click and Thock',title:'Gateron Oil King Sound Test with GMK, MT3 and SA Keycaps',setup:'Tofu60 aluminum case; FR4 plate; GMK Hennessey keycaps; PCB foam; Durock V2 stabilizers.',treatment:'Stock switches, with factory lubrication.'},
+  blackink:{video:'2fe37TLjI5E',start:67,end:124,creator:'KeebNews',title:'Gateron INK BLACK V2 Review & Sound Test // Stock vs Lubed',setup:'Stock typing chapter; the full video also includes a separate lubed and filmed test.',treatment:'Stock switches.'},
+  akkocream:{video:'teUx36lySu0',start:103,end:138,creator:'Click and Thock',title:'Akko V3 Cream Yellow Pro Switch Sound Test and Review',setup:'Tofu60 aluminum case; FR4 plate; GMK Hennessey keycaps; PCB foam; Durock V2 stabilizers.',treatment:'Stock switches, with factory lubrication.'},
+  nkcream:{video:'eir-tb4EHyI',start:48,end:155,creator:'eyedin',title:'NovelKeys Cream Sound Test (Stock vs. Lubed) (NK65 Entry Edition)',setup:'NK65 Entry Edition. This chapter is the stock typing test; a separate lubed chapter follows later.',treatment:'Stock, unlubed switches.'},
+  mx2ared:{video:'FIKLvH-pibc',start:255,end:292,creator:'SeungupKBD',title:'Cherry MX 3.1 RGB MX2A Mechanical Keyboard',setup:'Cherry MX 3.1 RGB keyboard; MX2A Red typing chapter.',treatment:'MX2A Red switches, as reviewed.'},
+  alpacav2:{video:'PjSutgLURl8',creator:'Turboards',title:'Alpaca V2 Sound Test ASMR | YC66',setup:'YC66; Ducky Cotton Candy SA keycaps; Durock plate-mount stabilizers; Blue Snowball microphone.',treatment:'Stock Alpaca V2 switches.'},
+  u4t:{video:'FuugCJ-V0Ng',start:98,end:133,creator:'Click and Thock',title:'Gazzew Boba U4T 62g Sound Test & Review',setup:'62g black-housing Boba U4T; Tofu60 aluminum case; FR4 plate; GMK Hennessey keycaps; PCB foam.',treatment:'Stock switches. The recorded housing variant is black.'},
+  panda:{video:'wRFG6-EZg7I',start:412,end:453,creator:'The Dredgen Project',title:'Glorious Panda Switch Review and Unboxing + Sound Test on 5 Keyboards',setup:'Acrylic Tofu60, unlubed typing chapter. The creator notes that the recording can peak.',treatment:'Stock, unlubed Glorious Panda switches; not Holy Pandas.'},
+  kangaroo:{video:'P6jZkog_FoU',creator:'Click and Thock',title:'Gateron Baby Kangaroo Sound Test & Review',setup:'Full test with GMK, MT3 and SA keycaps. Use the video chapters to compare keycap profiles.',treatment:'Factory-lubed Baby Kangaroo switches.'},
+  lavender:{video:'Smyxu_ZY-zI',start:146,end:204,creator:'Rx003',title:'Akko V3 Lavender Purple Pro: Full Review and Soundtest on Vega65',setup:'Vega65; factory-lubed Lavender Purple Pro chapter. This is the V3 Pro, not the older CS Lavender.',treatment:'Factory-lubed switches.'},
+  banana:{video:'yMyFXpRABF0',start:59,end:72,creator:'Keychron',title:'Keychron K Pro Switch Sound Test',setup:'Manufacturer comparison; chapter for the regular-height K Pro Banana.',treatment:'K Pro Banana switches, as demonstrated by Keychron.'},
+  u4:{video:'V-iNdStuYMc',start:98,end:133,creator:'Click and Thock',title:'Gazzew Boba U4 62g black housing: Sound Test & Review',setup:'62g black-housing Boba U4; Tofu60 aluminum case; FR4 plate; GMK Hennessey keycaps; PCB foam.',treatment:'Silent tactile switches, as reviewed.'},
+  silentred:{video:'6bY1sH9G83Q',start:44,end:59,creator:'Keychron',title:'Cherry Switches Sound Test: Standard, Silent, Speed',setup:'Manufacturer comparison; Cherry MX Silent Red chapter. This is the original MX version.',treatment:'Silent linear switches, as demonstrated by Keychron.'},
+  mx2ablue:{video:'fKsVrUJyfrQ',creator:'Mechanical Keyboards',title:'Cherry Blue MX1A vs MX2A sound comparison',setup:'MX1A and MX2A Blue comparison on Keychron Q2 Pro: aluminum/no foam, then PC with PE and case foam. Follow the on-screen switch labels.',treatment:'Comparison includes both generations; listen to the MX2A sections.'},
+  boxjade:{video:'5LxLPOp0alI',start:243,end:254,creator:'Click and Thock',title:'Clicky Switches Sound Test Compilation — Kailh BOX Jade / GMK',setup:'Tofu60 aluminum case; brass plate; GMK Mitolet keycaps; PCB foam. Same rig as the BOX White clip.',treatment:'BOX Jade typing chapter.'},
+  boxwhite:{video:'5LxLPOp0alI',start:210,end:221,creator:'Click and Thock',title:'Clicky Switches Sound Test Compilation — Kailh BOX White / GMK',setup:'Tofu60 aluminum case; brass plate; GMK Mitolet keycaps; PCB foam. Same rig as the BOX Jade clip.',treatment:'Original BOX White typing chapter; not BOX White V2.'},
 };
-const SND_PITCH={deep:26,mid:46,bright:70};
-const kindOf=type=>/Silent/.test(type)?'silent':/Clicky/.test(type)?'clicky':/Tactile/.test(type)?'tactile':'linear';
-function sndFor(key){
-  if(SND_PRESETS[key]) return SND_PRESETS[key];
-  if(key.startsWith('part:')){const s=BYID[key.slice(5)]; return s&&{pitch:SND_PITCH[s.sound]||46,vol:s.vol,kind:kindOf(s.type)}}
-  if(key==='build'||key.startsWith('res:')){
-    const b=key==='build'?build:(resList[+key.slice(4)]||{}).b; if(!b) return null;
-    const s=BYID[b.switches], e=estimate(b); return {pitch:e.pitch,vol:Math.max(e.vol,s&&/Silent/.test(s.type)?10:20),kind:s?kindOf(s.type):'linear'};
-  }
+// Quiz choices demonstrate named examples, not every switch in a category.
+const SOUND_EXAMPLES={Linear:'milkyyp',Tactile:'u4t',Clicky:'boxjade',Silent:'silentred',
+  thock:'u4t',creamy:'oilking',clack:'nkcream',quiet:'silentred'};
+const switchName=p=>[p.brand==='Various'?'':p.brand,p.name].filter(Boolean).join(' ');
+const soundSearchUrl=p=>'https://www.youtube.com/results?search_query='+encodeURIComponent(switchName(p)+' switches sound test');
+function soundPart(key){
+  if(SOUND_EXAMPLES[key]) return BYID[SOUND_EXAMPLES[key]];
+  if(key.startsWith('part:')) return BYID[key.slice(5)];
+  if(key==='build') return BYID[build.switches];
+  if(/^res:\d+$/.test(key)) return BYID[resList[Number(key.slice(4))]?.b?.switches];
   return null;
 }
-let actx=null, noiseBuf=null, sndBtn=null, sndT;
-function audio(){
-  if(!actx){const A=window.AudioContext||window.webkitAudioContext; if(!A) return null; actx=new A()}
-  if(actx.state==='suspended') actx.resume();
-  if(!noiseBuf){const n=actx.sampleRate; noiseBuf=actx.createBuffer(1,n,actx.sampleRate); const d=noiseBuf.getChannelData(0); for(let i=0;i<n;i++) d[i]=Math.random()*2-1}
-  return actx;
-}
-function burst(ctx,out,t,f,{q=1,dur=.04,gain=.5,type='bandpass'}={}){
-  const s=ctx.createBufferSource(), fl=ctx.createBiquadFilter(), g=ctx.createGain();
-  s.buffer=noiseBuf; fl.type=type; fl.frequency.value=f; fl.Q.value=q;
-  g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(gain,t+.0015); g.gain.exponentialRampToValueAtTime(.0001,t+dur);
-  s.connect(fl).connect(g).connect(out); s.start(t,Math.random()*.8); s.stop(t+dur+.02);
-}
-function tone(ctx,out,t,f,{dur=.06,gain=.4,drop=1.5,type='sine'}={}){
-  const o=ctx.createOscillator(), g=ctx.createGain(); o.type=type;
-  o.frequency.setValueAtTime(f*drop,t); o.frequency.exponentialRampToValueAtTime(f,t+.014);
-  g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(gain,t+.002); g.gain.exponentialRampToValueAtTime(.0001,t+dur);
-  o.connect(g).connect(out); o.start(t); o.stop(t+dur+.02);
-}
-/* one key press: optional click or bump, the bottom-out (filtered noise + a low body thump), then the quieter upstroke */
-function keystroke(ctx,out,t,P,big){
-  const r=()=>1+(Math.random()-.5)*.14, lo=P.pitch/100, silent=P.kind==='silent';
-  const f=(silent?260:420+P.pitch*26)*r()*(big?.72:1);
-  if(P.kind==='clicky'){burst(ctx,out,t-.022,4300*r(),{q:7,dur:.016,gain:.75}); tone(ctx,out,t-.022,3100*r(),{dur:.012,gain:.12,drop:1,type:'triangle'})}
-  if(P.kind==='tactile') burst(ctx,out,t-.026,f*.7,{q:.8,dur:.018,gain:.12});
-  burst(ctx,out,t,f,{q:silent?.6:1.1+lo*1.6,dur:(P.soft?.07:.055)-lo*.02+(big?.03:0),gain:silent?.22:.62});
-  if(!silent&&!P.soft) burst(ctx,out,t,f*2.3,{q:2.2,dur:.012+lo*.006,gain:.1+lo*.32});
-  tone(ctx,out,t,(silent?80:90+P.pitch*2.2)*(big?.8:1),{dur:.05+(1-lo)*.07+(big?.04:0),gain:silent?.12:.18+(1-lo)*.42});
-  const up=t+.085+Math.random()*.03;
-  if(P.kind==='clicky') burst(ctx,out,up,3900*r(),{q:6,dur:.012,gain:.38});
-  burst(ctx,out,up,f*1.25,{q:1,dur:.028,gain:silent?.04:P.soft?.1:.2});
-}
-function playSnd(key,btn){
-  const P=sndFor(key), ctx=audio(); if(!P||!ctx) return;
-  const out=ctx.createGain(), comp=ctx.createDynamicsCompressor(), lp=ctx.createBiquadFilter();
-  lp.type='lowpass'; lp.frequency.value=P.soft?3200:P.kind==='silent'?2200:9000;
-  out.gain.value=.25+Math.min(100,P.vol)/100*.75;
-  out.connect(lp).connect(comp).connect(ctx.destination);
-  const t0=ctx.currentTime+.04, gaps=[0,.15,.27,.45,.58,.76,.86];
-  gaps.forEach((g,i)=>keystroke(ctx,out,t0+g+(i?(Math.random()-.5)*.03:0),P,i===gaps.length-1));
-  if(sndBtn) sndBtn.classList.remove('playing');
-  sndBtn=btn||null; if(sndBtn) sndBtn.classList.add('playing');
-  clearTimeout(sndT); sndT=setTimeout(()=>{if(sndBtn) sndBtn.classList.remove('playing'); sndBtn=null},1150);
+function soundSearchLink(p,label){
+  return p?`<a class="store sound-search" href="${esc(soundSearchUrl(p))}" target="_blank" rel="noopener noreferrer">${esc(label||'YouTube: '+switchName(p)+' sound tests')} ↗</a>`:'';
 }
 const EQ='<span class="eq" aria-hidden="true"><i></i><i></i><i></i></span>';
 const SPK='<svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M4 2.5v11L13 8z"/></svg>';
-const playBtn=(key,label)=>`<button type="button" class="play" data-snd="${key}" aria-label="Hear ${esc(label)}" title="Hear it">${SPK}${EQ}</button>`;
-const listenBtn=(key,label='Listen')=>`<button type="button" class="listen" data-snd="${key}">${SPK}${EQ}${esc(label)}</button>`;
-document.addEventListener('click',e=>{const b=e.target.closest('[data-snd]'); if(b){e.preventDefault(); e.stopPropagation(); playSnd(b.dataset.snd,b)}},true);
+function soundButton(key,label,compact=false){
+  const p=soundPart(key), name=p?switchName(p):label;
+  const text=label||(p&&SOUND_TESTS[p.id]?'Recorded test':'Find sound tests');
+  return `<button type="button" class="${compact?'play':'listen'}" data-snd="${esc(key)}" aria-haspopup="dialog" aria-controls="soundpreview" aria-expanded="false" aria-label="Open sound test: ${esc(name)}" title="${esc(name)} — ${p&&SOUND_TESTS[p.id]?'real recording':'YouTube sound tests'}">${SPK}${EQ}${compact?'':esc(text)}</button>`;
+}
+const playBtn=(key,label)=>soundButton(key,label,true);
+const listenBtn=(key,label)=>soundButton(key,label);
+let sndBtn=null, soundDialog=null;
+function resetSoundButton(){
+  if(sndBtn){sndBtn.classList.remove('playing');sndBtn.setAttribute('aria-expanded','false');sndBtn=null}
+}
+function closeSoundPreview(){
+  if(soundDialog?.open) soundDialog.close();
+  if(soundDialog) soundDialog.innerHTML='';
+  resetSoundButton();
+}
+function getSoundDialog(){
+  if(soundDialog) return soundDialog;
+  soundDialog=document.createElement('dialog');
+  soundDialog.id='soundpreview'; soundDialog.className='soundpreview';
+  soundDialog.setAttribute('aria-labelledby','soundtitle');
+  soundDialog.setAttribute('aria-describedby','soundcontext');
+  document.body.append(soundDialog);
+  soundDialog.addEventListener('close',()=>{
+    soundDialog.innerHTML=''; // Removing the iframe immediately stops playback.
+    resetSoundButton();
+  });
+  soundDialog.addEventListener('click',e=>{
+    if(e.target===soundDialog){
+      const r=soundDialog.getBoundingClientRect();
+      if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom) closeSoundPreview();
+    }
+  });
+  // Keep Escape from also closing the results or picker underneath.
+  soundDialog.addEventListener('keydown',e=>{
+    if(e.key==='Escape'){e.preventDefault();e.stopPropagation();closeSoundPreview()}
+  });
+  return soundDialog;
+}
+function playSnd(key,btn){
+  const p=soundPart(key);
+  if(!p){toast('Choose a switch to hear its sound test');return}
+  if(soundDialog?.open&&sndBtn===btn){closeSoundPreview();return}
+  closeSoundPreview();
+  const d=getSoundDialog(), recording=SOUND_TESTS[p.id], example=!!SOUND_EXAMPLES[key];
+  const isBuild=key==='build'||key.startsWith('res:');
+  const context=example?'A recorded example of this sound or switch type.':isBuild?'A recording of your selected switch on the setup below.':'A recording of this switch on the setup below.';
+  const url=recording?'https://www.youtube.com/watch?v='+recording.video+(recording.start?'&t='+recording.start+'s':''):'';
+  const embed=recording?'https://www.youtube-nocookie.com/embed/'+recording.video+'?autoplay=1&playsinline=1&rel=0'+(recording.start?'&start='+recording.start:'')+(recording.end?'&end='+recording.end:''):'';
+  d.innerHTML=`<header class="soundhead"><div><small>RECORDED SOUND TEST</small><h2 id="soundtitle">${esc(switchName(p))}</h2></div><button type="button" class="iconbtn" id="soundclose" autofocus aria-label="Close sound preview">×</button></header>
+    <p id="soundcontext" class="note">${esc(context)} Case, plate, keycaps and mods change the sound; this is not a recording of your custom build. Recordings are not loudness-matched.</p>
+    ${recording?`<div class="soundvideo"><iframe src="${esc(embed)}" title="${esc(recording.title+' by '+recording.creator)}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div>
+    <div class="soundmeta"><strong>${esc(recording.creator)}</strong><span>${esc(recording.title)}</span><p>${esc(recording.setup)}</p><p>${esc(recording.treatment)}</p></div>
+    <div class="soundlinks"><a class="store maker" href="${esc(url)}" target="_blank" rel="noopener noreferrer">Open original recording ↗</a>${soundSearchLink(p,'More '+switchName(p)+' sound tests')}</div>
+    <p class="note">If playback is blocked or the video is unavailable, open the original recording or browse more tests. Press play in the player if it does not start.</p>`
+    :`<p class="note">No curated recording for this exact model yet. Find real tests of ${esc(switchName(p))} on YouTube.</p><div class="soundlinks">${soundSearchLink(p)}</div>`}`;
+  sndBtn=btn||null;
+  if(sndBtn){sndBtn.classList.add('playing');sndBtn.setAttribute('aria-expanded','true')}
+  d.querySelector('#soundclose').onclick=closeSoundPreview;
+  d.showModal();
+}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-snd]');if(b){e.preventDefault();e.stopPropagation();playSnd(b.dataset.snd,b)}},true);
+window.addEventListener('hashchange',closeSoundPreview);
+document.addEventListener('visibilitychange',()=>{if(document.hidden) closeSoundPreview()});
+
 
 /* =========================================================
    WHERE TO BUY: maker page plus store searches
@@ -1092,6 +1150,7 @@ const storeChips=p=>buyLinks(p).map(l=>`<a class="store ${l.maker?'maker':''} ${
    ========================================================= */
 let view='finder';
 function go(v,push=true){
+  closeSoundPreview();
   view=v;
   for(const id of ['finder','build','saved']){
     const el=document.getElementById('view-'+id), on=id===v;
@@ -1129,13 +1188,13 @@ const QUESTIONS = [
     {v:'any',b:'No preference'}]},
   {key:'use',title:'What is it for?',opts:[
     {v:'gaming',b:'Gaming',s:'Fast, light presses'},{v:'work',b:'Work',s:'Typing and coding'},{v:'any',b:'No preference',s:'A bit of both'}]},
-  {key:'feel',title:'How should a key feel?',hint:'Tap the play button to hear each one.',opts:[
+  {key:'feel',title:'How should a key feel?',hint:'Play a real recording for each type. The player names the switch and setup; sound cannot demonstrate the tactile feel.',opts:[
     {v:'Linear',b:'Linear',s:'Smooth all the way',snd:'Linear',art:()=>switchSVG(BYID.milkyyp)},
     {v:'Tactile',b:'Tactile',s:'A bump you can feel',snd:'Tactile',art:()=>switchSVG(BYID.u4t)},
-    {v:'Clicky',b:'Clicky',s:'Bump and a click',snd:'Clicky',art:()=>switchSVG(BYID.mx2ablue)},
+    {v:'Clicky',b:'Clicky',s:'Bump and a click',snd:'Clicky',art:()=>switchSVG(BYID.boxjade)},
     {v:'Silent',b:'Silent',s:'Dampened, quiet',snd:'Silent',art:()=>switchSVG(BYID.silentred)},
     {v:'any',b:'Not sure'}]},
-  {key:'sound',title:'What should it sound like?',hint:'Tap the play button to hear each one.',opts:[
+  {key:'sound',title:'What should it sound like?',hint:'Hear recorded examples: Boba U4T, Oil King, NK Cream and MX Silent Red. Your case, plate and keycaps also shape the sound.',opts:[
     {v:'thock',b:'Deep thock',s:'Low and rounded',snd:'thock',art:()=>waveSVG(.18)},{v:'creamy',b:'Creamy',s:'Soft and muted',snd:'creamy',art:()=>waveSVG(.38)},
     {v:'clack',b:'Crisp clack',s:'Bright and sharp',snd:'clack',art:()=>waveSVG(.82)},{v:'quiet',b:'Quiet',s:'For calls and shared rooms',snd:'quiet',art:()=>waveSVG(.4,.3)},{v:'any',b:'No preference'}]},
   {key:'wireless',title:'How should it connect?',opts:[
@@ -1372,7 +1431,7 @@ function renderRDetail(){
   let rows=items.map((i,n)=>`<div class="part" style="--i:${n}"><span class="pt">${i.slot==='case'?buildBoard({case:c.id,color:b.color||0,keycaps:null,extras:[]},{legends:false,u:10,cls:''}):thumbFor(i.part)}</span>
       <div class="pn"><small>${esc(SL(i.slot))}</small><b>${esc(i.part.brand==='Various'?'':i.part.brand+' ')}${esc(i.part.name)}</b><em>${esc(desc(i.part))}</em></div>
       <div class="pp">${money(i.price)}${sub(i)?`<small>${esc(sub(i))}</small>`:''}</div>
-      <div class="stores">${i.slot==='switches'?listenBtn('part:'+i.part.id):''}${i.slot==='keycaps'&&quizAns.look==='surprise'?'<button type="button" class="listen" id="reroll">↻ Shuffle</button>':''}${storeChips(i.part)}</div></div>`);
+      <div class="stores">${i.slot==='switches'?listenBtn('part:'+i.part.id)+soundSearchLink(i.part):''}${i.slot==='keycaps'&&quizAns.look==='surprise'?'<button type="button" class="listen" id="reroll">↻ Shuffle</button>':''}${storeChips(i.part)}</div></div>`);
   if(c.kit) rows.splice(1,0,`<div class="part inc" style="--i:1"><span class="pt">${pcbSVG(c.kit.pcb)}</span><div class="pn"><small>Included</small><b>PCB, ${esc(c.kit.plate)} plate${c.kit.stabs?' and stabilizers':''}</b><em>Comes with the ${esc(c.name)}</em></div><div class="pp"><span class="chip ok">Included</span></div></div>`);
   const el=document.getElementById('rdetail');
   el.innerHTML=`<button class="iconbtn rclose" id="rclose" aria-label="Close">${icon('close')}</button>
@@ -1381,7 +1440,9 @@ function renderRDetail(){
       <div><h2>${esc(c.brand)} ${esc(c.name)}</h2></div>
       <div class="total"><b>${money(r.t)}</b><span>approx. for every part</span></div>
       <div class="stats3"><div><span>Match</span><b>${r.pct}%</b></div><div><span>Sound</span><b>${pitchWord(r.e.pitch)}</b></div><div><span>Feel</span><b>${esc(s.type)}</b></div></div>
-      <div class="ractions">${listenBtn('res:'+resIdx,'Hear it')}<button class="btn primary" id="rbuild">Customize this build</button><button class="btn" id="rcopy">Copy parts list</button></div>
+      <div class="ractions">${listenBtn('res:'+resIdx,'Hear the switches')}<button class="btn primary" id="rbuild">Customize this build</button><button class="btn" id="rcopy">Copy parts list</button></div>
+      <div class="soundlinks">${soundSearchLink(s)}</div>
+      <p class="note" style="margin:0">Sound tests feature these switches in another keyboard. Your case, plate, keycaps and mods will change the result.</p>
       <textarea id="rcopyfb" hidden aria-label="Parts list" style="width:100%;min-height:80px;font-size:12px;background:var(--tile);border:0;border-radius:8px;padding:8px"></textarea>
     </div>
     <div class="rparts swapin"><div class="phead"><h3>Parts and where to buy</h3><span>${items.length+(c.kit?1:0)} items</span></div>
@@ -1440,7 +1501,7 @@ function renderParts(){
     if(s.key==='keycaps'&&li.addon) sub=`<small>incl. numpad kit ${money(li.addon)}</small>`;
     if(s.key==='stabs') sub=`<small>${layoutOf(build)==='full'?'7':'5'}-stab set</small>`;
     h+=`<div class="prow"><div class="slot">${s.label}<small>${s.hint}</small></div>
-      <div class="item"><span class="thumb">${thumbFor(p)}</span><div class="meta"><b>${esc(p.name)}</b><span class="by">${esc(p.brand)}</span><span class="specs">${specChips(p)}${iss.map(i=>`<span class="chip ${i.level}">${i.level==='fail'?'Conflict':'Note'}</span>`).join('')}</span><span class="stores">${s.key==='switches'?listenBtn('part:'+p.id):''}${storeChips(p)}</span></div></div>
+      <div class="item"><span class="thumb">${thumbFor(p)}</span><div class="meta"><b>${esc(p.name)}</b><span class="by">${esc(p.brand)}</span><span class="specs">${specChips(p)}${iss.map(i=>`<span class="chip ${i.level}">${i.level==='fail'?'Conflict':'Note'}</span>`).join('')}</span><span class="stores">${s.key==='switches'?listenBtn('part:'+p.id)+soundSearchLink(p):''}${storeChips(p)}</span></div></div>
       <div class="price"><span>${money(li.price)}</span>${sub}</div>
       <div class="acts"><button class="btn small" data-pick="${s.key}">Change</button><button class="btn small ghost" data-rm="${s.key}" aria-label="Remove ${esc(p.name)}">✕</button></div></div>`;
   }
@@ -1461,7 +1522,8 @@ function renderRail(){
     <ul class="issues">${sorted.map(i=>`<li class="${i.level}"><i></i><span>${esc(i.msg)}${i.sub?`<br><small>${esc(i.sub)}</small>`:''}</span></li>`).join('')}</ul></section>
   <section class="card"><h3>Price</h3><div class="totals">${items.map(i=>`<div><span>${SLOTS.find(s=>s.key===i.slot).label}${i.slot==='extras'?': '+esc(i.part.name):''}</span><span class="mono">${money(i.price)}</span></div>`).join('')||'<div><span class="note">Nothing yet</span></div>'}
     <div class="grand"><span>Total</span><span class="mono">${money(t)}</span></div></div><p class="note" style="margin:0">Approximate list prices, before shipping and tax.</p></section>
-  <section class="card"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><h3>Sound and feel estimate</h3>${build.switches?listenBtn('build','Hear it'):''}</div>
+  <section class="card"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><h3>Sound and feel estimate</h3>${build.switches?listenBtn('build','Hear switches'):''}</div>
+    ${build.switches?`<div class="soundlinks">${soundSearchLink(BYID[build.switches])}</div><p class="note">The recording uses a different keyboard. These meters are estimates of your build.</p>`:''}
     ${meter('Pitch',e.pitch,pitchWord(e.pitch),'Deep','Bright')}
     ${meter('Volume',e.vol,volWord(e.vol),'Quiet','Loud')}
     ${meter('Typing feel',e.flex,flexWord(e.flex),'Stiff','Bouncy')}
@@ -1477,6 +1539,7 @@ function partsText(b){
   const c=caseOf(b);
   for(const i of lineItems(b)) lines.push(`${SLOTS.find(s=>s.key===i.slot).label}: ${i.part.brand} ${i.part.name}${i.qty?` x${i.qty}`:''} - ${money(i.price)}`,`  ${buyLinks(i.part)[0].u}`);
   if(c&&c.kit) lines.push(`Included with kit: PCB, ${c.kit.plate} plate${c.kit.stabs?', stabilizers':''}`);
+  if(BYID[b.switches]) lines.push('', 'Switch sound tests: '+soundSearchUrl(BYID[b.switches]));
   lines.push('',`Total: ${money(total(b))} (approx.)`,`Build code: ${encodeBuild(b)}`);
   return lines.join('\n');
 }
@@ -1583,7 +1646,7 @@ function renderPickList(){
       return `<article style="--i:${i}" class="card pick ${pr.bad.length?'bad':''} ${on?'selected':''}"><span class="thumb">${thumbFor(p)}</span>
       <div class="meta"><span class="by note">${esc(p.brand)}</span><b>${esc(p.name)}</b><span class="specs">${specChips(p)}</span><p>${esc(p.blurb||'')}</p>
         ${pr.bad.map(m=>`<span class="why">✕ ${esc(m)}</span>`).join('')}${pr.warn.map(m=>`<span class="why" style="color:var(--warn)">! ${esc(m)}</span>`).join('')}
-        <span class="links">${slot==='switches'?listenBtn('part:'+p.id):''}<a href="${shopLink(p)}" target="_blank" rel="noopener">Seller site</a><a href="${searchLink(p)}" target="_blank" rel="noopener">Compare prices</a></span></div>
+        <span class="links">${slot==='switches'?listenBtn('part:'+p.id)+soundSearchLink(p):''}<a href="${shopLink(p)}" target="_blank" rel="noopener">Seller site</a><a href="${searchLink(p)}" target="_blank" rel="noopener">Compare prices</a></span></div>
       <div class="side"><span class="p">${money(price)}</span>${sub?`<small>${esc(sub)}</small>`:''}
         ${slot==='extras'&&on?`<button class="btn small" data-unadd="${p.id}">Remove</button>`:`<button class="btn small ${on?'':'primary'}" data-add="${p.id}" ${on?'disabled':''}>${on?'Selected':'Add'}</button>`}</div></article>`}).join('')}`;
   const sel=list.querySelector('#pksort'); sel.value=pk.sort; sel.onchange=()=>{pk.sort=sel.value; renderPickList()};
@@ -1638,3 +1701,4 @@ const start=(location.hash||'').replace('#','');
 go(['finder','build','saved'].includes(start)?start:'finder',false);
 renderPill();
 </script>
+
