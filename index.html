@@ -1080,6 +1080,7 @@ function getSoundDialog(){
   soundDialog.setAttribute('aria-describedby','soundcontext');
   document.body.append(soundDialog);
   soundDialog.addEventListener('close',()=>{
+    if(soundDialog.open) return; // Ignore a queued close event after reopening.
     soundDialog.innerHTML=''; // Removing the iframe immediately stops playback.
     resetSoundButton();
   });

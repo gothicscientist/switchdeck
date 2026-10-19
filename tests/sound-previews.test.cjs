@@ -6,7 +6,6 @@ const { test } = require('node:test');
 const html = fs.readFileSync(require('node:path').join(__dirname, '../index.html'), 'utf8');
 const script = html.match(/<script>([\s\S]*?)<\/script>/)[1];
 const soundCode = script.slice(script.indexOf('const SOUND_TESTS='), script.indexOf('/* =========================================================\n   WHERE TO BUY:'));
-const switchesCode = script.slice(script.indexOf('const SWITCHES'), script.indexOf('const SWITCHES') + 14000);
 // Read the actual catalog literals, so adding a switch without a recording fails here.
 const switchRows = [...script.matchAll(/S\(\{id:'([^']+)',brand:'([^']+)',name:'([^']+)'/g)];
 const BYID = Object.fromEntries(switchRows.map(([,id,brand,name]) => [id,{id,brand,name}]));
@@ -98,6 +97,9 @@ test('real preview uses a visible credited player; closing destroys it', () => {
   assert.match(h.dialog.innerHTML, /FR4/);
   assert.match(h.dialog.innerHTML, /not a recording of your custom build/);
   assert.match(h.dialog.innerHTML, /Open original recording/);
+  // Native dialog close events can be queued; an old event must not erase a reopened player.
+  h.dialog.listeners.close();
+  assert.match(h.dialog.innerHTML, /youtube-nocookie/);
   h.close.onclick();
   assert.equal(h.dialog.open, false);
   assert.equal(h.dialog.innerHTML, '');
