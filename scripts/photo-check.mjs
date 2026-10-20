@@ -3,7 +3,7 @@ import {analyze,judge,photoRecord} from './image-check.mjs';
 
 // Pixel summaries are cached by image URL, so a refresh only downloads photos it hasn't seen
 // and changing the rules in image-check.mjs never needs a re-download.
-const VERSION=2;
+const VERSION=3;
 const small=u=>{const x=new URL(u); if(x.hostname==='cdn.shopify.com') x.searchParams.set('width','160'); return x.href};
 
 async function features(url,sharp){

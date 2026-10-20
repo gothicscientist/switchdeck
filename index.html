@@ -927,16 +927,27 @@ function verdict(issues){
   return {level:'ok',text:'All parts compatible'};
 }
 
+// Sound estimate, split into the case (with plate), keycaps, switches and extras so the finder can score thousands
+// of switch and keycap pairings per board without rebuilding each one. estimate() adds the parts back together.
+function caseSound(c,plate){
+  let p=0, v=0, flex=35;
+  if(plate){const m=PLATE_MAT[plate.material]; if(m){p+=m.pitch; flex=m.flex}}
+  if(c){ if(/Gasket/.test(c.mount)){p-=5;v-=4;flex+=10} if(/Tray/.test(c.mount)){p+=6;flex-=8} if(/plastic|Polycarbonate|ABS/i.test(c.material)){v+=6;p-=3} }
+  return {p,v,flex};
+}
+function capSound(kc){
+  let p=0, v=0;
+  if(kc){ if(kc.material==='PBT') p-=7; else p+=6; if(kc.profile==='SA'||kc.profile==='MT3'){p-=8;v+=6} if(kc.profile==='XDA') p-=2 }
+  return {p,v};
+}
+const swPitch=sw=>sw.sound==='deep'?-12:sw.sound==='bright'?10:0;
+function extrasSound(ids){let p=0, v=0; for(const id of ids||[]){const e=BYID[id]; if(e&&e.fx){p+=e.fx.pitch||0; v+=e.fx.vol||0}} return {p,v}}
+const clampSound=v=>Math.max(3,Math.min(97,Math.round(v)));
 function estimate(b){
-  const c=caseOf(b), plate=effPlate(b), sw=BYID[b.switches], kc=BYID[b.keycaps];
-  let pitch=50, vol=50, flex=35;
-  if(plate){const m=PLATE_MAT[plate.material]; if(m){pitch+=m.pitch; flex=m.flex}}
-  if(c){ if(/Gasket/.test(c.mount)){pitch-=5;vol-=4;flex+=10} if(/Tray/.test(c.mount)){pitch+=6;flex-=8} if(/plastic|Polycarbonate|ABS/i.test(c.material)){vol+=6;pitch-=3} }
-  if(kc){ if(kc.material==='PBT') pitch-=7; else pitch+=6; if(kc.profile==='SA'||kc.profile==='MT3'){pitch-=8;vol+=6} if(kc.profile==='XDA') pitch-=2 }
-  if(sw){ pitch+= sw.sound==='deep'?-12: sw.sound==='bright'?10:0; vol = vol*0.4 + sw.vol*0.6 }
-  for(const id of b.extras||[]){const e=BYID[id]; if(e&&e.fx){pitch+=e.fx.pitch||0; vol+=e.fx.vol||0}}
-  const cl=v=>Math.max(3,Math.min(97,Math.round(v)));
-  return {pitch:cl(pitch),vol:cl(vol),flex:cl(flex),force:sw?sw.force:null};
+  const c=caseOf(b), sw=BYID[b.switches], cs=caseSound(c,effPlate(b)), ks=capSound(BYID[b.keycaps]), xs=extrasSound(b.extras);
+  let pitch=50+cs.p+ks.p, vol=50+cs.v+ks.v;
+  if(sw){ pitch+=swPitch(sw); vol=vol*0.4+sw.vol*0.6 }
+  return {pitch:clampSound(pitch+xs.p),vol:clampSound(vol+xs.v),flex:clampSound(cs.flex),force:sw?sw.force:null};
 }
 const pitchWord=p=>p<32?'Deep thock':p<46?'Muted, creamy':p<62?'Balanced':p<76?'Crisp clack':'Sharp, high';
 const volWord=v=>v<25?'Quiet':v<45?'Soft':v<65?'Moderate':v<82?'Loud':'Very loud';
@@ -1513,18 +1524,51 @@ function configsFor(c,ans){
 }
 const evalCache=new Map();
 function hashStr(str){let h=2166136261; for(let i=0;i<str.length;i++){h^=str.charCodeAt(i); h=Math.imul(h,16777619)} return h>>>0}
+/* Recommendations. Every board is paired with switches and keycaps from the whole catalog, curated and imported,
+   and each pairing is scored on how the finished build fits the answers: the sound target, feel, use, look and
+   budget, plus how complete each part's published data is. Builds are then chosen best-first with a small penalty
+   for a switch or keycap set already used higher up the list, so a close alternative takes the place of a repeat
+   and the list draws on the catalog instead of handing every board the same few parts. */
+const SW_SHORT=40, KC_SHORT=40, SURPRISE_KC=12, REPEAT_SW=3, REPEAT_KC=3.2;
+const repeatCost=(w,n)=>n?w*Math.pow(n,.75):0;
+// The same product listed by two stores counts as one part for the repeat penalty.
+const sameKey=p=>(p.brand+' '+p.name).toLowerCase().replace(/\b(switch(es)?|keycaps?( set)?)\b|[^a-z0-9]/g,'');
+const feelOk=(s,feel)=>!feel||(feel==='Silent'?/Silent/.test(s.type):s.type===feel);
+function swQuality(s,ans){
+  let q=0;
+  if(!s.catalogId) q+=2; // reviewed, with sound notes
+  if(s.photo) q+=1.5;
+  q+=s.force!=null?1:-1;
+  if(s.factory) q+=.5;
+  if(ans.use==='gaming'&&s.type==='Linear') q+=s.force==null?3:s.force<=55?8:0;
+  if(ans.use==='work'&&/Tactile/.test(s.type)) q+=5;
+  return q;
+}
+function kcQuality(k,look){
+  let q=0;
+  if(!k.catalogId) q+=1.5;
+  if(k.photo) q+=2;
+  if(k.pal) q+=.5;
+  if(look&&(k.mood||[])[0]===look) q+=1.5; // the set's main look, not a secondary one
+  return q;
+}
 function evalAns(ans){
   const key=JSON.stringify(ans); if(evalCache.has(key)) return evalCache.get(key);
   const L=ans.layout&&ans.layout!=='any'?ans.layout:null;
   const budget=typeof ans.budget==='number'&&ans.budget<B_MAX?ans.budget:null;
   const feel=ans.feel&&ans.feel!=='any'?ans.feel:null;
-  // Sound-ranked recommendations use curated sound profiles; imported parts have no measured sound data.
   const must=mustOf(ans), mustSys=mustSystem(must);
-  const sws=SWITCHES.filter(s=>!s.catalogId&&(!feel||(feel==='Silent'?/Silent/.test(s.type):s.type===feel))&&(!mustSys||swSystem(s)===mustSys));
-  const surprise=ans.look==='surprise';
-  const kcs=KEYCAPS.filter(k=>!k.catalogId).filter(k=>!ans.look||ans.look==='any'||surprise||k.mood.includes(ans.look));
+  const surprise=ans.look==='surprise', look=ans.look&&ans.look!=='any'&&!surprise?ans.look:null;
   const T=SOUND_T[ans.sound]||{p:45,v:50};
-  const list=[];
+  const extras=['puller',...(ans.sound==='thock'||ans.sound==='creamy'?['casefoam']:[])], xs=extrasSound(extras);
+  // Shortlists: the parts that suit the answers best on their own. The exact build score is worked out per board.
+  const sws=SWITCHES.filter(s=>s.vol!=null&&feelOk(s,feel)&&(!mustSys||swSystem(s)===mustSys))
+    .map(s=>{const q=swQuality(s,ans), sp=swPitch(s); return {s,q,sp,key:sameKey(s),proxy:q-Math.abs(sp-(T.p-50))*.35-Math.abs(20+.6*s.vol-T.v)*.45}})
+    .sort((a,b)=>b.proxy-a.proxy).slice(0,SW_SHORT);
+  const kcPool=KEYCAPS.filter(k=>surprise?(k.photo||k.pal):!look||(k.mood||[]).includes(look))
+    .map(k=>{const s=capSound(k), q=kcQuality(k,look); return {k,q,kp:s.p,kv:s.v,key:sameKey(k),proxy:q-Math.abs(s.p-(T.p-50)/2)*.35}});
+  const kcs=surprise?kcPool:kcPool.sort((a,b)=>b.proxy-a.proxy).slice(0,KC_SHORT);
+  const list=[], boards=[];
   for(const c of FINDER_CASES){
     if(L&&c.layout!==L) continue;
     const wl=/Tri|Blue|2\.4/.test(c.conn);
@@ -1544,28 +1588,57 @@ function evalAns(ans){
       if(ans.use==='work'&&(c.layout==='75'||c.layout==='tkl'||c.layout==='full')) sc+=3;
       list.push({b,sc,t,e}); continue;
     }
-    let best=null;
-    let caseK=kcs.filter(k=>k.covers.includes(c.layout)||(k.addon&&k.addon[c.layout]));
-    if(surprise) caseK=caseK.map(k=>[k,hashStr(`${c.id}:${k.id}:${ans.seed||0}`)]).sort((a,b)=>a[1]-b[1]).map(x=>x[0]);
-    for(const k of caseK){ if(surprise&&best) break;
-    for(const cf of configsFor(c,ans)) for(const s of sws){
-      const b={case:c.id,color:0,pcb:cf.pcb,plate:cf.plate,switches:s.id,keycaps:k.id,stabs:null,extras:['puller']};
-      if(!stabsIncluded(b)){const pcb=effPcb(b); b.stabs=pcb.stabs.includes('screw')?'durockv2':'cherryclip'}
-      if(ans.sound==='thock'||ans.sound==='creamy') b.extras.push('casefoam');
-      const t=total(b); if(budget&&t>budget) continue;
-      const e=estimate(b);
-      let sc=100 - Math.abs(e.pitch-T.p)*0.7 - Math.abs(e.vol-T.v)*0.45;
-      if(budget) sc-=Math.max(0,(budget*0.5-t)/budget)*20; else sc-=t/60;
-      if(ans.use==='gaming'){ if(s.type==='Linear'&&s.force<=55) sc+=8; if(c.layout==='60'||c.layout==='65') sc+=3 }
-      if(ans.use==='work'){ if(/Tactile/.test(s.type)) sc+=5; if(c.layout==='75'||c.layout==='tkl'||c.layout==='full') sc+=3 }
-      if(k.addon&&!k.covers.includes(c.layout)) sc-=4;
-      const pcbE=effPcb(b); if(pcbE.hotswap===false||(pcbE.hotswap==null&&!c.catalogId)) sc-=8; if(c.catalogId) sc-=3;
-      if(!best||sc>best.sc) best={b,sc,t,e};
-    }}
-    if(!best) continue;
-    const iss=compat(best.b); if(iss.some(i=>i.level==='fail')) continue;
-    best.sc-=iss.filter(i=>i.level==='warn').length*5;
-    list.push(best);
+    // Keycap sets that fit this layout: listed coverage, a numpad add-on, or unknown coverage (a "check" note, scored lower).
+    let ks=kcs.filter(x=>!x.k.covers||x.k.covers.includes(c.layout)||(x.k.addon&&x.k.addon[c.layout]));
+    if(surprise){let r=hashStr(`${c.id}:${ans.seed||0}`)||1; const pick=[], pool=[...ks];
+      while(pick.length<SURPRISE_KC&&pool.length){r=(Math.imul(r,1664525)+1013904223)>>>0; pick.push(pool.splice(r%pool.length,1)[0])} ks=pick}
+    if(!ks.length) continue;
+    const cfgs=configsFor(c,ans).map(cf=>{
+      const b0={case:c.id,color:0,pcb:cf.pcb,plate:cf.plate,switches:null,keycaps:null,stabs:null,extras};
+      if(!stabsIncluded(b0)){const pcb=effPcb(b0); b0.stabs=pcb.stabs.includes('screw')?'durockv2':'cherryclip'}
+      const cs=caseSound(c,effPlate(b0)), pcbE=effPcb(b0);
+      let adj=0;
+      if(ans.use==='gaming'&&(c.layout==='60'||c.layout==='65')) adj+=3;
+      if(ans.use==='work'&&(c.layout==='75'||c.layout==='tkl'||c.layout==='full')) adj+=3;
+      if(pcbE.hotswap===false||(pcbE.hotswap==null&&!c.catalogId)) adj-=8; if(c.catalogId) adj-=3;
+      return {b0,base:total(b0),qty:switchQty(b0)||70,p0:50+cs.p,v0:50+cs.v,adj};
+    });
+    boards.push({c,ks,cfgs});
+  }
+  // Up to n best pairings for one board, ranked by score minus the repeat penalty (sc keeps the plain score).
+  const rank=(bd,useSw,useKc,n)=>{
+    const top=[];
+    for(const cf of bd.cfgs) for(const x of bd.ks){
+      const k=x.k, add=k.covers&&!k.covers.includes(bd.c.layout)?(k.addon&&k.addon[bd.c.layout]||0):0;
+      const kAdj=cf.adj+x.q-(add?4:0)-(k.covers?0:3)-(useKc?repeatCost(REPEAT_KC,useKc.get(x.key)):0);
+      const kp=cf.p0+x.kp+xs.p, kv=(cf.v0+x.kv)*.4, kPrice=cf.base+k.price+add;
+      for(const y of sws){
+        const t=kPrice+switchCost(y.s,cf.qty); if(budget&&t>budget) continue;
+        let sc=100-Math.abs(clampSound(kp+y.sp)-T.p)*.7-Math.abs(clampSound(kv+y.s.vol*.6+xs.v)-T.v)*.45+y.q+kAdj;
+        sc-=budget?Math.max(0,(budget*.5-t)/budget)*20:t/60;
+        const pen=useSw?repeatCost(REPEAT_SW,useSw.get(y.key)):0, ps=sc-pen;
+        if(top.length<n||ps>top[top.length-1].ps){
+          top.push({cf,k,s:y.s,kk:x.key,sk:y.key,sc:sc+(useKc?repeatCost(REPEAT_KC,useKc.get(x.key)):0),ps,t});
+          top.sort((a,b)=>b.ps-a.ps); if(top.length>n) top.pop();
+        }
+      }
+    }
+    return top;
+  };
+  // First the plain best score per board fixes the order; then each board, best first, takes its best pairing
+  // after the repeat penalty, skipping any that the compatibility check rejects.
+  for(const bd of boards){const t=rank(bd,null,null,1)[0]; bd.prior=t?t.sc:-Infinity}
+  boards.sort((a,b)=>b.prior-a.prior);
+  const useSw=new Map(), useKc=new Map();
+  for(const bd of boards){
+    if(bd.prior===-Infinity) continue;
+    for(const p of rank(bd,useSw,useKc,4)){
+      const b={...p.cf.b0,switches:p.s.id,keycaps:p.k.id,extras:[...extras]};
+      const iss=compat(b); if(iss.some(i=>i.level==='fail')) continue;
+      list.push({b,sc:p.sc-iss.filter(i=>i.level==='warn').length*5,t:p.t,e:estimate(b)});
+      useSw.set(p.sk,(useSw.get(p.sk)||0)+1); useKc.set(p.kk,(useKc.get(p.kk)||0)+1);
+      break;
+    }
   }
   list.sort((a,b)=>b.sc-a.sc);
   const top=list[0]?list[0].sc:100;

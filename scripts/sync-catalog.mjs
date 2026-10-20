@@ -3,6 +3,7 @@ import {fileURLToPath} from 'node:url';
 import path from 'node:path';
 import {SOURCES,CATEGORIES,normalize,builderPart,digest} from './catalog-lib.mjs';
 import {pickPhotos} from './photo-check.mjs';
+import {keycapMood,keycapPalette} from './keycap-look.mjs';
 
 const root=fileURLToPath(new URL('../',import.meta.url));
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
@@ -96,6 +97,12 @@ export async function syncCatalog({offline=false,log=console.log,photos=true}={}
     const shown=new Map(builder.filter(b=>b.photo).map(b=>[b.id.split('~')[0],b.photo.img]));
     for(const e of index) if(shown.has(e.id)) e.image=shown.get(e.id);
   }
+  // Keycap look: mood from the retailer's name plus measured photo pixels, palette from the photo's colours.
+  builder=builder.map(b=>{
+    if(b.cat!=='keycaps') return b;
+    const pal=keycapPalette(b.photo?.tone);
+    return {...b,mood:keycapMood(b.name,b.photo?.tone),...(pal?{pal}:{})};
+  });
   for(const m of Object.values(curated)) delete m.listings;
   const pick=c=>builder.filter(p=>p.cat===c);
   const switches=pick('switches'),extras=pick('extras'),cases=pick('case'),keycaps=pick('keycaps'),stabs=pick('stabs');

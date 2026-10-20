@@ -27,7 +27,47 @@ export function analyze({data,width:W,height:H,channels:ch=4}){
     total+=size; if(size>bestN){bestN=size;best=n}
   }
   const main=region(mask,W,H,i=>lab[i]===best);
-  return {bg,uniform,transparent,empty:false,...all,main:{...main,share:bestN/total}};
+  return {bg,uniform,transparent,empty:false,...all,main:{...main,share:bestN/total},tone:toneOf(data,mask,W*H,ch)};
+}
+
+// Colour summary over every foreground pixel (not just the largest shape), used to read a keycap
+// set's look from its photo. Luminance is Rec. 709 luma of the sRGB values, 0 (black) to 1 (white).
+// lum, dark, light, sat, colorful, beige are integers 0-100; swatches are up to 4 dominant colours.
+function toneOf(data,mask,n,ch){
+  let cnt=0,lumSum=0,satSum=0,dark=0,light=0,colorful=0,beige=0;
+  const buckets=new Map();
+  for(let p=0;p<n;p++){
+    if(!mask[p]) continue;
+    const i=p*ch, r=data[i], g=data[i+1], b=data[i+2];
+    cnt++;
+    const l=(0.2126*r+0.7152*g+0.0722*b)/255;
+    lumSum+=l; if(l<0.30) dark++; else if(l>0.78) light++;
+    const mx=Math.max(r,g,b)/255, mn=Math.min(r,g,b)/255, L=(mx+mn)/2, d=mx-mn;
+    const s=d===0?0:d/(1-Math.abs(2*L-1));
+    satSum+=s;
+    // Chroma (max - min channel) rather than HSL saturation, which reads pale creams as vivid.
+    if(d>0.30&&L>=0.18&&L<=0.88) colorful++;
+    if(d>=0.04&&d<=0.32&&L>=0.55&&L<=0.92){
+      let h=mx===r/255?((g-b)/255/d)%6:mx===g/255?(b-r)/255/d+2:(r-g)/255/d+4;
+      h*=60; if(h<0) h+=360;
+      if(h>=20&&h<=60) beige++;
+    }
+    const k=((r>>4)<<8)|((g>>4)<<4)|(b>>4);
+    const e=buckets.get(k)||(buckets.set(k,{n:0,r:0,g:0,b:0}),buckets.get(k));
+    e.n++; e.r+=r; e.g+=g; e.b+=b;
+  }
+  if(!cnt) return undefined;
+  const pct=v=>Math.round(v/cnt*100);
+  // Merge neighbouring buckets (largest first) into clusters whose mean colour stays within 24 per channel.
+  const clusters=[];
+  for(const e of [...buckets.values()].sort((a,b)=>b.n-a.n)){
+    const m=[e.r/e.n,e.g/e.n,e.b/e.n];
+    const c=clusters.find(c=>Math.max(Math.abs(c.r/c.n-m[0]),Math.abs(c.g/c.n-m[1]),Math.abs(c.b/c.n-m[2]))<=24);
+    if(c){c.n+=e.n;c.r+=e.r;c.g+=e.g;c.b+=e.b} else clusters.push({...e});
+  }
+  const hex=c=>'#'+[c.r,c.g,c.b].map(v=>Math.round(v/c.n).toString(16).padStart(2,'0')).join('');
+  const swatches=clusters.sort((a,b)=>b.n-a.n).slice(0,4).map(c=>({hex:hex(c),share:pct(c.n)})).filter((s,i)=>i===0||s.share>=1);
+  return {lum:pct(lumSum),dark:pct(dark),light:pct(light),sat:pct(satSum),colorful:pct(colorful),beige:pct(beige),swatches};
 }
 
 // Bounding box of the selected product pixels, ignoring thin specks and shadows at the edges.
@@ -66,7 +106,8 @@ export function judge(f,cat,layout){
 }
 
 // Compact record the site uses to frame a photo tightly around the product.
+// Keycap records also carry the photo's colour summary (tone); other categories stay small.
 export function photoRecord(img,f,cat){
   const r=cat==='case'?f.main:f;
-  return {img,box:r.box,ar:Math.round(r.aspect*1000)/1000,bg:f.transparent?null:'#'+f.bg.map(v=>v.toString(16).padStart(2,'0')).join('')};
+  return {img,box:r.box,ar:Math.round(r.aspect*1000)/1000,bg:f.transparent?null:'#'+f.bg.map(v=>v.toString(16).padStart(2,'0')).join(''),...(cat==='keycaps'&&f.tone?{tone:f.tone}:{})};
 }
