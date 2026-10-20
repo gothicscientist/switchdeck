@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-20T02:38:05.825Z",
+  "generatedAt": "2026-10-20T03:51:02.482Z",
   "listingCount": 8895,
-  "inStockCount": 4817,
+  "inStockCount": 4818,
   "builderSwitchCount": 356,
   "builderExtraCount": 154,
   "builderCaseCount": 465,
@@ -53,7 +53,7 @@
       "url": "https://novelkeys.com",
       "currency": "USD",
       "status": "fresh",
-      "checkedAt": "2026-10-20T02:37:30.020Z",
+      "checkedAt": "2026-10-20T03:50:14.915Z",
       "rawProducts": 410,
       "listings": 347
     },
@@ -63,7 +63,7 @@
       "url": "https://kbdfans.com",
       "currency": "USD",
       "status": "fresh",
-      "checkedAt": "2026-10-20T02:37:32.950Z",
+      "checkedAt": "2026-10-20T03:50:18.654Z",
       "rawProducts": 466,
       "listings": 382
     },
@@ -73,7 +73,7 @@
       "url": "https://cannonkeys.com",
       "currency": "USD",
       "status": "fresh",
-      "checkedAt": "2026-10-20T02:37:34.024Z",
+      "checkedAt": "2026-10-20T03:50:19.281Z",
       "rawProducts": 1185,
       "listings": 917
     },
@@ -83,7 +83,7 @@
       "url": "https://divinikey.com",
       "currency": "USD",
       "status": "fresh",
-      "checkedAt": "2026-10-20T02:37:35.240Z",
+      "checkedAt": "2026-10-20T03:50:21.574Z",
       "rawProducts": 1479,
       "listings": 1350
     },
@@ -93,7 +93,7 @@
       "url": "https://modedesigns.com",
       "currency": "USD",
       "status": "fresh",
-      "checkedAt": "2026-10-20T02:37:35.830Z",
+      "checkedAt": "2026-10-20T03:50:22.298Z",
       "rawProducts": 73,
       "listings": 46
     },
@@ -103,7 +103,7 @@
       "url": "https://keebsforall.com",
       "currency": "USD",
       "status": "fresh",
-      "checkedAt": "2026-10-20T02:37:36.292Z",
+      "checkedAt": "2026-10-20T03:50:22.616Z",
       "rawProducts": 452,
       "listings": 412
     },
@@ -113,7 +113,7 @@
       "url": "https://www.keychron.com",
       "currency": "USD",
       "status": "fresh",
-      "checkedAt": "2026-10-20T02:37:37.561Z",
+      "checkedAt": "2026-10-20T03:50:23.145Z",
       "rawProducts": 712,
       "listings": 640
     },
@@ -124,7 +124,7 @@
       "currency": "USD",
       "optional": true,
       "status": "fresh",
-      "checkedAt": "2026-10-20T02:37:38.782Z",
+      "checkedAt": "2026-10-20T03:50:24.995Z",
       "rawProducts": 205,
       "listings": 103
     },
@@ -135,7 +135,7 @@
       "currency": "USD",
       "optional": true,
       "status": "fresh",
-      "checkedAt": "2026-10-20T02:37:40.419Z",
+      "checkedAt": "2026-10-20T03:50:26.512Z",
       "rawProducts": 107,
       "listings": 74
     },
@@ -146,7 +146,7 @@
       "currency": "USD",
       "optional": true,
       "status": "fresh",
-      "checkedAt": "2026-10-20T02:37:41.285Z",
+      "checkedAt": "2026-10-20T03:50:27.304Z",
       "rawProducts": 31,
       "listings": 23
     },
@@ -157,7 +157,7 @@
       "currency": "USD",
       "optional": true,
       "status": "fresh",
-      "checkedAt": "2026-10-20T02:37:42.626Z",
+      "checkedAt": "2026-10-20T03:50:28.253Z",
       "rawProducts": 122,
       "listings": 108
     },
@@ -179,7 +179,7 @@
       "currency": "USD",
       "optional": true,
       "status": "fresh",
-      "checkedAt": "2026-10-20T02:37:44.029Z",
+      "checkedAt": "2026-10-20T03:50:30.828Z",
       "rawProducts": 177,
       "listings": 155
     },
@@ -201,7 +201,7 @@
       "currency": "USD",
       "optional": true,
       "status": "fresh",
-      "checkedAt": "2026-10-20T02:37:49.198Z",
+      "checkedAt": "2026-10-20T03:50:36.018Z",
       "rawProducts": 1380,
       "listings": 1266
     },
@@ -212,7 +212,7 @@
       "currency": "USD",
       "optional": true,
       "status": "fresh",
-      "checkedAt": "2026-10-20T02:38:03.735Z",
+      "checkedAt": "2026-10-20T03:51:00.812Z",
       "rawProducts": 5731,
       "listings": 3072
     }
@@ -331,5 +331,5 @@
     "parts/0110.json",
     "parts/0111.json"
   ],
-  "fingerprint": "319f8093052d415ea233d73eb2d689d24c5a711ab46e311986f4408f83aea1c4"
+  "fingerprint": "9a0b473a339173886173dea986ee9c86d9a7c1ef110c15f7ca411f4834769149"
 }
