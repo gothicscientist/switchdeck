@@ -205,7 +205,7 @@ h1,h2,h3{text-wrap:balance;margin:0;font-weight:700;letter-spacing:-.02em}
 /* RESULTS modal */
 .rscrim{position:fixed;inset:0;z-index:85;background:var(--scrim);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;padding:max(24px,env(safe-area-inset-top,0px)) max(24px,env(safe-area-inset-right,0px)) max(24px,env(safe-area-inset-bottom,0px)) max(24px,env(safe-area-inset-left,0px));animation:fade .3s var(--ease) both}
 .rscrim.closing{animation:fade .22s var(--ease) reverse both}
-.rgrid{display:grid;grid-template-columns:minmax(0,1fr) 290px;gap:12px;width:min(1240px,100%);height:min(560px,100%);animation:modalIn .55s var(--out) both}
+.rgrid{display:grid;grid-template-columns:minmax(0,1fr) 290px;gap:12px;width:min(1240px,100%);height:min(600px,100%);animation:modalIn .55s var(--out) both}
 .rscrim.closing .rgrid{animation:modalOut .22s var(--ease) both}
 @keyframes modalIn{from{opacity:0;transform:translateY(20px) scale(.97)}to{opacity:1;transform:none}}
 @keyframes modalOut{to{opacity:0;transform:translateY(10px) scale(.98)}}
@@ -425,6 +425,27 @@ h1,h2,h3{text-wrap:balance;margin:0;font-weight:700;letter-spacing:-.02em}
 .rsum .rcap{margin:-8px 0 0;font-size:12.5px;color:var(--muted);line-height:1.3}
 .rsum .rcap svg{width:12px;height:12px;margin-right:6px;vertical-align:-1px;color:var(--faint)}
 .rcap-n{display:none}
+/* Parts up close: a slow looping strip under the stats. It bleeds to the panel edges and fades out there; hover pauses it. */
+.rcar{flex:none;margin:0 -22px;overflow:hidden;-webkit-mask-image:linear-gradient(90deg,transparent,#000 30px,#000 calc(100% - 30px),transparent);mask-image:linear-gradient(90deg,transparent,#000 30px,#000 calc(100% - 30px),transparent)}
+.rcar-track{display:flex;width:max-content;padding:2px 0 8px}
+.rcar:not(.moving) .rcar-track{padding-left:22px;padding-right:22px}
+.rcar.moving .rcar-track{animation:rcar var(--dur,30s) linear infinite}
+.rcar.moving:hover .rcar-track,.rcar.moving:focus-within .rcar-track{animation-play-state:paused}
+@keyframes rcar{to{transform:translateX(-50%)}}
+.rcar-item{flex:none;width:132px;margin-right:10px;display:flex;flex-direction:column;gap:2px;padding:7px 7px 10px;border:0;border-radius:14px;background:var(--surface);box-shadow:inset 0 0 0 1px var(--line),0 1px 2px rgba(41,37,36,.04);text-align:left;font:inherit;color:inherit;cursor:pointer;transition:transform .5s var(--out),box-shadow .5s var(--out)}
+.rcar-item:hover,.rcar-item:focus-visible{transform:translateY(-3px);box-shadow:inset 0 0 0 1px var(--line),0 16px 30px -18px rgba(41,37,36,.45)}
+.rcar-img{display:grid;place-items:center;height:74px;margin-bottom:7px;padding:8px;border-radius:10px;background:var(--tile);overflow:hidden}
+.rcar-img svg{width:100%;height:100%;transition:transform .7s var(--out)}
+.rcar-item:hover .rcar-img svg{transform:scale(1.07)}
+.rcar-item small{padding:0 3px;font-size:9.5px;font-weight:500;letter-spacing:.05em;text-transform:uppercase;color:var(--faint)}
+.rcar-item b{padding:0 3px;font-size:12.5px;font-weight:600;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.part{transition:background-color .9s var(--ease)}
+.part.flash{background:var(--tile-hover);transition:none}
+@media (prefers-reduced-motion:reduce){
+  .rcar{overflow-x:auto}
+  .rcar.moving .rcar-track{animation:none;padding-left:22px;padding-right:22px}
+  .rcar-item[aria-hidden="true"]{display:none}
+}
 .stores .watchrow{flex:0 0 100%;display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:2px}
 a.listen{text-decoration:none}
 a.listen.watch{background:var(--accent-soft);color:var(--info)}
@@ -1061,11 +1082,11 @@ function extraSVG(e){
     Cable:`<path d="M10 36c8-14 12 14 20 0s12 14 20 0 12 14 20 0" stroke="#7E66C7" stroke-width="4" fill="none"/><rect x="70" y="30" width="18" height="12" rx="3" fill="#C9A44A"/>`}[e.kind]||'';
   return `<svg viewBox="0 0 96 72" aria-hidden="true">${ic}</svg>`;
 }
-function thumbFor(p,b){
+function thumbFor(p,b,w=240){
   if(!p) return '';
   if(p.cat==='case') return caseVisual({case:p.id,color:0,keycaps:null,extras:[]},'thumb');
   const icon=p.cat==='switches'?switchSVG(p):p.cat==='keycaps'?capsSVG(p):p.cat==='plate'?plateSVG(p.material):p.cat==='pcb'?pcbSVG(p):p.cat==='stabs'?stabSVG(p):p.cat==='extras'?extraSVG(p):'';
-  return framedPhoto(p.photo,p.name,icon,240);
+  return framedPhoto(p.photo,p.name,icon,w);
 }
 let stageMode='photo';
 function caseVisual(b,kind){
@@ -1936,7 +1957,7 @@ function renderRDetail(){
   const items=lineItems(b), SL=k=>SLOTS.find(x=>x.key===k).label;
   const sub=i=>i.slot==='switches'?`${i.qty} × ${money(i.part.price)}`:i.slot==='keycaps'&&i.addon?`incl. ${money(i.addon)} numpad kit`:i.slot==='stabs'?`${layoutOf(b)==='full'?7:5}-stab set`:'';
   const desc=p=>p.cat==='case'?[LAYOUT_NAMES[p.layout],p.material,p.mount&&p.mount+' mount',p.assembled?'sold assembled':p.kit&&'kit'].filter(Boolean).join(' · '):p.cat==='switches'?`${p.type} · ${p.force} g · ${p.pins}-pin`:p.cat==='keycaps'?`${p.profile} profile · ${p.material} · ${p.legends}`:p.cat==='pcb'?`${p.hotswap?'Hot-swap':'Solder'} · ${p.pins}-pin`:p.cat==='plate'?p.material:p.blurb||'';
-  let rows=items.map((i,n)=>`<div class="part" style="--i:${n}"><span class="pt">${i.slot==='case'?caseVisual({case:c.id,color:b.color||0,keycaps:null,extras:[]},'thumb'):thumbFor(i.part)}</span>
+  let rows=items.map((i,n)=>`<div class="part" data-pi="${n}" style="--i:${n}"><span class="pt">${i.slot==='case'?caseVisual({case:c.id,color:b.color||0,keycaps:null,extras:[]},'thumb'):thumbFor(i.part)}</span>
       <div class="pn"><small>${esc(SL(i.slot))}</small><b>${esc(partName(i.part))}</b><em>${esc(desc(i.part))}</em></div>
       <div class="pp">${money(i.price)}${sub(i)?`<small>${esc(sub(i))}</small>`:''}</div>
       <div class="stores">${i.slot==='switches'?`<span class="watchrow">${soundWatchLink(i.part)}${soundSearchLink(i.part,'More tests',true)}</span>`:''}${i.slot==='keycaps'&&quizAns.look==='surprise'?'<button type="button" class="listen" id="reroll">↻ Shuffle</button>':''}${storeChips(i.part)}</div></div>`);
@@ -1944,6 +1965,13 @@ function renderRDetail(){
   else if(c.kit&&c.catalogId) rows.splice(1,0,`<div class="part inc" style="--i:1"><span class="pt">${pcbSVG(c.kit.pcb)}</span><div class="pn"><small>Kit</small><b>PCB and plate, per the listing</b><em>Check ${esc(storeOf(c))} for exactly what the ${esc(partName(c))} kit includes.</em></div><div class="pp"><span class="chip ok">Kit</span></div></div>`);
   else if(c.kit) rows.splice(1,0,`<div class="part inc" style="--i:1"><span class="pt">${pcbSVG(c.kit.pcb)}</span><div class="pn"><small>Included</small><b>PCB, ${esc(c.kit.plate)} plate${c.kit.stabs?' and stabilizers':''}</b><em>Comes with the ${esc(partName(c))}</em></div><div class="pp"><span class="chip ok">Included</span></div></div>`);
   const nParts=items.length+(c.kit?1:0);
+  // Parts up close: every part but the case, in a strip that drifts slowly and loops. Three or more parts move (one set is
+  // repeated to at least 8 cards so the loop never shows a gap); fewer sit still. Copies are hidden from screen readers.
+  const look=items.map((i,n)=>({i,n})).filter(x=>x.i.slot!=='case');
+  const moving=look.length>=3, reps=moving?Math.ceil(8/look.length):1;
+  const card=(x,copy)=>`<button type="button" class="rcar-item" data-pi="${x.n}"${copy?' aria-hidden="true" tabindex="-1"':''}><span class="rcar-img">${thumbFor(x.i.part,null,480)}</span><small>${esc(SL(x.i.slot))}</small><b>${esc(partName(x.i.part))}</b></button>`;
+  const set=first=>Array.from({length:reps},(_,k)=>look.map(x=>card(x,!first||k>0)).join('')).join('');
+  const carousel=look.length?`<div class="rcar${moving?' moving':''}" role="group" aria-label="Parts up close"><div class="rcar-track" style="--dur:${look.length*reps*3.6}s">${set(true)}${moving?set(false):''}</div></div>`:'';
   const el=document.getElementById('rdetail');
   el.innerHTML=`<button class="iconbtn rclose" id="rclose" aria-label="Close">${icon('close')}</button>
     <div class="rsum swapin">
@@ -1952,6 +1980,7 @@ function renderRDetail(){
       <div class="total"><b>${money(r.t)}</b><span>approx. total</span></div>
       <p class="rcap"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 8h11M9 4l4 4-4 4"/></svg>Made of the ${nParts} parts listed <span class="rcap-w">on the right</span><span class="rcap-n">below</span></p>
       <div class="stats3"><div><span>Match</span><b>${r.pct}%</b></div><div><span>Sound</span><b>${pitchWord(r.e.pitch)}</b></div><div><span>Feel</span><b>${esc(s?s.type:'As shipped')}</b></div></div>
+      ${carousel}
       <div class="ractions"><button class="btn primary" id="rbuild">Customize this build</button><button class="btn" id="rcopy">Copy parts list</button></div>
       ${s?'':`<p class="note" style="margin:0">Sold assembled: its switches and keycaps come with it. Swap them in the builder to change the feel or look.</p>`}
       <textarea id="rcopyfb" hidden aria-label="Parts list" style="width:100%;min-height:80px;font-size:12px;background:var(--tile);border:0;border-radius:8px;padding:8px"></textarea>
@@ -1962,6 +1991,12 @@ function renderRDetail(){
   el.querySelector('#rclose').onclick=closeResults;
   el.querySelector('#rbuild').onclick=()=>{build={...b,extras:[...b.extras],name:`My ${partName(c)} build`}; persist(); closeResults(); go('build'); toast('Loaded into the builder')};
   el.querySelector('#rcopy').onclick=()=>copyText(partsText({...b,name:`${partName(c)} build`}),el.querySelector('#rcopyfb'));
+  // A card in the strip brings its row in the parts list into view and lights it up briefly.
+  el.querySelectorAll('.rcar-item').forEach(btn=>btn.onclick=()=>{
+    const row=el.querySelector(`.part[data-pi="${btn.dataset.pi}"]`); if(!row) return;
+    row.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'center'});
+    row.classList.add('flash'); clearTimeout(row.__fl); row.__fl=setTimeout(()=>row.classList.remove('flash'),700);
+  });
   const rr=el.querySelector('#reroll'); if(rr) rr.onclick=()=>{
     quizAns.seed=Math.floor(Math.random()*1e6); store.set('sy.quiz',quizAns);
     const id=c.id; resList=evalAns(quizAns).list; resIdx=Math.max(0,resList.findIndex(x=>x.b.case===id)); renderRList(); renderRDetail(); layoutField();
