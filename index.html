@@ -92,6 +92,7 @@ h1,h2,h3{text-wrap:balance;margin:0;font-weight:700;letter-spacing:-.02em}
 #view-finder::after{background:radial-gradient(circle at center,rgba(41,37,36,.1) 0 1px,transparent 1.4px) 0 0/26px 26px;-webkit-mask-image:radial-gradient(ellipse 58% 56% at 50% 36%,#000 8%,transparent 72%);mask-image:radial-gradient(ellipse 58% 56% at 50% 36%,#000 8%,transparent 72%);opacity:.7}
 .fitem{position:absolute;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:8px;border:0;background:transparent;padding:0;cursor:pointer;
   transition:left .9s var(--out),top .9s var(--out),width .9s var(--out),opacity .6s var(--ease),filter .6s var(--ease)}
+.fitem .art{display:block;width:100%}
 .fitem svg,.fitem img{width:100%;height:auto;display:block;transition:transform .4s var(--out),filter .4s var(--ease)}
 .fitem:hover svg,.fitem:hover img{transform:translateY(-3px)}
 .fitem .cap{font-size:11px;line-height:1.3;color:var(--ink-2);text-align:center;white-space:nowrap;max-width:min(240px,42vw);overflow:hidden;text-overflow:ellipsis;opacity:0;transition:opacity .4s var(--ease)}
@@ -1635,12 +1636,20 @@ function paintCombos(n,animate){
 const answered=()=>Object.keys(quizAns).length>0;
 
 /* field of keyboards */
-const FIELD_SLOTS=[[8,14],[22,8],[37,6],[63,6],[78,8],[92,14],[5,37],[18,31],[82,31],[95,37],[6,60],[17,57],[83,57],[94,60],[8,84],[21,90],[79,90],[92,84]];
-const MSLOTS_N=4;
+// Background boards: [x% of width, y (desktop: % of height; phone: fraction of the band above the card), size factor].
+// Slots are tried in order; any that would land on the header, the card, a centre board or another board is skipped.
+const FIELD_SLOTS=[
+  [5.5,14,1],[94.5,13,.95],[17,12,.9],[83.5,15,1.05],[27,16.5,1.05],[73.5,12.5,.9],
+  [10,25,.9],[90,26,1.1],[21,26,1.1],[79,23,.9],[14,33,.9],[86,34,1],[28,25,.95],[72,27,.9],
+  [4.5,37.5,.85],[95.5,36,.9],[4.5,50,.9],[95.5,50,.85],
+  [4.5,68,.8],[95.5,67,.85],[4.5,79,.85],[95.5,78,.8],[4.5,90,.8],[95.5,90,.85],
+  [15,69,1.05],[85,68,.9],[17,85,.9],[83,86,1.05],[26,92,1],[74,93,.9]];
+const MSLOTS=[[12,.05,1],[88,.05,.95],[10,.25,.9],[90,.25,1],[12,.45,1],[88,.45,.9],[11,.65,.9],[89,.65,1]];
+const MAX_BG=22, MAX_BG_MOBILE=6;
 const LW={'60':.64,'65':.72,'75':.78,'tkl':.9,'full':1};
 // The three centre boards are fixed, calm designs so the field always opens on the same look.
 const FEATURED_IDS=['epomaker-9144581390644','mechanicalkeyboards-8930667331884','epomaker-9319480721716'];
-const FEAT_SCALE=2.5; // the three centre boards are drawn this much larger than the first field layout
+const FEAT_SCALE=2.7, MFEAT_SCALE=2.2; // the three centre boards are drawn this much larger than the first field layout (phone has its own, smaller scale)
 let cutIds=null; const cutoutIds=()=>cutIds??=new Set(cutoutBoards().map(c=>c.id));
 const fieldEls={};
 function fieldBoard(b){return caseVisual(b,'field')}
@@ -1667,10 +1676,8 @@ function layoutField(){
   const res=evalAns(quizAns), W=innerWidth, H=innerHeight, mobile=W<760;
   const card=document.getElementById('qwrap'), cardTop=card.getBoundingClientRect().top;
   const topBar=mobile?60:72, avail=Math.max(120,cardTop-topBar);
-  const featW=mobile?Math.min(150,W*0.36)*FEAT_SCALE:Math.max(160,Math.min(250,W*0.17))*FEAT_SCALE, othW=mobile?W*0.2:Math.max(90,Math.min(150,W*0.1));
-  const featPos=mobile?[[50,.3],[25,.72],[75,.72]]:[[50,.28],[33,.68],[67,.68]];
-  // On a phone the two lower centre boards share the width, so each is capped to half of it.
-  const featMax=i=>mobile&&i>0?(W-24)/2:Infinity;
+  const featBase=mobile?Math.min(150,W*0.36)*MFEAT_SCALE:Math.max(160,Math.min(250,W*0.17))*FEAT_SCALE;
+  const othW=mobile?W*0.16:Math.max(100,Math.min(160,W*0.105));
   // Only cut-out boards (transparent photo) are ever drawn. Matches fill the slots first, best first; slots with no
   // transparent match are left empty rather than filled with anything else.
   const cut=cutoutIds(), hit=res.list.map(r=>r.b.case).filter(id=>cut.has(id));
@@ -1678,25 +1685,43 @@ function layoutField(){
   const featured=FEATURED_IDS.filter(id=>cut.has(id));
   const pool=[...new Set([...featured,...hit,...cut])];
   const top=pool.slice(0,3);
-  const nSlots=mobile?MSLOTS_N:FIELD_SLOTS.length;
-  const rest=pool.slice(3,3+nSlots+6); // a few spare so culled slots can be skipped
+  const maxBg=mobile?MAX_BG_MOBILE:MAX_BG, slots=mobile?MSLOTS:FIELD_SLOTS;
+  const rest=pool.slice(3,3+maxBg+12); // spares so culled slots can be skipped
   for(const id in fieldEls) if(!top.includes(id)&&!rest.includes(id)) fieldEls[id].className='fitem hidden-slot';
-  // The area each board takes (with a margin and room for its label), so a background board never lands on the header, the card or another board.
-  const cw=Math.min(card.classList.contains('wide')?1080:760,W-32), taken=[[0,0,W,topBar],[W/2-cw/2,cardTop,W/2+cw/2,H]];
-  const areaOf=(id,x,y,w,max,cap)=>{const ph=BYID[id].photo, bw=Math.min(w*LW[BYID[id].layout],max), bh=bw*(ph&&ph.ar>0?1.1/(ph.ar+.1):.4)+(cap?28:0), m=10; return [x-bw/2-m-(cap?30:0),y-bh/2-m,x+bw/2+m+(cap?30:0),y+bh/2+m]};
+  // Board size and its estimated box (the picture plus a caption line for the centre three).
+  const CAP=36, GX=mobile?10:24, GY=mobile?14:18, halfW=(W-24-GX)/2;
+  const wOf=(id,w,max=Infinity)=>Math.min(w*LW[BYID[id].layout],max);
+  const hOf=(id,bw,cap)=>{const ph=BYID[id].photo; return bw*(ph&&ph.ar>0?1.1/(ph.ar+.1):.4)+(cap?CAP:0)};
+  // Fit the centre three: one board on top, two side by side below, all between the header and the card, never overlapping.
+  const fit=s=>{const w=top.map((id,i)=>wOf(id,featBase*s,mobile&&i>0?halfW:Infinity)); return {w,h:top.map((id,i)=>hOf(id,w[i],true))}};
+  let sc=1, f=fit(sc);
+  for(let k=0;k<6&&top.length===3;k++){
+    const need=f.h[0]+Math.max(f.h[1],f.h[2])+GY, row=f.w[1]+f.w[2]+GX;
+    const k2=Math.min(1,(W-24)/row,(avail-(mobile?14:28))/need);
+    if(k2>=.999) break; sc*=k2*.995; f=fit(sc);
+  }
+  const rowH=Math.max(f.h[1]||0,f.h[2]||0), free=Math.max(0,avail-(f.h[0]+rowH+GY));
+  const y0=topBar+free*.3+f.h[0]/2, rowTop=topBar+free*.3+f.h[0]+GY+free*.3;
+  const rowW=(f.w[1]||0)+(f.w[2]||0)+GX, rx=(W-rowW)/2;
+  const fx=[W/2,rx+(f.w[1]||0)/2,rx+(f.w[1]||0)+GX+(f.w[2]||0)/2], fy=[y0,rowTop+rowH/2,rowTop+rowH/2];
+  // The area each board takes (with a margin), so a background board never lands on the header, the card or another board.
+  const cw=Math.min(card.classList.contains('wide')?1080:760,W-32), taken=[[0,0,W,topBar+4],[W/2-cw/2-4,cardTop-4,W/2+cw/2+4,H]];
   const hits=(a,b)=>a[0]<b[2]&&b[0]<a[2]&&a[1]<b[3]&&b[1]<a[3];
   top.forEach((id,i)=>{
-    const x=featPos[i][0]/100*W, y=topBar+featPos[i][1]*avail;
-    place(id,{x,y,w:featW,max:featMax(i),cls:'feat',r:res.byCase.get(id)}); taken.push(areaOf(id,x,y,featW,featMax(i),true));
+    place(id,{x:fx[i],y:fy[i],w:featBase*sc,max:mobile&&i>0?halfW:Infinity,cls:'feat',r:res.byCase.get(id)});
+    const m=12, hw=Math.max(f.w[i],mobile?0:200)/2+m; taken.push([fx[i]-hw,fy[i]-f.h[i]/2-m,fx[i]+hw,fy[i]+f.h[i]/2+m]);
   });
-  const MSLOTS=[[13,.1],[87,.1],[11,.4],[89,.4]], nS=mobile?MSLOTS.length:FIELD_SLOTS.length;
   let used=0;
-  for(let s=0;s<nS&&used<rest.length;s++){
-    const slot=mobile?MSLOTS[s]:FIELD_SLOTS[s], id=rest[used];
-    const x=slot[0]/100*W, y=mobile?topBar+slot[1]*avail:slot[1]/100*H, a=areaOf(id,x,y,othW,Infinity,false);
-    if(taken.some(t=>hits(a,t))) continue; // that spot is taken: leave it empty
+  for(let s=0;s<slots.length&&used<maxBg&&used<rest.length;s++){
+    const slot=slots[s], id=rest[used], x=slot[0]/100*W, y=mobile?topBar+slot[1]*avail:slot[1]/100*H;
+    let a=null, k=slot[2]; // a slot that is a little tight takes a smaller board before it is given up
+    for(const shrink of [1,.85,.72]){
+      const bw=wOf(id,othW*slot[2]*shrink), bh=hOf(id,bw,false), m=4, box=[x-bw/2-m,y-bh/2-m,x+bw/2+m,y+bh/2+m];
+      if(box[0]>=4&&box[2]<=W-4&&!taken.some(t=>hits(box,t))){a=box;k=slot[2]*shrink;break}
+    }
+    if(!a) continue; // that spot is taken: leave it empty
     taken.push(a); used++;
-    place(id,{x,y,w:othW,cls:res.byCase.has(id)?'dim':'out',r:res.byCase.get(id)});
+    place(id,{x,y,w:othW*k,cls:res.byCase.has(id)?'dim':'out',r:res.byCase.get(id)});
   }
   for(const id of rest.slice(used)) if(fieldEls[id]) fieldEls[id].className='fitem hidden-slot';
 }
