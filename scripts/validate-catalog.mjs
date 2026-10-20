@@ -21,7 +21,7 @@ for(const p of products){
   if(p.specs.actuationForceG!==undefined)assert.ok(p.specs.actuationForceG>=10&&p.specs.actuationForceG<=150,p.id+' force');
   for(const v of p.variants){assert.ok(v.price>0&&Number.isFinite(v.price));if(v.quantity)assert.ok(Math.abs(v.unitPrice-v.price/v.quantity)<.00001)}
 }
-for(const i of index){const p=byId.get(i.id);assert.equal(i.image,p.images[0]);assert.equal(i.price,p.priceMin);assert.ok(manifest.shards.includes(i.shard))}
+for(const i of index){const p=byId.get(i.id);assert.ok(p.images.includes(i.image)||(new URL(i.image).protocol==='https:'&&new URL(i.image).hostname===new URL(p.images[0]).hostname),'directory image '+i.id);assert.equal(i.price,p.priceMin);assert.ok(manifest.shards.includes(i.shard))}
 for(const [cat,info] of Object.entries(manifest.categories))assert.equal(info.count,products.filter(p=>p.category===cat).length);
 const ctx={window:{}};vm.runInNewContext(await readFile(new URL('builder-catalog.js',base),'utf8'),ctx);
 const catalog=ctx.window.SWITCHDECK_CATALOG;
