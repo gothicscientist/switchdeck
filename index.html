@@ -1649,7 +1649,9 @@ const MAX_BG=12, MAX_BG_MOBILE=6;
 const LW={'60':.64,'65':.72,'75':.78,'tkl':.9,'full':1};
 // The three centre boards are fixed, calm designs so the field always opens on the same look.
 const FEATURED_IDS=['epomaker-9144581390644','mechanicalkeyboards-8930667331884','epomaker-9319480721716'];
-const FEAT_SCALE=1, MFEAT_SCALE=2.2; // a desktop 75% board is FEAT_SCALE x 18% of the width (a touch bigger than the reference's 14.7%); the phone has its own scale
+const FEAT_SCALE=1, MFEAT_SCALE=2.2;
+// The 65% board is drawn narrower than the 75% and TKL ones at the same scale, so it gets a small boost to fill its share of the centre.
+const FEAT_BOOST={'epomaker-9144581390644':1.2}; // a desktop 75% board is FEAT_SCALE x 18% of the width (a touch bigger than the reference's 14.7%); the phone has its own scale
 let cutIds=null; const cutoutIds=()=>cutIds??=new Set(cutoutBoards().map(c=>c.id));
 const fieldEls={};
 function fieldBoard(b){return caseVisual(b,'field')}
@@ -1692,7 +1694,7 @@ function layoutField(){
   for(const id in fieldEls) if(!top.includes(id)&&!rest.includes(id)) fieldEls[id].className='fitem hidden-slot';
   // Board size and its estimated box (the picture plus a caption line for the centre three).
   const CAP=36, GX=mobile?10:24, GY=mobile?14:18, halfW=(W-24-GX)/2;
-  const wOf=(id,w,max=Infinity)=>Math.min(w*LW[BYID[id].layout],max);
+  const wOf=(id,w,max=Infinity)=>Math.min(w*LW[BYID[id].layout]*(FEAT_BOOST[id]||1),max);
   const hOf=(id,bw,cap)=>{const ph=BYID[id].photo; return bw*(ph&&ph.ar>0?1.1/(ph.ar+.1):.4)+(cap?CAP:0)};
   // Fit the centre three: one board on top, two side by side below, all between the header and the card, never overlapping.
   const fit=s=>{const w=top.map((id,i)=>wOf(id,featBase*s,mobile&&i>0?halfW:Infinity)); return {w,h:top.map((id,i)=>hOf(id,w[i],true))}};
@@ -1764,7 +1766,7 @@ function place(id,{x,y,w,max=Infinity,flat=false,cls,r}){
     else{const dx=x-innerWidth/2, dy=y-innerHeight*.45, n=Math.hypot(dx,dy)||1;
       el.style.setProperty('--d',(introN++*25)+'ms'); el.style.setProperty('--fx',(dx/n*28).toFixed(1)+'px'); el.style.setProperty('--fy',(dy/n*28).toFixed(1)+'px')}
   }
-  el.style.left=x+'px'; el.style.top=y+'px'; el.style.width=Math.min(flat?w:w*LW[c.layout],max)+'px';
+  el.style.left=x+'px'; el.style.top=y+'px'; el.style.width=Math.min(flat?w:w*LW[c.layout]*(cls==='feat'?FEAT_BOOST[id]||1:1),max)+'px';
   el.className='fitem '+cls;
   if(r&&el.dataset.k!==r.b.keycaps){el.dataset.k=r.b.keycaps; el.querySelector('.art').innerHTML=fieldBoard(r.b)}
   el.querySelector('.cap').innerHTML=cls==='feat'?`${esc(partName(c))}<small>$${Math.round(r?r.t:c.price).toLocaleString('en-US')}${r?' build':''}</small>`:'';
