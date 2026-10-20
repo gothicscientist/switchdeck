@@ -48,3 +48,23 @@ test('all buying surfaces use product policy; missing links do not break exports
  assert.doesNotMatch(html,/const SHOPS|STORES_FOR|function searchLink/);
  const directory=await readFile(new URL('../assets/directory.js',import.meta.url),'utf8');assert.match(directory,/SwitchdeckLinks.linksFor\(p\)/);
 });
+test('affiliate tags apply only to stores with a code, on the shopper link, never the canonical URL',()=>{
+ const {affiliateFor,hasAffiliates}=globalThis.SwitchdeckLinks;
+ const cfg={'amazon.com':{param:'tag',code:'switchyard-20'},'kbdfans.com':{param:'ref',code:''},'example.com':{wrap:'https://go.example.net/?u={url}'}};
+ assert.equal(affiliateFor('https://www.amazon.com/dp/B0CR1JTHWV',cfg),'https://www.amazon.com/dp/B0CR1JTHWV?tag=switchyard-20');
+ assert.equal(affiliateFor('https://kbdfans.com/products/foo',cfg),'https://kbdfans.com/products/foo','empty code stays untagged');
+ assert.equal(affiliateFor('https://divinikey.com/products/foo',cfg),'https://divinikey.com/products/foo','unknown store stays untagged');
+ assert.equal(affiliateFor('https://example.com/products/a?variant=1',cfg),'https://go.example.net/?u='+encodeURIComponent('https://example.com/products/a?variant=1'));
+ assert.equal(affiliateFor('https://www.amazon.com/dp/B0CR1JTHWV?tag=switchyard-20',cfg),'https://www.amazon.com/dp/B0CR1JTHWV?tag=switchyard-20','no double tag');
+ assert.equal(hasAffiliates(cfg),true); assert.equal(hasAffiliates({'a.com':{param:'ref',code:''}}),false);
+ // a store's old tag is stripped before ours is added
+ assert.equal(productURL('https://www.amazon.com/dp/B0CR1JTHWV?tag=someone-20'),'https://www.amazon.com/dp/B0CR1JTHWV');
+});
+test('every store link on the page and in the directory goes out through the affiliate-tagged href',async()=>{
+ const html=await readFile(new URL('../index.html',import.meta.url),'utf8'), dir=await readFile(new URL('../assets/directory.js',import.meta.url),'utf8');
+ assert.ok(html.indexOf('assets/affiliates.js')<html.indexOf('assets/product-links.js'));
+ assert.match(html,/u:r\.href\|\|r\.url/); assert.match(dir,/href="\$\{esc\(r\.href\|\|r\.url\)\}"/);
+ assert.doesNotMatch(dir,/\.href=safeURL\(v\.url\)/);
+ const links=globalThis.SwitchdeckLinks.linksFor({id:'x',url:'https://kbdfans.com/products/foo'},{});
+ assert.equal(links[0].url,'https://kbdfans.com/products/foo'); assert.ok('href' in links[0]);
+});

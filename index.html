@@ -486,6 +486,7 @@ a.listen.watch:hover{background:rgba(68,64,60,.16)}
 .part.inc .pn b{color:var(--muted);font-weight:500}
 .rdetail .rclose{left:auto;right:14px;top:14px}
 .rparts .phead{padding-right:58px}
+.rparts .affnote{margin:0;padding:8px 22px 0;font-size:11.5px}
 .prow .stores{grid-column:auto;margin-top:4px}
 .prow .stores .store{font-size:11.5px;padding:4px 9px}
 
@@ -612,7 +613,7 @@ a.listen.watch:hover{background:rgba(68,64,60,.16)}
         <aside class="rail" id="rail" aria-label="Build summary"></aside>
       </div>
     </div>
-    <footer class="foot"><div class="wrap"><span>Prices are approximate US list prices and change often. Check the seller before you buy.</span><span>Product images belong to their makers and link back to them.</span></div></footer>
+    <footer class="foot"><div class="wrap"><span>Prices are approximate US list prices and change often. Check the seller before you buy.</span><span>Product images belong to their makers and link back to them.</span><span id="affnote" hidden></span></div></footer>
   </section>
 
   <!-- SAVED -->
@@ -639,6 +640,7 @@ a.listen.watch:hover{background:rgba(68,64,60,.16)}
 <div class="toast" id="toast" hidden role="status"></div>
 
 <script src="assets/part-names.js"></script>
+<script src="assets/affiliates.js"></script>
 <script src="assets/product-links.js"></script>
 <script src="data/product-links.js"></script>
 <script src="data/builder-catalog.js"></script>
@@ -1172,7 +1174,7 @@ function partName(p){
 }
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function money(n){return '$'+(Math.round(n*100)/100).toLocaleString('en-US',{minimumFractionDigits:n%1?2:0,maximumFractionDigits:2})}
-function shopLink(p){return globalThis.SwitchdeckLinks.linksFor(p)[0]?.url||null}
+function shopLink(p){const l=globalThis.SwitchdeckLinks.linksFor(p)[0]; return l?l.href||l.url:null}
 function specChips(p){
   const ch=[];
   if(p.cat==='case'){ch.push(p.layoutLabel||LAYOUT_NAMES[p.layout],p.mount,p.material); if(p.kit&&!p.assembled) ch.push('Kit'); if(p.assembled) ch.push('Assembled'); if(p.kit?.pcb.hotswap) ch.push('Hot-swap'); if(/Tri|Blue|2\.4/.test(p.conn)) ch.push('Wireless')}
@@ -1345,7 +1347,9 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden) closeSound
    WHERE TO BUY: exact product pages, Amazon first
    ========================================================= */
 const ARROW='<svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M3 2h5v5M8 2L2.5 7.5"/></svg>';
-function buyLinks(p){return globalThis.SwitchdeckLinks.linksFor(p).map(r=>({n:r.name,u:r.url,maker:true,available:r.available}))}
+const AFF_NOTE='Some store links are affiliate links. We may earn a commission when you buy through them, at no extra cost to you.';
+const affNote=()=>globalThis.SwitchdeckLinks.hasAffiliates()?`<p class="note affnote">${AFF_NOTE}</p>`:'';
+function buyLinks(p){return globalThis.SwitchdeckLinks.linksFor(p).map(r=>({n:r.name,u:r.href||r.url,maker:true,available:r.available}))}
 // Each store's own favicon (https://<store domain>/favicon.ico), drawn as an SVG <image> so the page has no raw image tag.
 // If it fails to load, the capturing error listener below flips .fav to .bad and a letter badge shows instead.
 function storeFav(l){
@@ -1354,7 +1358,7 @@ function storeFav(l){
   return `<span class="fav" data-l="${esc((l.n||'?').trim().charAt(0).toUpperCase())}" aria-hidden="true"><svg viewBox="0 0 16 16" focusable="false"><image href="https://${esc(host)}/favicon.ico" width="16" height="16" loading="lazy" preserveAspectRatio="xMidYMid meet"/></svg></span>`;
 }
 document.addEventListener('error',e=>{const f=e.target.closest&&e.target.closest('.fav'); if(f) f.classList.add('bad')},true);
-const storeChips=p=>buyLinks(p).length?buyLinks(p).map(l=>`<a class="store ${l.maker?'maker':''} ${l.cmp?'cmp':''}" href="${esc(l.u)}" target="_blank" rel="noopener">${storeFav(l)}${esc(l.n)}${l.available===false?', sold out':''}${ARROW}</a>`).join(''):'<span class="note">Exact product link not confirmed yet</span>';
+const storeChips=p=>buyLinks(p).length?buyLinks(p).map(l=>`<a class="store ${l.maker?'maker':''} ${l.cmp?'cmp':''}" href="${esc(l.u)}" target="_blank" rel="sponsored noopener">${storeFav(l)}${esc(l.n)}${l.available===false?', sold out':''}${ARROW}</a>`).join(''):'<span class="note">Exact product link not confirmed yet</span>';
 
 /* =========================================================
    ROUTING
@@ -2099,7 +2103,7 @@ function renderRDetail(){
       ${s?'':`<p class="note" style="margin:0">Sold assembled: its switches and keycaps come with it. Swap them in the builder to change the feel or look.</p>`}
       <textarea id="rcopyfb" hidden aria-label="Parts list" style="width:100%;min-height:80px;font-size:12px;background:var(--tile);border:0;border-radius:8px;padding:8px"></textarea>
     </div>
-    <div class="rparts swapin"><div class="phead"><h3>Parts in this build</h3><span>${nParts} parts, ${money(r.t)}</span></div>
+    <div class="rparts swapin"><div class="phead"><h3>Parts in this build</h3><span>${nParts} parts, ${money(r.t)}</span></div>${affNote()}
       ${rows.join('')}
       </div>`;
   el.querySelector('#rclose').onclick=closeResults;
@@ -2175,7 +2179,7 @@ function renderRail(){
   <section class="card"><h3>Compatibility</h3><div class="verdict ${v.level}">${v.text}</div>
     <ul class="issues">${sorted.map(i=>`<li class="${i.level}"><i></i><span>${esc(i.msg)}${i.sub?`<br><small>${esc(i.sub)}</small>`:''}</span></li>`).join('')}</ul></section>
   <section class="card"><h3>Price</h3><div class="totals">${items.map(i=>`<div><span>${SLOTS.find(s=>s.key===i.slot).label}${i.slot==='extras'?': '+esc(i.part.name):''}</span><span class="mono">${money(i.price)}</span></div>`).join('')||'<div><span class="note">Nothing yet</span></div>'}
-    <div class="grand"><span>Total</span><span class="mono">${money(t)}</span></div></div><p class="note" style="margin:0">Approximate list prices, before shipping and tax.</p></section>
+    <div class="grand"><span>Total</span><span class="mono">${money(t)}</span></div></div><p class="note" style="margin:0">Approximate list prices, before shipping and tax.</p>${affNote()}</section>
   <section class="card"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><h3>Sound and feel estimate</h3>${build.switches?listenBtn('build','Hear switches'):''}</div>
     ${build.switches?`<div class="soundlinks">${soundSearchLink(BYID[build.switches])}</div><p class="note">The recording uses a different keyboard. These meters are estimates of your build.</p>`:''}
     ${meter('Pitch',e.pitch,pitchWord(e.pitch),'Deep','Bright')}
@@ -2363,6 +2367,7 @@ const start=(location.hash||'').replace('#','');
 // The directory lists retailer listings; one listing can hold several builder parts (one per spring weight or type).
 const BY_LISTING=new Map(); for(const p of ALLPARTS) if(p.catalogId&&!BY_LISTING.has(p.catalogId)) BY_LISTING.set(p.catalogId,p);
 window.SwitchdeckBuilder={has:id=>BY_LISTING.has(id),add:id=>{const p=BY_LISTING.get(id);if(!p)return;go('build');choose(p.cat,p)}};
+{const n=document.getElementById('affnote'); if(globalThis.SwitchdeckLinks.hasAffiliates()){n.textContent=AFF_NOTE; n.hidden=false}}
 go(['finder','build','saved','directory'].includes(start)?start:'finder',false);
 renderPill();
 </script>

@@ -24,12 +24,24 @@
     }
     return out.sort((a,b)=>Number(isAmazon(b.url))-Number(isAmazon(a.url))||Number(a.available===false)-Number(b.available===false));
   }
+  // The link a shopper follows: the canonical product URL with the store's affiliate tag, when one is set.
+  function affiliateFor(url,cfg=globalThis.SWITCHDECK_AFFILIATES||{}){
+    try{
+      const u=new URL(url), a=cfg[u.hostname.toLowerCase().replace(/^www\./,'')];
+      if(!a)return url;
+      if(a.wrap)return a.wrap.includes('{url}')?a.wrap.replace('{url}',encodeURIComponent(url)):url;
+      if(!a.param||!a.code)return url;
+      u.searchParams.set(a.param,a.code);return u.href;
+    }catch{return url}
+  }
+  const isAffiliate=url=>affiliateFor(url)!==url;
+  const hasAffiliates=(cfg=globalThis.SWITCHDECK_AFFILIATES||{})=>Object.values(cfg).some(a=>a&&(a.wrap||a.param&&a.code));
   function linksFor(p,registry=globalThis.SWITCHDECK_PRODUCT_LINKS||{}){
     if(!p)return [];
     const id=p.catalogId||p.id?.split('~')[0];
     return orderLinks([...(p.id===id?registry[p.id]||[]:[]),...(p.retailers||[]),...(p.id===id?[]:[...(registry[p.id]||[]),...(registry[id]||[])]),
       ...(p.url?[{name:p.retailer||p.brand,url:p.url,available:p.available}]:[]),
-      ...(p.photo?.page?[{name:p.brand,url:p.photo.page}]:[])]);
+      ...(p.photo?.page?[{name:p.brand,url:p.photo.page}]:[])]).map(r=>({...r,href:affiliateFor(r.url)}));
   }
-  globalThis.SwitchdeckLinks={productURL,isAmazon,orderLinks,linksFor};
+  globalThis.SwitchdeckLinks={productURL,isAmazon,orderLinks,linksFor,affiliateFor,isAffiliate,hasAffiliates};
 })();
