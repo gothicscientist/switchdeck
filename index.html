@@ -4,26 +4,27 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Host+Grotesk:wght@400;500;600;700;800&display=swap">
 <style>
 /* One deliberate light stone theme in every viewer setting. Layout: a field of keyboards fills the screen and reacts to each answer; a single white question card sits at the bottom. Builder and saved views reuse the same warm stone palette. */
 :root{
   --bg:#F5F5F4; --surface:#FFFFFF; --tile:#F5F5F4; --tile-hover:#EDEDEB; --ink:#292524; --ink-2:#44403C; --muted:#78716C; --faint:#A8A29E; --line:#E7E5E4;
   --dark:#44403C; --dark-hover:#292524; --on-dark:#FFFFFF;
-  --accent:#3B82F6; --accent-soft:rgba(59,130,246,.12);
-  --ok:#16A34A; --warn:#C2410C; --fail:#DC2626; --info:#2563EB;
-  --ok-soft:rgba(22,163,74,.1); --warn-soft:rgba(194,65,12,.09); --fail-soft:rgba(220,38,38,.08); --info-soft:rgba(37,99,235,.08);
+  --accent:#44403C; --accent-soft:rgba(68,64,60,.10);
+  --ok:#2A8A4E; --warn:#B7791F; --fail:#C2443A; --info:#3D6FB6;
+  --ok-soft:rgba(42,138,78,.1); --warn-soft:rgba(183,121,31,.1); --fail-soft:rgba(194,68,58,.08); --info-soft:rgba(61,111,182,.08);
   --glass:rgba(245,245,244,.78); --scrim:rgba(41,37,36,.28);
   --shadow-card:0 1px 2px rgba(41,37,36,.04),0 12px 40px rgba(41,37,36,.10);
   --shadow-sm:0 1px 2px rgba(41,37,36,.05);
   --shadow-lg:0 24px 70px rgba(41,37,36,.22);
-  --f:"Inter",Arial,system-ui,sans-serif;
+  --f:"Host Grotesk","Helvetica Neue",Arial,system-ui,sans-serif;
   --r:20px; --r-tile:10px;
   --out:cubic-bezier(.16,1,.3,1); --ease:cubic-bezier(.4,0,.2,1); --spring:cubic-bezier(.34,1.56,.64,1);
 }
 :root,:root[data-theme="dark"]{color-scheme:light}
 *{box-sizing:border-box}
 html,body{background:var(--bg)}
+input[type=checkbox],input[type=radio],input[type=range]{accent-color:var(--ink)}
 body{margin:0;color:var(--ink);font-family:var(--f);font-size:14px;line-height:1.45;-webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums}
 body.lock{overflow:hidden}
 body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:60;background:var(--bg)}
@@ -54,13 +55,15 @@ h1,h2,h3{text-wrap:balance;margin:0;font-weight:700;letter-spacing:-.02em}
 .topright{justify-self:end;display:flex;gap:16px;align-items:center}
 .pricepill{border:0;background:transparent;color:var(--muted);font-size:14px;padding:6px 2px;display:inline-flex;align-items:center;gap:7px;transition:color .2s}
 .pricepill:hover{color:var(--ink)}
+.pricepill .pname+span,.fp-name+span{color:var(--ink);font-weight:500}
+.pricepill .pname,.fp-name{margin-right:4px}
 .statusdot{display:inline-block;width:7px;height:7px;border-radius:50%}
 .fp-in{display:inline-flex;align-items:center;gap:8px;transition:opacity .4s ease,transform .4s ease}
 .fp-in.swap{opacity:0;transform:translateY(5px)}
 .fp-th{width:44px;height:22px;flex:none;display:grid;place-items:center;overflow:hidden;border-radius:4px}
 .fp-th>svg,.fp-th .pf-photo,.fp-th .pf-alt,.fp-th .pf-alt>svg{width:100%;height:100%;max-width:44px;max-height:22px;display:block}
 .fp-name{white-space:nowrap;max-width:200px;overflow:hidden;text-overflow:ellipsis}
-.fp-tag{font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:var(--faint)}
+.fp-tag{font-size:11px;color:var(--faint)}
 @media (prefers-reduced-motion:reduce){.fp-in{transition:none}}
 .has-scroll .top{background:var(--glass);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
 
@@ -340,6 +343,7 @@ h1,h2,h3{text-wrap:balance;margin:0;font-weight:700;letter-spacing:-.02em}
 .pick .why{font-size:12.5px;color:var(--fail)}
 .pick .links{display:flex;gap:12px;font-size:12.5px;flex-wrap:wrap;align-items:center}
 .pick .links a{color:var(--muted);text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:2px}
+.pick .links a.store{text-decoration:none}
 .pick.selected{box-shadow:inset 0 0 0 1.5px var(--ink)}
 .filtbtn{display:none}
 .grabber{display:none}
@@ -448,8 +452,8 @@ h1,h2,h3{text-wrap:balance;margin:0;font-weight:700;letter-spacing:-.02em}
 @media (prefers-reduced-motion:reduce){.rsf-fill,.rsf-pin,.rsf-w{animation:none}}
 .stores .watchrow{flex:0 0 100%;display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:2px}
 a.listen{text-decoration:none}
-a.listen.watch{background:var(--accent-soft);color:var(--info)}
-a.listen.watch:hover{background:rgba(59,130,246,.2)}
+a.listen.watch{background:var(--accent-soft);color:var(--ink)}
+a.listen.watch:hover{background:rgba(68,64,60,.16)}
 .textlink{font-size:12px;font-weight:500;color:var(--muted);text-decoration:underline;text-underline-offset:2px}
 .textlink:hover{color:var(--ink)}
 .fav{position:relative;flex:none;width:14px;height:14px;border-radius:4px;background:#fff;overflow:hidden;display:inline-block;box-shadow:inset 0 0 0 1px rgba(41,37,36,.08)}
@@ -466,7 +470,7 @@ a.listen.watch:hover{background:rgba(59,130,246,.2)}
 .part .pt{grid-row:span 2;width:52px;height:40px;border-radius:8px;background:var(--tile);display:grid;place-items:center;padding:4px;overflow:hidden}
 .part .pt svg{width:100%;height:100%}
 .part .pn{min-width:0;display:flex;flex-direction:column;gap:1px}
-.part .pn small{font-size:11px;color:var(--faint);font-weight:500;letter-spacing:.02em;text-transform:uppercase}
+.part .pn small{font-size:11.5px;color:var(--faint);font-weight:500}
 .part .pn b{font-size:14px;font-weight:600;line-height:1.3}
 .part .pn em{font-style:normal;font-size:12px;color:var(--muted)}
 .part .pp{text-align:right;font-size:14px;font-weight:600;white-space:nowrap}
@@ -615,7 +619,7 @@ a.listen.watch:hover{background:rgba(59,130,246,.2)}
   <section class="view page" id="view-saved" hidden>
     <div class="wrap">
       <div class="saved-head">
-        <div><div class="eyebrow">On this device</div><h1>Saved builds</h1></div>
+        <div><h1>Saved builds</h1></div>
         <button class="btn primary" data-go="build">Open builder</button>
       </div>
       <div id="savedlist"></div>
@@ -1069,7 +1073,7 @@ function boardSVG(opts){
     if(legends && legc && k.leg){
       const fs = k.leg.length>2? u*.17 : u*.24;
       const lx = k.leg.length>2 ? tx+u*.09 : tx+tw/2, anchor=k.leg.length>2?'start':'middle';
-      s+=`<text x="${lx}" y="${ty+th*.5+fs*.36}" font-size="${fs}" font-family="Familjen Grotesk, system-ui, sans-serif" font-weight="500" fill="${legc}" text-anchor="${anchor}">${esc(k.leg)}</text>`;
+      s+=`<text x="${lx}" y="${ty+th*.5+fs*.36}" font-size="${fs}" font-family="Host Grotesk, system-ui, sans-serif" font-weight="500" fill="${legc}" text-anchor="${anchor}">${esc(k.leg)}</text>`;
     }
   }
   return s+'</svg>';
@@ -1172,7 +1176,7 @@ function shopLink(p){return globalThis.SwitchdeckLinks.linksFor(p)[0]?.url||null
 function specChips(p){
   const ch=[];
   if(p.cat==='case'){ch.push(p.layoutLabel||LAYOUT_NAMES[p.layout],p.mount,p.material); if(p.kit&&!p.assembled) ch.push('Kit'); if(p.assembled) ch.push('Assembled'); if(p.kit?.pcb.hotswap) ch.push('Hot-swap'); if(/Tri|Blue|2\.4/.test(p.conn)) ch.push('Wireless')}
-  if(p.cat==='pcb'){ch.push(LAYOUT_NAMES[p.layout],p.hotswap===true?'Hot-swap':p.hotswap===false?'Solder':null,p.pins?`${p.pins}-pin`:null,p.rgb===true?`RGB${p.led?` · ${p.led}-facing`:''}`:p.rgb===false?'No RGB':null)}
+  if(p.cat==='pcb'){ch.push(LAYOUT_NAMES[p.layout],p.hotswap===true?'Hot-swap':p.hotswap===false?'Solder':null,p.pins?`${p.pins}-pin`:null,p.rgb===true?`RGB${p.led?`, ${p.led}-facing`:''}`:p.rgb===false?'No RGB':null)}
   if(p.cat==='plate'){ch.push(p.material,LAYOUT_NAMES[p.layout],PLATE_MAT[p.material]?`Flex ${flexWord(PLATE_MAT[p.material].flex).toLowerCase()}`:null)}
   if(p.cat==='switches'){ch.push(p.type,p.force?`${p.force}g`:null,p.travel?`${p.travel.toFixed(1)}mm`:null,p.pins?`${p.pins}-pin`:null); if(p.factory) ch.push('Factory lubed')}
   if(p.cat==='keycaps'){ch.push(p.profile,p.material,p.legends); if(p.shine) ch.push('Shine-through')}
@@ -1350,7 +1354,7 @@ function storeFav(l){
   return `<span class="fav" data-l="${esc((l.n||'?').trim().charAt(0).toUpperCase())}" aria-hidden="true"><svg viewBox="0 0 16 16" focusable="false"><image href="https://${esc(host)}/favicon.ico" width="16" height="16" loading="lazy" preserveAspectRatio="xMidYMid meet"/></svg></span>`;
 }
 document.addEventListener('error',e=>{const f=e.target.closest&&e.target.closest('.fav'); if(f) f.classList.add('bad')},true);
-const storeChips=p=>buyLinks(p).length?buyLinks(p).map(l=>`<a class="store ${l.maker?'maker':''} ${l.cmp?'cmp':''}" href="${esc(l.u)}" target="_blank" rel="noopener">${storeFav(l)}${esc(l.n)}${l.available===false?' · sold out':''}${ARROW}</a>`).join(''):'<span class="note">Exact product link not confirmed yet</span>';
+const storeChips=p=>buyLinks(p).length?buyLinks(p).map(l=>`<a class="store ${l.maker?'maker':''} ${l.cmp?'cmp':''}" href="${esc(l.u)}" target="_blank" rel="noopener">${storeFav(l)}${esc(l.n)}${l.available===false?', sold out':''}${ARROW}</a>`).join(''):'<span class="note">Exact product link not confirmed yet</span>';
 
 /* =========================================================
    ROUTING
@@ -1382,7 +1386,7 @@ function fpPool(){return CASES.filter(c=>c.photo&&Array.isArray(c.photo.box)&&c.
 function fpPick(){const p=fpPool(); if(!p.length) return null; const q=p.length>1?p.filter(c=>c!==fpCur):p; return q[Math.floor(Math.random()*q.length)]}
 function fpHTML(c){
   const icon=buildBoard({case:c.id,color:0,keycaps:null,extras:[]},{legends:false,u:6,cls:''})||'';
-  return `<span class="fp-in"><span class="fp-th">${framedPhoto(c.photo,partName(c),icon,120)}</span><span class="fp-name pname">${esc(partName(c))} · </span><span>${money(c.price)}</span></span>`;
+  return `<span class="fp-in"><span class="fp-th">${framedPhoto(c.photo,partName(c),icon,120)}</span><span class="fp-name pname">${esc(partName(c))}</span><span>${money(c.price)}</span></span>`;
 }
 function fpShow(c,animate){
   const pill=document.getElementById('pricepill'); fpCur=c;
@@ -1423,7 +1427,7 @@ function renderPill(){
   fpStop(); fpHold=false; pill.onclick=null; pill.setAttribute('data-go','build'); pill.removeAttribute('aria-label'); pill.title='Open your build';
   const v=verdict(compat(build)), col={ok:'var(--ok)',warn:'var(--warn)',fail:'var(--fail)',info:'var(--info)'}[v.level];
   const c=caseOf(build);
-  pill.innerHTML=`<span class="statusdot" style="background:${col}"></span>${c?`<span class="pname">${esc(partName(c))} · </span>`:'<span class="pname">Your build · </span>'}${money(total(build))}`;
+  pill.innerHTML=`<span class="statusdot" style="background:${col}"></span>${c?`<span class="pname">${esc(partName(c))}</span>`:'<span class="pname">Your build</span>'}<span>${money(total(build))}</span>`;
 }
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&view==='finder'&&!fpTimer)fpStart()});
 
@@ -1520,7 +1524,7 @@ function quizArt(kind){
   return `<svg viewBox="0 0 120 60" aria-hidden="true"><defs>${defs}</defs>${body}</svg>`;
 }
 function surpriseSVG(){
-  const cap=(x,y,r,top,side,leg)=>`<g transform="translate(${x} ${y}) rotate(${r})"><rect x="-15" y="-15" width="30" height="30" rx="5" fill="${side}"/><rect x="-11" y="-14" width="22" height="22" rx="4" fill="${top}"/>${leg?`<text x="0" y="2" text-anchor="middle" dominant-baseline="middle" font-family="Inter,system-ui" font-weight="700" font-size="13" fill="${leg}">?</text>`:''}</g>`;
+  const cap=(x,y,r,top,side,leg)=>`<g transform="translate(${x} ${y}) rotate(${r})"><rect x="-15" y="-15" width="30" height="30" rx="5" fill="${side}"/><rect x="-11" y="-14" width="22" height="22" rx="4" fill="${top}"/>${leg?`<text x="0" y="2" text-anchor="middle" dominant-baseline="middle" font-family="Host Grotesk,system-ui" font-weight="700" font-size="13" fill="${leg}">?</text>`:''}</g>`;
   return `<svg viewBox="0 0 120 60" aria-hidden="true">${cap(34,34,-12,'#E14E9B','#B93C7E')}${cap(86,34,12,'#4FD3E3','#2FA9B8')}${cap(60,30,0,'#2C2B2D','#1A1A1B','#F4EEE0')}</svg>`;
 }
 const B_MIN=100, B_MAX=600;
@@ -2063,7 +2067,7 @@ function renderRDetail(){
   const r=resList[resIdx], b=r.b, c=caseOf(b), s=BYID[b.switches];
   const items=lineItems(b), SL=k=>SLOTS.find(x=>x.key===k).label;
   const sub=i=>i.slot==='switches'?`${i.qty} × ${money(i.part.price)}`:i.slot==='keycaps'&&i.addon?`incl. ${money(i.addon)} numpad kit`:i.slot==='stabs'?`${layoutOf(b)==='full'?7:5}-stab set`:'';
-  const desc=p=>p.cat==='case'?[LAYOUT_NAMES[p.layout],p.material,p.mount&&p.mount+' mount',p.assembled?'sold assembled':p.kit&&'kit'].filter(Boolean).join(' · '):p.cat==='switches'?[p.type,p.force&&`${p.force} g`,p.pins&&`${p.pins}-pin`].filter(Boolean).join(' · '):p.cat==='keycaps'?[p.profile&&`${p.profile} profile`,p.material,p.legends].filter(Boolean).join(' · '):p.cat==='pcb'?[p.hotswap===true?'Hot-swap':p.hotswap===false?'Solder':null,p.pins&&`${p.pins}-pin`].filter(Boolean).join(' · '):p.cat==='plate'?p.material||'':p.blurb||'';
+  const desc=p=>p.cat==='case'?[LAYOUT_NAMES[p.layout],p.material,p.mount&&p.mount+' mount',p.assembled?'sold assembled':p.kit&&'kit'].filter(Boolean).join(', '):p.cat==='switches'?[p.type,p.force&&`${p.force} g`,p.pins&&`${p.pins}-pin`].filter(Boolean).join(', '):p.cat==='keycaps'?[p.profile&&`${p.profile} profile`,p.material,p.legends].filter(Boolean).join(', '):p.cat==='pcb'?[p.hotswap===true?'Hot-swap':p.hotswap===false?'Solder':null,p.pins&&`${p.pins}-pin`].filter(Boolean).join(', '):p.cat==='plate'?p.material||'':p.blurb||'';
   let rows=items.map((i,n)=>`<div class="part" data-pi="${n}" style="--i:${n}"><span class="pt">${i.slot==='case'?caseVisual({case:c.id,color:b.color||0,keycaps:null,extras:[]},'thumb'):thumbFor(i.part)}</span>
       <div class="pn"><small>${esc(SL(i.slot))}</small><b>${esc(partName(i.part))}</b><em>${esc(desc(i.part))}</em>${i.part.soldOut?'<span class="chip warn" style="align-self:flex-start;margin-top:4px">Sold out</span>':''}</div>
       <div class="pp">${money(i.price)}${sub(i)?`<small>${esc(sub(i))}</small>`:''}</div>
@@ -2095,7 +2099,7 @@ function renderRDetail(){
       ${s?'':`<p class="note" style="margin:0">Sold assembled: its switches and keycaps come with it. Swap them in the builder to change the feel or look.</p>`}
       <textarea id="rcopyfb" hidden aria-label="Parts list" style="width:100%;min-height:80px;font-size:12px;background:var(--tile);border:0;border-radius:8px;padding:8px"></textarea>
     </div>
-    <div class="rparts swapin"><div class="phead"><h3>Parts in this build</h3><span>${nParts} parts · ${money(r.t)}</span></div>
+    <div class="rparts swapin"><div class="phead"><h3>Parts in this build</h3><span>${nParts} parts, ${money(r.t)}</span></div>
       ${rows.join('')}
       </div>`;
   el.querySelector('#rclose').onclick=closeResults;
@@ -2113,12 +2117,12 @@ function renderRDetail(){
 function renderBuilder(){
   const c=caseOf(build);
   document.getElementById('buildname').value=build.name||'My keyboard';
-  document.getElementById('buildeyebrow').textContent = build.example?'Example build · edit anything':'Your build';
+  document.getElementById('buildeyebrow').textContent = build.example?'Example build. Change any part to make it yours.':'Your build';
   const sb=document.getElementById('stageboard');
   const hasPhoto=!!(c&&c.photo&&c.photo.box);
   sb.innerHTML = c? `<div class="swap">${hasPhoto&&stageMode==='photo'?caseVisual(build,'stage'):buildBoard(build)}</div>${hasPhoto?`<div class="stagetoggle" role="group" aria-label="Preview type"><button aria-pressed="${stageMode==='photo'}" data-stage="photo">Photo</button><button aria-pressed="${stageMode!=='photo'}" data-stage="render">Your build</button></div>${stageMode==='photo'?`<span class="credit">Photo: ${esc(c.brand)}</span>`:''}`:''}` : `<div class="empty"><p style="margin:0 0 10px">Start with a case or kit. It sets the layout for everything else.</p><button class="btn primary" data-pick="case">Choose a case</button></div>`;
   const sw=document.getElementById('swatches');
-  sw.innerHTML = c? `<span>Case color</span>${c.colors.map(([n,h],i)=>`<button class="sw" style="background:${h}" title="${esc(n)}" aria-label="${esc(n)}" aria-pressed="${(build.color||0)===i}" data-color="${i}"></button>`).join('')}<span class="mono" style="margin-left:auto">${LAYOUT_NAMES[c.layout]} · ${c.keys} keys${c.knob?' + knob':''}</span>`:'';
+  sw.innerHTML = c? `<span>Case color</span>${c.colors.map(([n,h],i)=>`<button class="sw" style="background:${h}" title="${esc(n)}" aria-label="${esc(n)}" aria-pressed="${(build.color||0)===i}" data-color="${i}"></button>`).join('')}<span class="mono" style="margin-left:auto">${LAYOUT_NAMES[c.layout]}, ${c.keys} keys${c.knob?' and a knob':''}</span>`:'';
   sw.querySelectorAll('[data-color]').forEach(b=>b.onclick=()=>{build.color=+b.dataset.color; stageMode='render'; commit()});
   sb.querySelectorAll('[data-stage]').forEach(b=>b.onclick=()=>{stageMode=b.dataset.stage; renderBuilder()});
   renderParts(); renderRail(); renderPill();
@@ -2147,7 +2151,7 @@ function renderParts(){
     }
     const p=li.part, iss=compat(build).filter(i=>i.slot===s.key&&(i.level==='fail'||i.level==='warn'));
     let sub='';
-    if(s.key==='switches') sub=`<small>${keyCount(build)} needed · ${li.qty} @ ${money(p.price)}</small>`;
+    if(s.key==='switches') sub=`<small>${keyCount(build)} needed, buying ${li.qty} at ${money(p.price)}</small>`;
     if(s.key==='keycaps'&&li.addon) sub=`<small>incl. numpad kit ${money(li.addon)}</small>`;
     if(s.key==='stabs') sub=`<small>${layoutOf(build)==='full'?'7':'5'}-stab set</small>`;
     h+=`<div class="prow"><div class="slot">${s.label}<small>${s.hint}</small></div>
@@ -2180,7 +2184,7 @@ function renderRail(){
     <div class="totals"><div><span>Actuation force</span><span class="mono">${e.force?e.force+' g':'—'}</span></div></div>
     <p class="note" style="margin:0">A rough guide from plate, mount, switches, keycaps and mods. Real boards vary.</p></section>
   <section class="card"><h3>Share</h3><div class="railacts"><button class="btn small" id="copylist">Copy parts list</button><button class="btn small" id="copycode">Copy build code</button></div>
-    <textarea id="copyfallback" hidden aria-label="Copy text" style="width:100%;min-height:80px;font-family:var(--f-mono);font-size:12px;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:6px"></textarea></section>`;
+    <textarea id="copyfallback" hidden aria-label="Copy text" style="width:100%;min-height:80px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:6px"></textarea></section>`;
   rail.querySelector('#copylist').onclick=()=>copyText(partsText(build),rail.querySelector('#copyfallback'));
   rail.querySelector('#copycode').onclick=()=>copyText(encodeBuild(build),rail.querySelector('#copyfallback'));
 }
@@ -2294,11 +2298,11 @@ function renderPickList(){
   const current = slot==='extras'? (build.extras||[]) : [build[slot]];
   const list=document.getElementById('pklist');
   const total=rows.length; rows=rows.slice(0,pk.limit);
-  list.innerHTML=`<div class="dbar"><span>${total.toLocaleString('en-US')} ${total===1?'part':'parts'}${hidden?` · ${hidden} hidden because they don't fit your build`:''}</span>
+  list.innerHTML=`<div class="dbar"><span>${total.toLocaleString('en-US')} ${total===1?'part':'parts'}${hidden?`, ${hidden} hidden because they don't fit your build`:''}</span>
     <label>Sort <select id="pksort"><option value="featured">Featured</option><option value="priceAsc">Price: low to high</option><option value="priceDesc">Price: high to low</option><option value="name">Name</option>${slot==='switches'?'<option value="force">Force: light to heavy</option>':''}</select></label></div>
     ${rows.length?'':`<div class="card emptybox"><b>Nothing matches these filters.</b><span>Clear a filter or raise the max price.</span></div>`}
     ${rows.map(({p,price,pr},i)=>{const on=current.includes(p.id);
-      let sub=''; if(slot==='switches') sub=p.packQuantity?`${Math.ceil((switchQty(build)||70)/p.packQuantity)} packs × ${p.packQuantity} switches`: `${switchQty(build)||70} switches @ ${money(p.price)}`; else if(slot==='case'&&p.assembled) sub='Sold assembled'; else if(slot==='case'&&p.catalogId) sub='Kit · check what\'s included'; else if(slot==='case'&&p.kit) sub='PCB + plate'+(p.kit.stabs?' + stabs':'')+' included';
+      let sub=''; if(slot==='switches') sub=p.packQuantity?`${Math.ceil((switchQty(build)||70)/p.packQuantity)} packs × ${p.packQuantity} switches`: `${switchQty(build)||70} switches at ${money(p.price)}`; else if(slot==='case'&&p.assembled) sub='Sold assembled'; else if(slot==='case'&&p.catalogId) sub='Kit · check what\'s included'; else if(slot==='case'&&p.kit) sub='PCB + plate'+(p.kit.stabs?' + stabs':'')+' included';
       return `<article style="--i:${i}" class="card pick ${pr.bad.length?'bad':''} ${on?'selected':''}"><span class="thumb">${thumbFor(p)}</span>
       <div class="meta"><span class="by note">${esc(p.brand)}</span><b>${esc(p.name)}</b><span class="specs">${specChips(p)}</span><p>${esc(p.blurb||'')}</p>
         ${pr.bad.map(m=>`<span class="why">✕ ${esc(m)}</span>`).join('')}${pr.warn.map(m=>`<span class="why" style="color:var(--warn)">! ${esc(m)}</span>`).join('')}
