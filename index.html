@@ -85,24 +85,23 @@ h1,h2,h3{text-wrap:balance;margin:0;font-weight:700;letter-spacing:-.02em}
 
 /* FINDER: product field */
 #view-finder{position:relative;height:100vh;height:100dvh;overflow:hidden}
-.field{position:absolute;inset:0}
+.field{position:absolute;inset:0;z-index:1}
+/* Finder backdrop: a soft light from the top centre with a faint vignette, and a fine dot grid that fades out toward the edges. Static, no images. */
+#view-finder::before,#view-finder::after{content:"";position:absolute;inset:0;z-index:0;pointer-events:none}
+#view-finder::before{background:radial-gradient(ellipse 62% 52% at 50% -4%,rgba(255,255,255,.95),rgba(255,255,255,0) 72%),radial-gradient(ellipse 125% 105% at 50% 42%,rgba(41,37,36,0) 58%,rgba(41,37,36,.055) 100%)}
+#view-finder::after{background:radial-gradient(circle at center,rgba(41,37,36,.1) 0 1px,transparent 1.4px) 0 0/26px 26px;-webkit-mask-image:radial-gradient(ellipse 58% 56% at 50% 36%,#000 8%,transparent 72%);mask-image:radial-gradient(ellipse 58% 56% at 50% 36%,#000 8%,transparent 72%);opacity:.7}
 .fitem{position:absolute;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:8px;border:0;background:transparent;padding:0;cursor:pointer;
   transition:left .9s var(--out),top .9s var(--out),width .9s var(--out),opacity .6s var(--ease),filter .6s var(--ease)}
 .fitem svg,.fitem img{width:100%;height:auto;display:block;transition:transform .4s var(--out),filter .4s var(--ease)}
 .fitem:hover svg,.fitem:hover img{transform:translateY(-3px)}
-.fitem .art{display:block;width:100%;transform:rotate(var(--tilt,0deg));animation:ffloat 7s ease-in-out infinite;animation-delay:var(--fd,0s)}
-@keyframes ffloat{0%,100%{transform:translateY(0) rotate(var(--tilt,0deg))}50%{transform:translateY(-6px) rotate(var(--tilt,0deg))}}
-.fitem .cap{font-size:12px;line-height:1.3;font-weight:500;color:var(--ink-2);text-align:center;white-space:nowrap;max-width:calc(100% + 72px);min-width:0;overflow:hidden;text-overflow:ellipsis;opacity:0;transition:opacity .4s var(--ease)}
-.fitem.feat .cap,.fitem.sub .cap,.fitem.mid .cap{opacity:1}
-.fitem.feat .cap{font-size:14px;color:var(--ink)}
+.fitem .cap{font-size:11px;line-height:1.3;color:var(--ink-2);text-align:center;white-space:nowrap;max-width:min(240px,42vw);overflow:hidden;text-overflow:ellipsis;opacity:0;transition:opacity .4s var(--ease)}
+.fitem .cap small{display:block;color:var(--faint);font-size:10px}
+.fitem.feat .cap{opacity:1}
+.fitem.dim{opacity:.4;filter:grayscale(1)}
 .fitem.out{opacity:.14;filter:grayscale(1);pointer-events:none}
 .fitem.hidden-slot{opacity:0;pointer-events:none}
-.fitem svg{filter:drop-shadow(0 12px 16px rgba(41,37,36,.16)) drop-shadow(0 2px 3px rgba(41,37,36,.1))}
-.fitem.feat svg{filter:drop-shadow(0 22px 26px rgba(41,37,36,.2)) drop-shadow(0 3px 5px rgba(41,37,36,.12))}
-.fitem.out svg{filter:none}
-.fitem.out .art{animation:none}
-@media (prefers-reduced-motion:reduce){.fitem .art{animation:none}}
-@media (max-width:759px){.fitem .cap{max-width:calc(100% + 20px);font-size:11px}.fitem.feat .cap{font-size:13px}}
+.fitem svg{filter:drop-shadow(0 10px 14px rgba(41,37,36,.14))}
+.fitem.dim svg,.fitem.out svg{filter:none}
 
 /* FINDER: question card */
 .qwrap{position:absolute;left:50%;bottom:max(32px,env(safe-area-inset-bottom,0px));transform:translateX(-50%);width:min(760px,calc(100% - 32px));z-index:5;transition:width .5s var(--out)}
@@ -842,14 +841,14 @@ function compat(b){
   const out=[], c=caseOf(b), pcb=effPcb(b), plate=effPlate(b), sw=BYID[b.switches], kc=BYID[b.keycaps], st=BYID[b.stabs], L=layoutOf(b);
   const add=(level,slot,msg,sub)=>out.push({level,slot,msg,sub});
   if(!c){add('info','case','Pick a case or kit to start','The case decides the layout and which parts fit.');return out}
-  if(c.assembled) add('info','case',`${c.name} is sold assembled`,'It ships with switches and keycaps. What you pick here are swaps or upgrades.');
-  else if(c.kit&&c.catalogId) add('info','case',`${c.name} is a kit listing`,`Check ${storeOf(c)} for exactly what's included.`);
-  else if(c.kit) add('ok','case',`${c.name} is a kit`,`PCB, plate${c.kit.stabs?' and stabilizers':''} are included.`);
+  if(c.assembled) add('info','case',`${partName(c)} is sold assembled`,'It ships with switches and keycaps. What you pick here are swaps or upgrades.');
+  else if(c.kit&&c.catalogId) add('info','case',`${partName(c)} is a kit listing`,`Check ${storeOf(c)} for exactly what's included.`);
+  else if(c.kit) add('ok','case',`${partName(c)} is a kit`,`PCB, plate${c.kit.stabs?' and stabilizers':''} are included.`);
   if(!c.kit){
     const p=BYID[b.pcb], pl=BYID[b.plate];
-    if(p && p.fit!==c.fit) add('fail','pcb',`${p.name} doesn't fit the ${c.name}`,`It's a ${LAYOUT_NAMES[p.layout]} board for a different mounting pattern.`);
-    else if(p) add('ok','pcb',`${p.name} fits the ${c.name}`);
-    if(pl && pl.fit!==c.fit) add('fail','plate',`${pl.name} doesn't fit the ${c.name}`);
+    if(p && p.fit!==c.fit) add('fail','pcb',`${p.name} doesn't fit the ${partName(c)}`,`It's a ${LAYOUT_NAMES[p.layout]} board for a different mounting pattern.`);
+    else if(p) add('ok','pcb',`${p.name} fits the ${partName(c)}`);
+    if(pl && pl.fit!==c.fit) add('fail','plate',`${pl.name} doesn't fit the ${partName(c)}`);
     if(!pl && p) add('warn','plate','No plate selected','Plateless builds flex a lot and switches can wobble. 5-pin switches help.');
   }
   if(kc&&!kc.covers) add('info','keycaps',`Check that ${kc.name} covers a ${LAYOUT_NAMES[L]} board`,`${storeOf(kc)} doesn't list a key count for this set.`);
@@ -1069,7 +1068,7 @@ function caseVisual(b,kind){
   const c=caseOf(b); if(!c) return '';
   const small=kind==='field'||kind==='thumb';
   const svg=buildBoard(b,{legends:!small,u:small?20:40,cls:''});
-  return framedPhoto(c.photo,`${c.brand} ${c.name}`,svg,{thumb:240,field:520,detail:1100,stage:1400}[kind]);
+  return framedPhoto(c.photo,partName(c),svg,{thumb:240,field:520,detail:1100,stage:1400}[kind]);
 }
 // The only way a product photo reaches the page. A photo shows only if the catalog's image check
 // passed it and recorded the product's outline (box, as % of the image, and its aspect ratio ar);
@@ -1086,16 +1085,22 @@ function framedPhoto(ph,alt,icon,width=400){
 function buildBoard(b,opts={}){
   const c=caseOf(b); if(!c) return null;
   const kc=BYID[b.keycaps], col=(c.colors[b.color||0]||c.colors[0])[1], pcb=effPcb(b);
-  return boardSVG({layout:c.layout,caseColor:col,pal:kc?.pal||NEUTRAL_PAL,profile:kc?kc.profile:'Cherry',legends:!!kc,knob:c.knob,glow:!!(kc&&kc.shine&&pcb&&pcb.rgb),label:`${c.name} with ${kc?kc.name:'no keycaps yet'}`,...opts});
+  return boardSVG({layout:c.layout,caseColor:col,pal:kc?.pal||NEUTRAL_PAL,profile:kc?kc.profile:'Cherry',legends:!!kc,knob:c.knob,glow:!!(kc&&kc.shine&&pcb&&pcb.rgb),label:`${partName(c)} with ${kc?kc.name:'no keycaps yet'}`,...opts});
 }
 
 /* =========================================================
    HELPERS
    ========================================================= */
+// A part's full name, maker first: "Lemokey X6", "Epomaker x AULA F75". The catalog keeps the model in name and the maker in brand;
+// the brand is left off when the name already carries it ("Neo" + "Neo60 Core", "paw65" + "Chilkey Paw65") or is just "Various".
+function partName(p){
+  const b=String(p?.brand??'').trim(), n=String(p?.name??'').trim();
+  return !b||b==='Various'||n.toLowerCase().includes(b.toLowerCase())?n:b+' '+n;
+}
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function money(n){return '$'+(Math.round(n*100)/100).toLocaleString('en-US',{minimumFractionDigits:n%1?2:0,maximumFractionDigits:2})}
 function shopLink(p){if(p.photo&&p.photo.page) return p.photo.page; if(p.catalogId&&p.retailers?.[0]) return p.retailers[0].url; const u=SHOPS[p.brand]||SHOPS.Various; return u.includes('google.com/search')&&p.brand==='Various'?u+encodeURIComponent(p.name):u}
-function searchLink(p){return 'https://www.google.com/search?tbm=shop&q='+encodeURIComponent(`${p.brand==='Various'?'':p.brand+' '}${p.name}`)}
+function searchLink(p){return 'https://www.google.com/search?tbm=shop&q='+encodeURIComponent(partName(p))}
 function specChips(p){
   const ch=[];
   if(p.cat==='case'){ch.push(p.layoutLabel||LAYOUT_NAMES[p.layout],p.mount,p.material); if(p.kit&&!p.assembled) ch.push('Kit'); if(p.assembled) ch.push('Assembled'); if(p.kit?.pcb.hotswap) ch.push('Hot-swap'); if(/Tri|Blue|2\.4/.test(p.conn)) ch.push('Wireless')}
@@ -1284,7 +1289,7 @@ const STORES_FOR={case:['amazon','divinikey','kbdfans'],pcb:['kbdfans','divinike
 const ARROW='<svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M3 2h5v5M8 2L2.5 7.5"/></svg>';
 function buyLinks(p){
   if(p.retailers?.length)return p.retailers.map(r=>({n:r.name,u:r.url,maker:true}));
-  const term=`${p.brand==='Various'?'':p.brand+' '}${p.name}`+(p.cat==='switches'?' switches':p.cat==='keycaps'&&!/keycap/i.test(p.name)?' keycaps':'');
+  const term=partName(p)+(p.cat==='switches'?' switches':p.cat==='keycaps'&&!/keycap/i.test(p.name)?' keycaps':'');
   const q=encodeURIComponent(term.trim()), out=[], maker=shopLink(p);
   if(!/google\.com/.test(maker)) out.push({n:p.brand,u:maker,maker:true});
   for(const k of STORES_FOR[p.cat]||['amazon']){const [n,u]=STORES[k]; if(n.toLowerCase()!==p.brand.toLowerCase()&&!(p.brand==='PBTfans'&&k==='kbdfans')) out.push({n,u:u(q)})}
@@ -1330,11 +1335,11 @@ function fpPool(){return CASES.filter(c=>c.photo&&Array.isArray(c.photo.box)&&c.
 function fpPick(){const p=fpPool(); if(!p.length) return null; const q=p.length>1?p.filter(c=>c!==fpCur):p; return q[Math.floor(Math.random()*q.length)]}
 function fpHTML(c){
   const icon=buildBoard({case:c.id,color:0,keycaps:null,extras:[]},{legends:false,u:6,cls:''})||'';
-  return `<span class="fp-in"><span class="fp-th">${framedPhoto(c.photo,c.name,icon,120)}</span><span class="fp-name pname">${esc(c.brand)} ${esc(c.name)} · </span><span>${money(c.price)}</span></span>`;
+  return `<span class="fp-in"><span class="fp-th">${framedPhoto(c.photo,partName(c),icon,120)}</span><span class="fp-name pname">${esc(partName(c))} · </span><span>${money(c.price)}</span></span>`;
 }
 function fpShow(c,animate){
   const pill=document.getElementById('pricepill'); fpCur=c;
-  pill.setAttribute('aria-label',`Featured: ${c.brand} ${c.name}, open in builder`);
+  pill.setAttribute('aria-label',`Featured: ${partName(c)}, open in builder`);
   pill.title='Featured keyboard: open in builder';
   const swapIn=()=>{pill.innerHTML=fpHTML(c); const el=pill.firstElementChild; if(animate){el.classList.add('swap'); void el.offsetWidth; el.classList.remove('swap')}};
   const old=pill.firstElementChild;
@@ -1354,7 +1359,7 @@ function fpStart(){
 })();
 function fpOpen(){
   const c=fpCur; if(!c) return;
-  build={case:c.id,color:0,pcb:null,plate:null,switches:null,stabs:null,keycaps:null,extras:[],name:`My ${c.name} build`};
+  build={case:c.id,color:0,pcb:null,plate:null,switches:null,stabs:null,keycaps:null,extras:[],name:`My ${partName(c)} build`};
   persist(); go('build'); toast('Loaded into the builder');
 }
 function renderPill(){
@@ -1371,7 +1376,7 @@ function renderPill(){
   fpStop(); fpHold=false; pill.onclick=null; pill.setAttribute('data-go','build'); pill.removeAttribute('aria-label'); pill.title='Open your build';
   const v=verdict(compat(build)), col={ok:'var(--ok)',warn:'var(--warn)',fail:'var(--fail)',info:'var(--info)'}[v.level];
   const c=caseOf(build);
-  pill.innerHTML=`<span class="statusdot" style="background:${col}"></span>${c?`<span class="pname">${esc(c.name)} · </span>`:'<span class="pname">Your build · </span>'}${money(total(build))}`;
+  pill.innerHTML=`<span class="statusdot" style="background:${col}"></span>${c?`<span class="pname">${esc(partName(c))} · </span>`:'<span class="pname">Your build · </span>'}${money(total(build))}`;
 }
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&view==='finder'&&!fpTimer)fpStart()});
 
@@ -1636,36 +1641,18 @@ function paintCombos(n,animate){
 const answered=()=>Object.keys(quizAns).length>0;
 
 /* field of keyboards */
-// Slots by size tier: [tier, x as % of width, y, y basis]. 'a' = fraction of the free height above the
-// question card, 'h' = fraction of the window height. One hero, two large, a ring of medium boards, small ones at the edges.
-const FIELD_SLOTS=[
-  ['feat',50,.26,'a'],['sub',32,.72,'a'],['sub',68,.72,'a'],
-  ['mid',13,.25,'h'],['mid',87,.25,'h'],['mid',11,.53,'h'],['mid',89,.53,'h'],
-  ['sm',24,.12,'h'],['sm',37,.10,'h'],['sm',63,.10,'h'],['sm',76,.12,'h'],['sm',30,.31,'h'],['sm',70,.31,'h'],['sm',4,.40,'h'],['sm',96,.40,'h']];
-const FIELD_SLOTS_M=[
-  ['feat',50,.25,'a'],['sub',26,.72,'a'],['sub',74,.72,'a'],
-  ['sm',12,.56,'a'],['sm',88,.56,'a'],['sm',13,.93,'a'],['sm',87,.93,'a']];
-// Boards are drawn a little narrower for short layouts so a 60% hero still reads as a hero.
-const FW={'60':.86,'65':.89,'75':.91,'tkl':.96,'full':1};
+const FIELD_SLOTS=[[8,14],[22,8],[37,6],[63,6],[78,8],[92,14],[5,37],[18,31],[82,31],[95,37],[6,60],[17,57],[83,57],[94,60],[8,84],[21,90],[79,90],[92,84]];
+const MSLOTS_N=4;
+const LW={'60':.64,'65':.72,'75':.78,'tkl':.9,'full':1};
+const FEAT_SCALE=1.7; // the three centre boards are drawn this much larger than the first field layout
+let cutIds=null; const cutoutIds=()=>cutIds??=new Set(cutoutBoards().map(c=>c.id));
 const fieldEls={};
 function fieldBoard(b){return caseVisual(b,'field')}
+// The floating field draws only boards whose checked photo has a real transparent background (the image check records bg:null
+// only when the photo's border is transparent). Drawn icons and photos on a solid backdrop are never shown there.
+function cutoutBoards(list=FINDER_CASES){return list.filter(c=>c&&c.photo&&Array.isArray(c.photo.box)&&c.photo.bg===null)}
 function initField(){
 }
-// How vivid a hex colour is: chroma, eased down for near-white and near-black.
-function vividHex(h){
-  if(!/^#[0-9a-f]{6}$/i.test(h||'')) return 0;
-  const [r,g,b]=[1,3,5].map(i=>parseInt(h.slice(i,i+2),16)), mx=Math.max(r,g,b), mn=Math.min(r,g,b);
-  return (mx-mn)/255*(1-Math.abs((mx+mn)/255-1)*.4);
-}
-// Boards with a checked photo come first, then the most colourful: first colour swatch, any other swatch, a tinted photo backdrop.
-const fieldScoreMemo=new Map();
-function fieldScore(c){
-  let v=fieldScoreMemo.get(c.id); if(v!==undefined) return v;
-  const ph=c.photo, shot=!!(ph&&ph.img&&Array.isArray(ph.box)&&ph.ar>0), sw=(c.colors||[]).map(x=>vividHex(x[1]));
-  v=(shot?10:0)+(sw[0]||0)*3+Math.max(0,...sw.slice(1))+(shot?vividHex(ph.bg)*2:0);
-  fieldScoreMemo.set(c.id,v); return v;
-}
-let fieldGhosts=null;
 function fieldEl(id){
   if(fieldEls[id]) return fieldEls[id];
   const field=document.getElementById('field'), c=BYID[id];
@@ -1673,10 +1660,8 @@ function fieldEl(id){
     const el=document.createElement('button'); el.className='fitem'; el.type='button';
     const r=evalAns({}).byCase.get(c.id); const b=r?r.b:{case:c.id,color:0,keycaps:null,extras:[]};
     el.innerHTML=`<span class="art">${fieldBoard(b)}</span><span class="cap"></span>`; el.dataset.k=b.keycaps||'';
-    let hs=0; for(const ch of c.id) hs=(hs*31+ch.charCodeAt(0))>>>0;
-    el.style.setProperty('--tilt',((hs%5)-2)*.7+'deg'); el.style.setProperty('--fd',-(hs%70)/10+'s');
-    el.setAttribute('aria-label',`${c.brand} ${c.name}`);
-    el.addEventListener('click',()=>{const res=evalAns(quizAns); if(res.byCase.has(c.id)) openResults(c.id); else toast(`${c.name} doesn't match your answers`)});
+    el.setAttribute('aria-label',partName(c));
+    el.addEventListener('click',()=>{const res=evalAns(quizAns); if(res.byCase.has(c.id)) openResults(c.id); else toast(`${partName(c)} doesn't match your answers`)});
     field.appendChild(el); fieldEls[c.id]=el; return el;
   }
 }
@@ -1686,32 +1671,43 @@ function layoutField(){
   const res=evalAns(quizAns), W=innerWidth, H=innerHeight, mobile=W<760;
   const card=document.getElementById('qwrap'), cardTop=card.getBoundingClientRect().top;
   const topBar=mobile?60:72, avail=Math.max(120,cardTop-topBar);
-  const B=mobile?W:Math.min(W,H*1.55), cl=(lo,v,hi)=>Math.max(lo,Math.min(hi,v));
-  const TW=mobile?{feat:cl(200,W*.62,300),sub:W*.4,sm:W*.2}:{feat:cl(260,B*.32,520),sub:cl(210,B*.235,340),mid:cl(120,B*.15,200),sm:cl(84,B*.095,130)};
-  const slots=mobile?FIELD_SLOTS_M:FIELD_SLOTS;
-  // Matches fill the slots first, the most colourful (photographed) boards leading; only boards that get a slot are drawn.
-  // If there are fewer matches than slots, faint non-matching boards, again the most colourful first, fill the rest.
-  const hit=res.list.map(r=>r.b.case).sort((a,b)=>fieldScore(BYID[b])-fieldScore(BYID[a]));
-  fieldGhosts??=FINDER_CASES.map(c=>c.id).sort((a,b)=>fieldScore(BYID[b])-fieldScore(BYID[a]));
-  const ids=hit.slice(0,slots.length);
-  for(let i=0;ids.length<slots.length&&i<fieldGhosts.length;i++) if(!res.byCase.has(fieldGhosts[i])) ids.push(fieldGhosts[i]);
-  for(const id in fieldEls) if(!ids.includes(id)) fieldEls[id].className='fitem hidden-slot';
-  ids.forEach((id,i)=>{
-    const [tier,xp,yp,basis]=slots[i], r=res.byCase.get(id);
-    place(id,{x:xp/100*W,y:basis==='a'?topBar+yp*avail:yp*H,w:TW[tier],cls:r?tier:'out',r,W,H});
+  const featW=mobile?Math.min(150,W*0.36)*FEAT_SCALE:Math.max(160,Math.min(250,W*0.17))*FEAT_SCALE, othW=mobile?W*0.2:Math.max(90,Math.min(150,W*0.1));
+  const featPos=mobile?[[50,.3],[25,.72],[75,.72]]:[[50,.28],[33,.68],[67,.68]];
+  // On a phone the two lower centre boards share the width, so each is capped to half of it.
+  const featMax=i=>mobile&&i>0?(W-24)/2:Infinity;
+  // Only cut-out boards (transparent photo) are ever drawn. Matches fill the slots first, best first; slots with no
+  // transparent match are left empty rather than filled with anything else.
+  const cut=cutoutIds(), hit=res.list.map(r=>r.b.case).filter(id=>cut.has(id));
+  const top=hit.slice(0,3);
+  const nSlots=mobile?MSLOTS_N:FIELD_SLOTS.length;
+  const rest=hit.slice(3,3+nSlots+6); // a few spare so culled slots can be skipped
+  for(const id in fieldEls) if(!top.includes(id)&&!rest.includes(id)) fieldEls[id].className='fitem hidden-slot';
+  // The area each board takes (with a margin and room for its label), so a background board never lands on the header, the card or another board.
+  const cw=Math.min(card.classList.contains('wide')?1080:760,W-32), taken=[[0,0,W,topBar],[W/2-cw/2,cardTop,W/2+cw/2,H]];
+  const areaOf=(id,x,y,w,max,cap)=>{const ph=BYID[id].photo, bw=Math.min(w*LW[BYID[id].layout],max), bh=bw*(ph&&ph.ar>0?1.1/(ph.ar+.1):.4)+(cap?28:0), m=10; return [x-bw/2-m-(cap?30:0),y-bh/2-m,x+bw/2+m+(cap?30:0),y+bh/2+m]};
+  const hits=(a,b)=>a[0]<b[2]&&b[0]<a[2]&&a[1]<b[3]&&b[1]<a[3];
+  top.forEach((id,i)=>{
+    const x=featPos[i][0]/100*W, y=topBar+featPos[i][1]*avail;
+    place(id,{x,y,w:featW,max:featMax(i),cls:'feat',r:res.byCase.get(id)}); taken.push(areaOf(id,x,y,featW,featMax(i),true));
   });
+  const MSLOTS=[[13,.1],[87,.1],[11,.4],[89,.4]], nS=mobile?MSLOTS.length:FIELD_SLOTS.length;
+  let used=0;
+  for(let s=0;s<nS&&used<rest.length;s++){
+    const slot=mobile?MSLOTS[s]:FIELD_SLOTS[s], id=rest[used];
+    const x=slot[0]/100*W, y=mobile?topBar+slot[1]*avail:slot[1]/100*H, a=areaOf(id,x,y,othW,Infinity,false);
+    if(taken.some(t=>hits(a,t))) continue; // that spot is taken: leave it empty
+    taken.push(a); used++;
+    place(id,{x,y,w:othW,cls:res.byCase.has(id)?'dim':'out',r:res.byCase.get(id)});
+  }
+  for(const id of rest.slice(used)) if(fieldEls[id]) fieldEls[id].className='fitem hidden-slot';
 }
-function place(id,{x,y,w,cls,r,W,H}){
-  const el=fieldEl(id), c=BYID[id], fw=w*FW[c.layout], hasCap=!!r&&cls!=='sm';
-  if(r&&el.dataset.k!==r.b.keycaps){el.dataset.k=r.b.keycaps; el.querySelector('.art').innerHTML=fieldBoard(r.b)}
-  const vb=el.querySelector('svg')?.viewBox?.baseVal, ratio=vb&&vb.width?vb.height/vb.width:.4;
-  // Keep the whole board, its label and its float and tilt inside the window.
-  const hx=fw/2+(hasCap?36:0)+16, hy=(fw*ratio+(hasCap?28:0))/2+16;
-  x=Math.max(hx,Math.min(W-hx,x)); y=Math.max(hy,Math.min(H-hy,y));
-  el.style.left=x+'px'; el.style.top=y+'px'; el.style.width=fw+'px';
+function place(id,{x,y,w,max=Infinity,cls,r}){
+  const el=fieldEl(id), c=BYID[id];
+  el.style.left=x+'px'; el.style.top=y+'px'; el.style.width=Math.min(w*LW[c.layout],max)+'px';
   el.className='fitem '+cls;
-  el.querySelector('.cap').textContent=hasCap?c.name:'';
-  el.tabIndex=cls==='feat'||cls==='sub'?0:-1;
+  if(r&&el.dataset.k!==r.b.keycaps){el.dataset.k=r.b.keycaps; el.querySelector('.art').innerHTML=fieldBoard(r.b)}
+  el.querySelector('.cap').innerHTML=cls==='feat'&&r?`${esc(partName(c))}<small>${money(r.t)} build</small>`:'';
+  el.tabIndex=cls==='feat'?0:-1;
 }
 addEventListener('resize',()=>{clearTimeout(window.__rz); window.__rz=setTimeout(layoutField,80)});
 
@@ -1861,7 +1857,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!document.getElemen
 let rShown=60;
 function renderRList(){
   const el=document.getElementById('rlist'); rShown=Math.max(rShown,resIdx+1);
-  el.innerHTML=resList.slice(0,rShown).map((r,i)=>{const c=caseOf(r.b);return `<button style="--i:${i}" data-ri="${i}" aria-current="${i===resIdx}"><span class="rthumb">${caseVisual(r.b,'thumb')}</span><span style="min-width:0"><b>${esc(c.brand)} ${esc(c.name)}</b><small>${money(r.t)}</small></span>${i===0?'<span class="best">Best match</span>':`<small>${r.pct}%</small>`}</button>`}).join('')+(resList.length>rShown?`<button class="rmore" id="rmore" style="grid-template-columns:1fr;text-align:center"><small>Show more (${resList.length-rShown} left)</small></button>`:'');
+  el.innerHTML=resList.slice(0,rShown).map((r,i)=>{const c=caseOf(r.b);return `<button style="--i:${i}" data-ri="${i}" aria-current="${i===resIdx}"><span class="rthumb">${caseVisual(r.b,'thumb')}</span><span style="min-width:0"><b>${esc(partName(c))}</b><small>${money(r.t)}</small></span>${i===0?'<span class="best">Best match</span>':`<small>${r.pct}%</small>`}</button>`}).join('')+(resList.length>rShown?`<button class="rmore" id="rmore" style="grid-template-columns:1fr;text-align:center"><small>Show more (${resList.length-rShown} left)</small></button>`:'');
   const more=el.querySelector('#rmore'); if(more) more.onclick=()=>{rShown+=60; const st=el.scrollTop; renderRList(); el.scrollTop=st};
   el.querySelectorAll('[data-ri]').forEach(b=>b.onclick=()=>{resIdx=+b.dataset.ri; el.querySelectorAll('[data-ri]').forEach(x=>x.setAttribute('aria-current',x===b)); renderRDetail()});
 }
@@ -1871,18 +1867,18 @@ function renderRDetail(){
   const sub=i=>i.slot==='switches'?`${i.qty} × ${money(i.part.price)}`:i.slot==='keycaps'&&i.addon?`incl. ${money(i.addon)} numpad kit`:i.slot==='stabs'?`${layoutOf(b)==='full'?7:5}-stab set`:'';
   const desc=p=>p.cat==='case'?[LAYOUT_NAMES[p.layout],p.material,p.mount&&p.mount+' mount',p.assembled?'sold assembled':p.kit&&'kit'].filter(Boolean).join(' · '):p.cat==='switches'?`${p.type} · ${p.force} g · ${p.pins}-pin`:p.cat==='keycaps'?`${p.profile} profile · ${p.material} · ${p.legends}`:p.cat==='pcb'?`${p.hotswap?'Hot-swap':'Solder'} · ${p.pins}-pin`:p.cat==='plate'?p.material:p.blurb||'';
   let rows=items.map((i,n)=>`<div class="part" style="--i:${n}"><span class="pt">${i.slot==='case'?caseVisual({case:c.id,color:b.color||0,keycaps:null,extras:[]},'thumb'):thumbFor(i.part)}</span>
-      <div class="pn"><small>${esc(SL(i.slot))}</small><b>${esc(i.part.brand==='Various'?'':i.part.brand+' ')}${esc(i.part.name)}</b><em>${esc(desc(i.part))}</em></div>
+      <div class="pn"><small>${esc(SL(i.slot))}</small><b>${esc(partName(i.part))}</b><em>${esc(desc(i.part))}</em></div>
       <div class="pp">${money(i.price)}${sub(i)?`<small>${esc(sub(i))}</small>`:''}</div>
       <div class="stores">${i.slot==='switches'?`<span class="watchrow">${soundWatchLink(i.part)}${soundSearchLink(i.part,'More tests',true)}</span>`:''}${i.slot==='keycaps'&&quizAns.look==='surprise'?'<button type="button" class="listen" id="reroll">↻ Shuffle</button>':''}${storeChips(i.part)}</div></div>`);
   if(c.assembled) rows.splice(1,0,`<div class="part inc" style="--i:1"><span class="pt">${pcbSVG(c.kit.pcb)}</span><div class="pn"><small>Included</small><b>Switches and keycaps, per the listing</b><em>Listed as a complete keyboard. Check ${esc(storeOf(c))} for which switches and keycaps it ships with.</em></div><div class="pp"><span class="chip ok">Included</span></div></div>`);
-  else if(c.kit&&c.catalogId) rows.splice(1,0,`<div class="part inc" style="--i:1"><span class="pt">${pcbSVG(c.kit.pcb)}</span><div class="pn"><small>Kit</small><b>PCB and plate, per the listing</b><em>Check ${esc(storeOf(c))} for exactly what the ${esc(c.name)} kit includes.</em></div><div class="pp"><span class="chip ok">Kit</span></div></div>`);
-  else if(c.kit) rows.splice(1,0,`<div class="part inc" style="--i:1"><span class="pt">${pcbSVG(c.kit.pcb)}</span><div class="pn"><small>Included</small><b>PCB, ${esc(c.kit.plate)} plate${c.kit.stabs?' and stabilizers':''}</b><em>Comes with the ${esc(c.name)}</em></div><div class="pp"><span class="chip ok">Included</span></div></div>`);
+  else if(c.kit&&c.catalogId) rows.splice(1,0,`<div class="part inc" style="--i:1"><span class="pt">${pcbSVG(c.kit.pcb)}</span><div class="pn"><small>Kit</small><b>PCB and plate, per the listing</b><em>Check ${esc(storeOf(c))} for exactly what the ${esc(partName(c))} kit includes.</em></div><div class="pp"><span class="chip ok">Kit</span></div></div>`);
+  else if(c.kit) rows.splice(1,0,`<div class="part inc" style="--i:1"><span class="pt">${pcbSVG(c.kit.pcb)}</span><div class="pn"><small>Included</small><b>PCB, ${esc(c.kit.plate)} plate${c.kit.stabs?' and stabilizers':''}</b><em>Comes with the ${esc(partName(c))}</em></div><div class="pp"><span class="chip ok">Included</span></div></div>`);
   const nParts=items.length+(c.kit?1:0);
   const el=document.getElementById('rdetail');
   el.innerHTML=`<button class="iconbtn rclose" id="rclose" aria-label="Close">${icon('close')}</button>
     <div class="rsum swapin">
       <div class="board">${caseVisual(b,'detail')}</div>
-      <div><h2>${esc(c.brand)} ${esc(c.name)}</h2></div>
+      <div><h2>${esc(partName(c))}</h2></div>
       <div class="total"><b>${money(r.t)}</b><span>approx. total</span></div>
       <p class="rcap"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 8h11M9 4l4 4-4 4"/></svg>Made of the ${nParts} parts listed <span class="rcap-w">on the right</span><span class="rcap-n">below</span></p>
       <div class="stats3"><div><span>Match</span><b>${r.pct}%</b></div><div><span>Sound</span><b>${pitchWord(r.e.pitch)}</b></div><div><span>Feel</span><b>${esc(s?s.type:'As shipped')}</b></div></div>
@@ -1894,8 +1890,8 @@ function renderRDetail(){
       ${rows.join('')}
       <p class="pfoot">Approximate list prices before shipping and tax. The dark button opens the maker's page; the others search that store.</p></div>`;
   el.querySelector('#rclose').onclick=closeResults;
-  el.querySelector('#rbuild').onclick=()=>{build={...b,extras:[...b.extras],name:`My ${c.name} build`}; persist(); closeResults(); go('build'); toast('Loaded into the builder')};
-  el.querySelector('#rcopy').onclick=()=>copyText(partsText({...b,name:`${c.brand} ${c.name} build`}),el.querySelector('#rcopyfb'));
+  el.querySelector('#rbuild').onclick=()=>{build={...b,extras:[...b.extras],name:`My ${partName(c)} build`}; persist(); closeResults(); go('build'); toast('Loaded into the builder')};
+  el.querySelector('#rcopy').onclick=()=>copyText(partsText({...b,name:`${partName(c)} build`}),el.querySelector('#rcopyfb'));
   const rr=el.querySelector('#reroll'); if(rr) rr.onclick=()=>{
     quizAns.seed=Math.floor(Math.random()*1e6); store.set('sy.quiz',quizAns);
     const id=c.id; resList=evalAns(quizAns).list; resIdx=Math.max(0,resList.findIndex(x=>x.b.case===id)); renderRList(); renderRDetail(); layoutField();
@@ -1931,7 +1927,7 @@ function renderParts(){
     if(included){
       const kp=c.kit.pcb, desc= s.key==='pcb'?[kp.hotswap===true?'Hot-swap':kp.hotswap===false?'Solder':'PCB type not listed',kp.pins?`${kp.pins}-pin`:'',kp.rgb?`RGB${kp.led?` (${kp.led}-facing)`:''}`:''].filter(Boolean).join(', '): s.key==='plate'?(c.kit.plate?`${c.kit.plate} plate`:'Plate material not listed'):c.kit.stabs;
       const thumb = s.key==='pcb'?pcbSVG(c.kit.pcb): s.key==='plate'?plateSVG(c.kit.plate): stabSVG({mount:/Plate/.test(c.kit.stabs)?'plate':'screw'});
-      h+=`<div class="prow included"><div class="slot">${s.label}<small>${s.hint}</small></div><div class="item"><span class="thumb">${thumb}</span><div class="meta"><b>Included with ${esc(c.name)}</b><span class="by">${esc(desc)}</span></div></div><div class="price"><span class="chip ok">Included</span></div><div class="acts"></div></div>`;
+      h+=`<div class="prow included"><div class="slot">${s.label}<small>${s.hint}</small></div><div class="item"><span class="thumb">${thumb}</span><div class="meta"><b>Included with ${esc(partName(c))}</b><span class="by">${esc(desc)}</span></div></div><div class="price"><span class="chip ok">Included</span></div><div class="acts"></div></div>`;
       continue;
     }
     const li=items.find(i=>i.slot===s.key);
@@ -1982,7 +1978,7 @@ function renderRail(){
 function partsText(b){
   const lines=[`${b.name||'My keyboard'} (Switchyard)`,''];
   const c=caseOf(b);
-  for(const i of lineItems(b)) lines.push(`${SLOTS.find(s=>s.key===i.slot).label}: ${i.part.brand} ${i.part.name}${i.qty?` x${i.qty}`:''} - ${money(i.price)}`,`  ${buyLinks(i.part)[0].u}`);
+  for(const i of lineItems(b)) lines.push(`${SLOTS.find(s=>s.key===i.slot).label}: ${partName(i.part)}${i.qty?` x${i.qty}`:''} - ${money(i.price)}`,`  ${buyLinks(i.part)[0].u}`);
   if(c&&c.kit) lines.push(`Included with kit: PCB, ${c.kit.plate} plate${c.kit.stabs?', stabilizers':''}`);
   if(BYID[b.switches]) lines.push('', 'Switch sound tests: '+soundSearchUrl(BYID[b.switches]));
   lines.push('',`Total: ${money(total(b))} (approx.)`,`Build code: ${encodeBuild(b)}`);
@@ -2107,7 +2103,7 @@ function renderPickList(){
 }
 function choose(slot,p){
   const notes=[];
-  if(slot==='extras'){ build.extras=[...new Set([...(build.extras||[]),p.id])]; commit(); renderPickList(); toast(`Added ${p.name}`); return }
+  if(slot==='extras'){ build.extras=[...new Set([...(build.extras||[]),p.id])]; commit(); renderPickList(); toast(`Added ${partName(p)}`); return }
   build[slot]=p.id;
   if(slot==='keycaps') stageMode='render'; if(slot==='case') stageMode='photo';
   if(slot==='case'){
@@ -2119,7 +2115,7 @@ function choose(slot,p){
     }
   }
   commit(); closePicker();
-  toast(notes.length?`${p.name} added. ${notes.join('; ')}.`:`${p.name} added`);
+  toast(notes.length?`${partName(p)} added. ${notes.join('; ')}.`:`${partName(p)} added`);
   const next=SLOTS.find(s=>needed(build,s.key)&&!build[s.key]);
   if(next && slot==='case') setTimeout(()=>openPicker(next.key),250);
 }
@@ -2133,7 +2129,7 @@ function renderSaved(){
   el.innerHTML=`<div class="saved-grid">${saved.map((b,i)=>{const c=caseOf(b),v=verdict(compat(b));return `<article style="--i:${i}" class="card saved">
     <div class="boardwrap" style="padding:12px;min-height:0">${buildBoard(b,{u:24,cls:''})||''}</div>
     <div class="body"><div class="row"><b>${esc(b.name||'Untitled')}</b><span class="chip ${v.level}">${v.text}</span></div>
-    <div class="row note"><span>${c?esc(c.brand+' '+c.name):''}</span><span class="mono">${money(total(b))}</span></div>
+    <div class="row note"><span>${c?esc(partName(c)):''}</span><span class="mono">${money(total(b))}</span></div>
     <div class="row"><button class="btn small primary" data-load="${i}">Open</button><button class="btn small ghost" data-del="${i}">Delete</button></div></div></article>`}).join('')}</div>`;
   el.querySelectorAll('[data-load]').forEach(b=>b.onclick=()=>{build={...saved[+b.dataset.load]}; persist(); go('build')});
   el.querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>{

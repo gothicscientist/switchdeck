@@ -70,3 +70,30 @@ test('directory photos are letterboxed inside fixed frames',async()=>{
     assert.match(rule,/object-fit:contain/,cls);assert.match(rule,/height:\d+px/,cls);
   }
 });
+
+// Pulls the finder's cutout filter out of index.html.
+async function cutoutHelper(){
+  const html=await readFile(new URL('../index.html',import.meta.url),'utf8');
+  const start=html.indexOf('function cutoutBoards('), end=html.indexOf('\n',start);
+  assert.ok(start>0,'cutoutBoards exists');
+  const ctx={FINDER_CASES:[]};vm.createContext(ctx);vm.runInContext(html.slice(start,end),ctx);
+  return ctx;
+}
+test('the floating field only draws boards whose photo has a transparent background',async()=>{
+  const ctx=await cutoutHelper();
+  const box=[5,10,90,60];
+  const cases=[
+    {id:'ok',photo:{img:'https://x/a.png',box,ar:2.5,bg:null}},
+    {id:'solid',photo:{img:'https://x/b.jpg',box,ar:2.5,bg:'#ffffff'}},
+    {id:'white-is-not-clear',photo:{img:'https://x/c.jpg',box,ar:2.5,bg:'#fafafa'}},
+    {id:'nophoto'},
+    {id:'nullphoto',photo:null},
+    {id:'nobox',photo:{img:'https://x/d.png',bg:null}},
+    {id:'undefbg',photo:{img:'https://x/e.png',box,ar:2.5}}
+  ];
+  ctx.cases=cases;
+  const ids=vm.runInContext('cutoutBoards(cases).map(c=>c.id)',ctx);
+  assert.deepEqual([...ids],['ok']);
+  ctx.FINDER_CASES=cases;
+  assert.deepEqual([...vm.runInContext('cutoutBoards().map(c=>c.id)',ctx)],['ok'],'defaults to the finder boards');
+});
