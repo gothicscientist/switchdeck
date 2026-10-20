@@ -92,3 +92,11 @@ test('store titles that describe switches for keyboards are switches',()=>{
   assert.equal(category(raw({title:'Gateron North Pole Switch Linear 50g 5pin SMD RGB mx stem switch for mechanical keyboard',product_type:''})),'switches');
   assert.equal(category(raw({title:'Example 65% Hot-swap Keyboard with 5pin Gateron switches',product_type:''})),'keyboards');
 });
+test('lubed switch packs, LEDs, films, badges and hardware packs are never boards',()=>{
+  const cat=t=>category(raw({title:t,product_type:'Keyboards'}));
+  assert.equal(cat('KTT Wine Red Switch Linear 53g MX switch for mechanical keyboard 80m Factory Lubed'),'switches');
+  for(const t of ['4pin rgb leds Diffused rgb led for mechanical keyboard such as keycool 87','DZ60 WKL PE Film','Neo75 Cu Accent Badge','Keycult No. 1 / 60 Hardware Pack','Perfect Grip Sheet for Filco Majestouch Fullsize','ZOOM64 Mechanical Keyboard Kit Add Ons'])
+    assert.notEqual(cat(t),'keyboards',t);
+  for(const t of ['One 2 Mini v2 RGB LED 60% Double Shot PBT Mechanical Keyboard','QK65 V2 Classic by Qwertykeys - Custom Keyboard Kit'])
+    assert.equal(cat(t),'keyboards',t);
+});

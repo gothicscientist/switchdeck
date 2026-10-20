@@ -24,6 +24,7 @@ export function plain(value='') {
   return String(value).replace(/<(script|style)\b[^>]*>[\s\S]*?<\/\1>/gi,'').replace(/<\/(?:td|th)>\s*<(?:td|th)[^>]*>/gi,': ').replace(/<\/(?:li|p|tr|div|h[1-6])>|<br\s*\/?\s*>/gi,'\n').replace(/<[^>]+>/g,' ').replace(/&nbsp;|&#160;/g,' ').replace(/&amp;/g,'&').replace(/&quot;/g,'"').replace(/&#39;|&apos;/g,"'").replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&#(\d+);/g,(_,n)=>String.fromCodePoint(Math.min(+n,0x10ffff))).split('\n').map(s=>s.replace(/\s+/g,' ').trim()).filter(Boolean).join('\n');
 }
 export function https(value) {try {const u=new URL(value.startsWith('//')?'https:'+value:value); return u.protocol==='https:'?u.href:null;}catch{return null}}
+const PART_FOR_A_BOARD=/\b(?:for|such as)\s+(?:custom\s+|gaming\s+)?mech\w*\s+keyboards?\b|\bbadges?\b|\bfilm\b|\bbulbs?\b|hardware pack|grip sheet|expansion kit|\bkit add[- ]?ons?\b/i;
 export function category(p) {
   const title=plain(p.title), type=p.product_type||'', tags=(p.tags||[]).join(' '), t=title.toLowerCase();
   if(/gift card|gift certificate|route protection|shipping protection|test product|fedex test|fee placeholder|balance payment|build service|\bdeposit\b|\binterest check\b|redeem your points|\bapparel\b|t-shirt|hoodie|sticker|poster|\bmouse\b|trackpad|wrist rest|carrying case|travel case|keyboard bag|keycap tray|display stand|switch tester|sample pack|sampler|switch container|keycap storage|mystery box|mystery switches|replacement keycaps/i.test(title+' '+type)) return null;
@@ -35,7 +36,9 @@ export function category(p) {
   if(/\bcase\b/i.test(type+' '+title)&&!/keycap|carrying|travel|storage|foam/i.test(title)) return 'cases';
   if(/\baccessories\b|\badd-ons\b|\bcomponents\b|\bweights?\b|\bknobs?\b|\bfeet\b|\bbumpons?\b|\bscrews?\b/i.test(title)) return 'extras';
   // Store titles like "Linear Switch 5pin RGB for Mechanical Keyboard" describe switches, not keyboards.
-  if(/\bswitch(?:es)?\b/i.test(title)&&/(?:for|of)\s+(?:gaming\s+)?mechanical\s+keyboards?|mx[- ]?stem|\b[345]\s?-?pins?\b/i.test(title)&&!/keyboard/i.test(title.replace(/(?:for|of)\s+(?:gaming\s+)?mechanical\s+keyboards?/ig,''))&&!/keycaps?\b|tester|\bpcb\b|\bplate\b|puller|opener|lube|film|spring kit/i.test(title)) return 'switches';
+  if(/\bswitch(?:es)?\b/i.test(title)&&/(?:for|of)\s+(?:gaming\s+)?mechanical\s+keyboards?|mx[- ]?stem|\b[345]\s?-?pins?\b/i.test(title)&&!/keyboard/i.test(title.replace(/(?:for|of)\s+(?:gaming\s+)?mechanical\s+keyboards?/ig,''))&&!/keycaps?\b|tester|\bpcb\b|\bplate\b|puller|opener|\blubes?\b|film|spring kit/i.test(title)) return 'switches';
+  // "LED bulbs for mechanical keyboard" or "Badge" titles are parts for a board, not a board.
+  if(PART_FOR_A_BOARD.test(title)) return /\bswitch(?:es)?\b/i.test(title)?'switches':'extras';
   // Complete keyboards bundled with a named keycap set are still keyboards.
   if(/keyboard|diy kit/i.test(type)&&(!/keycaps?(?: set)?$/i.test(title)||/with keycaps$/i.test(title))) return 'keyboards';
   if(/keycap/i.test(type)||/keycaps?|\b(?:GMK|PBTfans|DSS|DCS|KAT|KAM|MT3|MW|DCX)\b/i.test(title)) return 'keycaps';
@@ -140,7 +143,10 @@ const switchType=t=>{const x=String(t||'').toLowerCase(); return /silent/.test(x
 const live=p=>p.variants.filter(v=>v.available);
 // Keychron's low-profile and slim lines take low-profile switches; their names don't always say so.
 const LOW_PROFILE_MODELS=/\bKeychron (?:K1|K3|K5|K7|K9|K11|K13|K15|K17|B\d|S1)\b/i;
-const NOT_A_BOARD=/\bbag\b|add-?ons?\b|\bfeet\b|accessor|\bcover\b|sleeve|\bknob\b|weight|replacement|\bparts?\b|\bcable\b|\bfoam\b|wrist|palm|\bstand\b|dust|\bskin\b|protector|upgrade kit|\bplate\b|\bpcb\b/i;
+const NOT_A_BOARD=/\bbadges?\b|\bfilm\b|\bbulbs?\b|hardware pack|grip sheet|expansion kit|\b(?:for|such as)\s+(?:custom\s+|gaming\s+)?mech\w*\s+keyboards?\b|\bbag\b|add[- ]?ons?\b|\bconfigurator\b|\bfeet\b|accessor|\bcover\b|sleeve|\bknob\b|weight|replacement|\bparts?\b|\bcable\b|\bfoam\b|wrist|palm|\bstand\b|dust|\bskin\b|protector|upgrade kit|\bplate\b|\bpcb\b/i;
+// Variants sold alongside a board on the same listing, such as a foam kit. Option combos
+// like "Black / Logo Badge / PC Plate" are the board itself.
+const ADD_ON=/^[^/]*(?:\bfoam\b|\bfilm\b|\bbadges?\b|hardware pack|add-?ons?\b)[^/]*$/i;
 const LOCALE=/\bISO\b|\bJIS\b|\bDE\b|\bFR\b|\bUK\b|nordic|spanish|german|french|japanese|korean|arabic|hebrew|russian|swiss|belgian|italian|turkish|portug/i;
 const tidy=v=>v?String(v).replace(/[.;,\s]+$/,'').slice(0,40):null;
 const cleanBrand=(p)=>{const b=String(p.brand).replace(/,?\s*(?:LLC|Inc\.?|Ltd\.?)$/i,'').trim(); return /^(?:Z-|third party|default|vendor)/i.test(b)?p.retailer:b};
@@ -223,9 +229,10 @@ export function builderPart(p) {
     const L=builderLayout(s.layout,p.name)||layoutFromName(p.name); if(!L||s.switchSystem||NON_MX.test(p.name)||LOW_PROFILE_MODELS.test(p.name)||NOT_A_BOARD.test(p.name)||LOCALE.test(p.name)) return null;
     const vs0=live(p); if(!vs0.length) return null;
     const vs=vs0.filter(v=>!LOCALE.test(v.name)).length?vs0.filter(v=>!LOCALE.test(v.name)):vs0;
-    const bare=vs.find(v=>/bare ?bones?|barebone|\bkit\b|no switch|without switch|\bdiy\b/i.test(v.name));
+    const bare=vs.find(v=>!ADD_ON.test(v.name)&&/bare ?bones?|barebone|\bkit\b|no switch|without switch|\bdiy\b/i.test(v.name));
     const assembled=!bare&&!/bare ?bones?|barebone|\bkit\b|diy/i.test(p.name);
-    const v=bare||cheapest(vs);
+    const boards=vs.filter(v=>!ADD_ON.test(v.name)); if(!boards.length) return null;
+    const v=bare||cheapest(boards);
     const opt=p.options.find(o=>/colou?r|finish/i.test(o.name));
     let colors=opt?[...new Set(opt.values)].map(n=>[n,colorHex(n)]).filter(c=>c[1]).slice(0,6):[];
     if(!colors.length){const h=colorHex(p.name+' '+v.name);colors=[[h?'As pictured':'As pictured',h||'#57534E']]}
