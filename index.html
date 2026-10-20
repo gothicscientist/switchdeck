@@ -533,6 +533,33 @@ a.listen.watch:hover{background:rgba(59,130,246,.2)}
   .boardwrap{padding:28px 16px 24px}
 }
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-delay:0ms!important;transition-duration:.01ms!important}}
+
+/* Keep the finder composition proportional to the usable viewport, including short laptops. */
+@media (min-width:761px){
+  .qwrap{width:min(760px,calc(100% - 48px),max(620px,98dvh));bottom:max(clamp(18px,3.4dvh,32px),env(safe-area-inset-bottom,0px))}
+  .qwrap.wide{width:min(1080px,calc(100% - 48px),max(680px,135dvh))}
+  .qcard{padding:clamp(16px,2.8dvh,26px)}
+  .qhead{grid-template-columns:80px minmax(0,1fr) 80px;margin-bottom:clamp(14px,2.8dvh,26px)}
+  .qhead h1{font-size:clamp(20px,2.8dvh,26px)}
+  .opts{grid-template-columns:repeat(var(--option-count,3),minmax(0,1fr))}
+  .opt{min-width:0;min-height:clamp(76px,10.6dvh,96px);padding:clamp(10px,1.8dvh,16px) 8px}
+  .opt .art{height:clamp(34px,6.4dvh,58px);margin-bottom:clamp(6px,1.1dvh,10px)}
+  .opt .art svg,.opt .art img{max-height:100%}
+  .opt b{font-size:clamp(12px,1.55dvh,14px)}
+  .opt span{font-size:clamp(11px,1.4dvh,12.5px)}
+}
+@media (min-width:481px) and (max-width:760px){
+  .opts{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media (max-width:760px){
+  .qcard{max-height:calc(100dvh - 152px);overflow:auto}
+  .qhead{grid-template-columns:64px minmax(0,1fr) 64px}
+  .qhead h1{font-size:clamp(16px,3.5vw,19px)}
+}
+@media (max-height:500px) and (min-width:761px){
+  .qcard{max-height:calc(100dvh - 150px);overflow:auto}
+}
+
 </style>
 <link rel="stylesheet" href="assets/directory.css">
 
@@ -1772,11 +1799,15 @@ function fieldEl(id){
 function layoutField(){
   if(view!=='finder') return;
   initField();
+  const counter=document.querySelector('#qcount b');
+  if(counter&&shownCombos!=null) counter.textContent=fmtCombos(shownCombos);
   if(!introDone){introDone=true; introOn=true; const f=document.getElementById('field'); f.classList.add('intro');
     setTimeout(()=>{introOn=false},50); setTimeout(()=>f.classList.remove('intro'),1800)}
-  const res=evalAns(quizAns), W=innerWidth, H=innerHeight, mobile=W<760;
+  const res=evalAns(quizAns), fieldRect=document.getElementById('view-finder').getBoundingClientRect();
+  const W=fieldRect.width, H=fieldRect.height, mobile=W<=760;
   const card=document.getElementById('qwrap'), cardTop=card.getBoundingClientRect().top;
-  const topBar=mobile?60:72, avail=Math.max(120,cardTop-topBar);
+  const topBar=document.querySelector('.top .bar').getBoundingClientRect().bottom-fieldRect.top;
+  const avail=Math.max(0,cardTop-fieldRect.top-topBar-16);
   const featBase=mobile?Math.min(150,W*0.36)*MFEAT_SCALE:W*0.18/LW['75']*FEAT_SCALE; // 18% of the width is the 75% layout's size; other layouts scale by LW
   const othW=mobile?W*0.16:Math.max(80,Math.min(130,W*0.065));
   // Only cut-out boards (transparent photo) are ever drawn. Matches fill the slots first, best first; slots with no
@@ -1798,33 +1829,26 @@ function layoutField(){
   // Fit the centre three: one board on top, two side by side below, all between the header and the card, never overlapping.
   const fit=s=>{const w=top.map((id,i)=>wOf(id,featBase*s,mobile&&i>0?halfW:Infinity)); return {w,h:top.map((id,i)=>hOf(id,w[i],true))}};
   let sc=1, f=fit(sc), fx, fy;
-  if(mobile){
-    for(let k=0;k<6&&top.length===3;k++){
-      const need=f.h[0]+Math.max(f.h[1],f.h[2])+GY, row=f.w[1]+f.w[2]+GX;
-      const k2=Math.min(1,(W-24)/row,(avail-14)/need);
-      if(k2>=.999) break; sc*=k2*.995; f=fit(sc);
-    }
-    const rowH=Math.max(f.h[1]||0,f.h[2]||0), free=Math.max(0,avail-(f.h[0]+rowH+GY));
-    const y0=topBar+free*.3+f.h[0]/2, rowTop=topBar+free*.3+f.h[0]+GY+free*.3;
-    const rowW=(f.w[1]||0)+(f.w[2]||0)+GX, rx=(W-rowW)/2;
-    fx=[W/2,rx+(f.w[1]||0)/2,rx+(f.w[1]||0)+GX+(f.w[2]||0)/2]; fy=[y0,rowTop+rowH/2,rowTop+rowH/2];
-  } else {
-    // Desktop: fixed spots (picture centres): top board at 50% / 26%, the lower two at 40% and 60% / 47%. The size only shrinks
-    // if the boards would otherwise touch each other, the header or the card. The caption hangs under each picture.
-    fx=[W/2,W*.4,W*.6]; fy=[H*.26,H*.47,H*.47];
-    for(let k=0;k<4&&top.length===3;k++){
-      const ih=f.h.map(h=>h-CAP), ihRow=Math.max(ih[1],ih[2]);
-      const k2=Math.min(1,
-        (fy[0]-topBar)/(ih[0]/2),
-        (fy[1]-fy[0]-CAP-GY)/((ih[0]+ihRow)/2),
-        (cardTop-10-CAP-fy[1])/(ihRow/2),
-        (W*.2-GX)/((f.w[1]+f.w[2])/2));
-      if(k2>=.999) break; sc*=Math.max(.3,k2)*.995; f=fit(sc);
-    }
-    fy=fy.map(y=>y+CAP/2); // the box's centre includes the caption, so shift down to keep the picture centred on the spot
-  }
+  // Fit both rows as a whole inside the actual band between navigation and the card.
+  // Fixed screen-percentage centres can leave negative room on short laptops and collapse the pictures.
+  const rowHeight=()=>Math.max(f.h[1]||0,f.h[2]||0);
+  const pictureHeight=()=>Math.max(0,f.h[0]-CAP)+Math.max(0,rowHeight()-CAP);
+  const imageRoom=Math.max(0,avail-CAP*2-GY-16);
+  const widthRoom=W-(mobile?24:80);
+  const rowWidth=(f.w[1]||0)+(f.w[2]||0)+GX;
+  sc=Math.min(1,imageRoom/Math.max(1,pictureHeight()),widthRoom/Math.max(1,rowWidth),widthRoom/Math.max(1,f.w[0]||0));
+  f=fit(sc);
+  const usedHeight=(f.h[0]||0)+rowHeight()+GY;
+  const free=Math.max(0,avail-usedHeight);
+  const firstTop=topBar+free*.4;
+  const rowTop=firstTop+(f.h[0]||0)+GY+free*.2;
+  const separation=Math.max((f.w[1]||0)/2+(f.w[2]||0)/2+GX,mobile?0:W*.2);
+  const pairWidth=(f.w[1]||0)/2+separation+(f.w[2]||0)/2;
+  const pairLeft=(W-pairWidth)/2;
+  fx=[W/2,pairLeft+(f.w[1]||0)/2,pairLeft+(f.w[1]||0)/2+separation];
+  fy=[firstTop+(f.h[0]||0)/2,rowTop+rowHeight()/2,rowTop+rowHeight()/2];
   // The area each board takes (with a margin), so a background board never lands on the header, the card or another board.
-  const cw=Math.min(card.classList.contains('wide')?1080:760,W-32), taken=[[W/2-cw/2-4,cardTop-4,W/2+cw/2+4,H]];
+  const cr=card.getBoundingClientRect(), taken=[[cr.left-4,cr.top-4,cr.right+4,H]];
   if(mobile) taken.push([0,0,W,topBar+4]);
   else for(const q of ['.brand','.nav','.topright']){const e=document.querySelector(q); if(!e) continue; const r=e.getBoundingClientRect(); if(r.width>0) taken.push([r.left-8,r.top-8,r.right+8,r.bottom+8])}
   const hits=(a,b)=>a[0]<b[2]&&b[0]<a[2]&&a[1]<b[3]&&b[1]<a[3];
@@ -1872,7 +1896,16 @@ function place(id,{x,y,w,max=Infinity,flat=false,cls,r}){
   el.querySelector('.cap').innerHTML=cls==='feat'?`${esc(partName(c))}<small>$${Math.round(r?r.t:c.price).toLocaleString('en-US')}${r?' build':''}</small>`:'';
   el.tabIndex=cls==='feat'?0:-1;
 }
-addEventListener('resize',()=>{clearTimeout(window.__rz); window.__rz=setTimeout(layoutField,80)});
+let fieldFrame=0;
+function scheduleField(){cancelAnimationFrame(fieldFrame);fieldFrame=requestAnimationFrame(layoutField)}
+addEventListener('resize',scheduleField);
+if(window.visualViewport) visualViewport.addEventListener('resize',scheduleField);
+if(window.ResizeObserver){
+  const fieldObserver=new ResizeObserver(scheduleField);
+  fieldObserver.observe(document.getElementById('qwrap'));
+  fieldObserver.observe(document.getElementById('view-finder'));
+}
+if(document.fonts) document.fonts.ready.then(scheduleField);
 
 /* question card */
 let qDir=1, hT;
@@ -1906,7 +1939,7 @@ function renderQuiz(){
   } else {
     title=Q.title;
     const optB=(o,i)=>`<button class="opt" style="--i:${i}" aria-pressed="${quizAns[Q.key]===o.v}" data-v="${o.v}">${o.art?`<span class="art">${o.art()}</span>`:''}<b>${esc(o.b)}</b>${o.s?`<span>${esc(o.s)}</span>`:''}<i class="tick">${icon('tick')}</i></button>`;
-    body=`${Q.info?`<p class="qinfotext" id="qinfotext" hidden>${esc(Q.info)}</p>`:''}${Q.hint?`<p class="qhint">${esc(Q.hint)}</p>`:''}<div class="opts">${Q.opts.map((o,i)=>o.clip?`<div class="optw" style="--i:${i}">${optB(o,i)}${clipBtn(o.clip,o.b)}</div>`:optB(o,i)).join('')}</div>${Q.key==='must'&&mustBlocked()?`<p class="qempty" role="status" style="margin:14px 0 0;text-align:center;color:var(--muted);font-size:13px">${mustEmptyMsg()}</p>`:''}${Q.key==='sound'?`<p class="qcredit" id="qcredit" aria-live="polite">Recordings from <a href="assets/sounds/CREDITS.md" target="_blank" rel="noopener">Freesound, CC0</a></p>`:''}`;
+    body=`${Q.info?`<p class="qinfotext" id="qinfotext" hidden>${esc(Q.info)}</p>`:''}${Q.hint?`<p class="qhint">${esc(Q.hint)}</p>`:''}<div class="opts" style="--option-count:${Q.opts.length}">${Q.opts.map((o,i)=>o.clip?`<div class="optw" style="--i:${i}">${optB(o,i)}${clipBtn(o.clip,o.b)}</div>`:optB(o,i)).join('')}</div>${Q.key==='must'&&mustBlocked()?`<p class="qempty" role="status" style="margin:14px 0 0;text-align:center;color:var(--muted);font-size:13px">${mustEmptyMsg()}</p>`:''}${Q.key==='sound'?`<p class="qcredit" id="qcredit" aria-live="polite">Recordings from <a href="assets/sounds/CREDITS.md" target="_blank" rel="noopener">Freesound, CC0</a></p>`:''}`;
   }
   wrapEl.classList.toggle('wide',!!(Q&&Q.opts&&Q.opts.length>5));
   card.innerHTML=`<div class="qhead"><div class="l"><button class="iconbtn" id="qback" aria-label="Previous question" ${quizStep===0?'disabled':''}>${icon('back')}</button><button class="iconbtn" id="qreset" aria-label="Start over" ${answered()?'':'disabled'}>${icon('reset')}</button></div>
