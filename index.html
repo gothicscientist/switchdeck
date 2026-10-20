@@ -96,10 +96,12 @@ h1,h2,h3{text-wrap:balance;margin:0;font-weight:700;letter-spacing:-.02em}
 .qwrap{position:absolute;left:50%;bottom:max(32px,env(safe-area-inset-bottom,0px));transform:translateX(-50%);width:min(760px,calc(100% - 32px));z-index:5;transition:width .5s var(--out)}
 .qwrap.wide{width:min(1080px,calc(100% - 32px))}
 .qcard{padding:26px 26px 26px;overflow:hidden;transition:height .45s var(--out)}
-.qhead{display:grid;grid-template-columns:80px 1fr 80px;align-items:center;gap:8px;margin-bottom:26px}
+.qhead{display:grid;grid-template-columns:110px 1fr 110px;align-items:center;gap:8px;margin-bottom:26px}
 .qhead .l{display:flex;gap:6px}
-.qhead .r{display:flex;justify-content:flex-end;align-items:center;font-size:13px;color:var(--muted);white-space:nowrap}
-.qhead .r b{color:var(--ink);font-weight:600;margin-right:4px}
+.qhead .r{display:flex;flex-direction:column;justify-content:center;align-items:flex-end;line-height:1.15;font-size:11px;color:var(--muted);white-space:nowrap}
+.qhead .r b{display:inline-block;transform-origin:100% 50%;color:var(--ink);font-weight:600;font-size:15px;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.qhead .r b.bump{animation:qbump .6s cubic-bezier(.22,1,.36,1)}
+@keyframes qbump{0%{transform:scale(1);opacity:.7}35%{transform:scale(1.14);opacity:1}100%{transform:scale(1);opacity:1}}
 .qhead h1{font-size:26px;text-align:center;letter-spacing:-.025em}
 .qbody{animation:qIn .5s var(--out) both}
 .qbody.back{animation-name:qInBack}
@@ -114,6 +116,35 @@ h1,h2,h3{text-wrap:balance;margin:0;font-weight:700;letter-spacing:-.02em}
 .opt span{font-size:12.5px;color:var(--muted);line-height:1.35}
 .opt .art{height:58px;width:100%;display:flex;align-items:center;justify-content:center;margin-bottom:10px}
 .opt .art svg,.opt .art img{max-height:58px;max-width:100%}
+.opt .art{position:relative}
+.qa-press,.qa-ripple,.qa-line,.qa-caret,.qa-arc,.qa-flow,.qa-led,.qa-swap,.qa-glow,.qa-iron{transform-box:fill-box;transform-origin:center;animation-timing-function:ease-in-out;animation-iteration-count:infinite}
+.qa-press{animation:qaPress 1.8s}
+.qa-ripple{animation:qaRipple 1.8s ease-out infinite}
+.qa-line{transform-origin:left center;animation:qaType 2.6s}
+.qa-caret{animation:qaBlink 1s}
+.qa-arc{animation:qaArc 2.2s}
+.qa-flow{animation:qaFlow 2.2s}
+.qa-flow-s{animation-name:qaFlowS}
+.qa-led{animation:qaBlink 2.2s}
+.qa-swap{animation:qaSwap 3s}
+.qa-glow{animation:qaGlow 2s}
+.qa-iron{animation:qaIron 3s}
+.opt:hover .qa-press{animation-duration:.9s}.opt:hover .qa-ripple{animation-duration:1s}.opt:hover .qa-arc{animation-duration:1.4s}.opt:hover .qa-flow{animation-duration:1.3s}.opt:hover .qa-swap{animation-duration:1.8s}.opt:hover .qa-glow{animation-duration:1.2s}
+@keyframes qaPress{0%,100%{transform:translateY(0)}20%{transform:translateY(3px)}40%{transform:translateY(0)}}
+@keyframes qaRipple{0%{transform:scale(.7);opacity:.7}100%{transform:scale(1.7);opacity:0}}
+@keyframes qaType{0%{transform:scaleX(0);opacity:.4}30%,85%{transform:scaleX(1);opacity:1}100%{transform:scaleX(1);opacity:0}}
+@keyframes qaBlink{0%,100%{opacity:1}50%{opacity:.25}}
+@keyframes qaArc{0%,100%{opacity:.2}40%{opacity:1}}
+@keyframes qaFlow{0%{transform:translateX(0);opacity:0}15%{opacity:1}85%{opacity:1}100%{transform:translateX(56px);opacity:0}}
+@keyframes qaFlowS{0%{transform:translateX(0);opacity:0}15%{opacity:1}85%{opacity:1}100%{transform:translateX(20px);opacity:0}}
+@keyframes qaSwap{0%,30%,100%{transform:translateY(0)}50%,70%{transform:translateY(-12px)}}
+@keyframes qaGlow{0%,100%{transform:scale(.8);opacity:.55}50%{transform:scale(1.15);opacity:1}}
+@keyframes qaIron{0%,100%{transform:translate(0,0)}50%{transform:translate(-1.5px,2px)}}
+@media (prefers-reduced-motion:reduce){.qa-press,.qa-ripple,.qa-line,.qa-caret,.qa-arc,.qa-flow,.qa-led,.qa-swap,.qa-glow,.qa-iron{animation:none!important}.qa-ripple,.qa-flow{opacity:0}}
+.feel-pic,.feel-graph{display:flex;align-items:center;justify-content:center;width:100%;height:100%;transition:opacity .25s ease,transform .25s ease}
+.feel-graph{position:absolute;inset:0;opacity:0;transform:translateY(4px)}
+.opt:hover .feel-pic,.opt:focus-visible .feel-pic,.opt[aria-pressed="true"] .feel-pic{opacity:0}
+.opt:hover .feel-graph,.opt:focus-visible .feel-graph,.opt[aria-pressed="true"] .feel-graph{opacity:1;transform:none}
 .opt[aria-pressed="true"]{background:var(--tile-hover);box-shadow:inset 0 0 0 1.5px var(--ink)}
 .opt .tick{position:absolute;top:-7px;right:-7px;width:20px;height:20px;border-radius:50%;background:var(--ink);color:var(--surface);display:none;place-items:center;box-shadow:0 0 0 2px var(--surface)}
 .opt[aria-pressed="true"] .tick{display:grid;animation:pop .35s var(--spring)}
@@ -403,7 +434,7 @@ h1,h2,h3{text-wrap:balance;margin:0;font-weight:700;letter-spacing:-.02em}
   .top .bar{height:60px}
   .qwrap,.qwrap.wide{width:100%;bottom:0}
   .qcard{border-radius:20px 20px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom,0px))}
-  .qhead{grid-template-columns:70px 1fr 70px;margin-bottom:16px}
+  .qhead{grid-template-columns:76px 1fr 76px;margin-bottom:16px}
   .qhead h1{font-size:19px}
   .qhead .r .w{display:none}
   .opts{grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -1253,21 +1284,21 @@ const QUESTIONS = [
     {v:'tkl',b:'TKL',s:'No numpad',art:()=>miniBoard('tkl')},
     {v:'full',b:'Full size',s:'Full numpad',art:()=>miniBoard('full')},
     {v:'any',b:'No preference'}]},
-  {key:'use',title:'What is it for?',opts:[
-    {v:'gaming',b:'Gaming',s:'Fast, light presses'},{v:'work',b:'Work',s:'Typing and coding'},{v:'any',b:'No preference',s:'A bit of both'}]},
-  {key:'feel',title:'How should a key feel to press?',hint:'Feel only: how the key moves under your finger. The graphs show press force as the key goes down. Sound is the next step.',opts:[
-    {v:'Linear',b:'Linear',s:'Smooth and even, top to bottom',art:()=>feelSVG('linear')},
-    {v:'Tactile',b:'Tactile',s:'A bump partway down',art:()=>feelSVG('tactile')},
-    {v:'Clicky',b:'Clicky',s:'A sharp, snappy bump',art:()=>feelSVG('clicky')},
-    {v:'Silent',b:'Cushioned',s:'Soft landing at the bottom',art:()=>feelSVG('cushioned')},
+  {key:'feel',title:'How should a key feel to press?',hint:'Feel only: how the key moves under your finger. Hover a switch to see its force curve. Sound is the next step.',opts:[
+    {v:'Linear',b:'Linear',s:'Smooth and even, top to bottom',art:()=>`<span class="feel-pic">${switchSVG(BYID.milkyyp)}</span><span class="feel-graph">${feelSVG('linear')}</span>`},
+    {v:'Tactile',b:'Tactile',s:'A bump partway down',art:()=>`<span class="feel-pic">${switchSVG(BYID.u4t)}</span><span class="feel-graph">${feelSVG('tactile')}</span>`},
+    {v:'Clicky',b:'Clicky',s:'A sharp, snappy bump',art:()=>`<span class="feel-pic">${switchSVG(BYID.boxjade)}</span><span class="feel-graph">${feelSVG('clicky')}</span>`},
+    {v:'Silent',b:'Cushioned',s:'Soft landing at the bottom',art:()=>`<span class="feel-pic">${switchSVG(BYID.silentred)}</span><span class="feel-graph">${feelSVG('cushioned')}</span>`},
     {v:'any',b:'Not sure'}]},
   {key:'sound',title:'What should it sound like?',hint:'Press play to hear a 10-second example, looped. Real recordings; your case, plate and keycaps also shape the sound.',opts:[
     {v:'thock',b:'Deep thock',s:'Low and rounded',clip:'thock',art:()=>waveSVG(.18)},{v:'creamy',b:'Creamy',s:'Soft and muted',clip:'creamy',art:()=>waveSVG(.38)},
     {v:'clack',b:'Crisp clack',s:'Bright and sharp',clip:'clack',art:()=>waveSVG(.82)},{v:'quiet',b:'Quiet',s:'For calls and shared rooms',clip:'quiet',art:()=>waveSVG(.4,.3)},{v:'any',b:'No preference'}]},
+  {key:'use',title:'What is it for?',opts:[
+    {v:'gaming',b:'Gaming',s:'Fast, light presses',art:()=>quizArt('gaming')},{v:'work',b:'Work',s:'Typing and coding',art:()=>quizArt('work')},{v:'any',b:'No preference',s:'A bit of both',art:()=>quizArt('both')}]},
   {key:'wireless',title:'How should it connect?',opts:[
-    {v:'wired',b:'Wired only',s:'Nothing to charge'},{v:'yes',b:'Wireless',s:'Bluetooth or 2.4 GHz'},{v:'any',b:'No preference',s:'Nothing ruled out'}]},
+    {v:'wired',b:'Wired only',s:'Nothing to charge',art:()=>quizArt('wired')},{v:'yes',b:'Wireless',s:'Bluetooth or 2.4 GHz',art:()=>quizArt('wireless')},{v:'any',b:'No preference',s:'Nothing ruled out',art:()=>quizArt('either-conn')}]},
   {key:'solder',title:'Will you solder?',opts:[
-    {v:'hotswap',b:'No, hot-swap',s:'Switches press in by hand'},{v:'either',b:'Happy to solder',s:'Opens up more PCBs'}]},
+    {v:'hotswap',b:'No, hot-swap',s:'Switches press in by hand',art:()=>quizArt('hotswap')},{v:'either',b:'Happy to solder',s:'Opens up more PCBs',art:()=>quizArt('solder')}]},
   {key:'budget',title:"What's your budget?",budget:true},
   {key:'look',title:'Pick a look',opts:[
     {v:'dark',b:'Dark',s:'Black and charcoal',art:()=>capsSVG(BYID.gmkwob)},{v:'light',b:'Light',s:'White and cream',art:()=>capsSVG(BYID.bow)},
@@ -1286,6 +1317,43 @@ function feelSVG(kind){
 function waveSVG(pitch,amp=1){
   const n=26, pts=[]; for(let i=0;i<n;i++){const x=4+i*(112/(n-1)), env=Math.exp(-((i%13)/(2+ (1-pitch)*5))), y=30+Math.sin(i*(1.1+pitch*2.4))*env*20*amp; pts.push(`${x.toFixed(1)},${y.toFixed(1)}`)}
   return `<svg viewBox="0 0 120 60" aria-hidden="true"><polyline points="${pts.join(' ')}" fill="none" stroke="#57534E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+}
+function quizArt(kind){
+  const C={blue:['#8FB2F5','#5B8DEF'],teal:['#6FD3C7','#2BB3A3'],amber:['#F7C477','#F2A541'],coral:['#F59A8D','#EF6F5E'],violet:['#B2A8FA','#8B7CF6']};
+  const grad=(id,c,vert)=>`<linearGradient id="qa-${id}" x1="0" y1="0" x2="${vert?0:1}" y2="${vert?1:1}"><stop offset="0" stop-color="${C[c][0]}"/><stop offset="1" stop-color="${C[c][1]}"/></linearGradient>`;
+  const neutral=`<linearGradient id="qa-n-${kind}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#E7E5E4"/></linearGradient>`;
+  const key=(x,y,s,id,cls)=>`<g class="${cls||''}"><rect x="${x}" y="${y+s*.12}" width="${s}" height="${s}" rx="${s*.26}" fill="#D6D3D1" opacity=".7"/><rect x="${x}" y="${y}" width="${s}" height="${s}" rx="${s*.26}" fill="url(#qa-${id})"/><rect x="${x+s*.2}" y="${y+s*.16}" width="${s*.6}" height="${s*.36}" rx="${s*.14}" fill="#fff" opacity=".28"/></g>`;
+  const doc=(x,y,w,h,id,sc)=>{const lw=[.8,.6,.72];let o=`<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="7" fill="url(#qa-n-${kind})" stroke="#D6D3D1" stroke-width="1.2"/>`;
+    lw.forEach((f,i)=>{o+=`<rect class="qa-line" style="animation-delay:${i*.35}s" x="${x+w*.12}" y="${y+h*(.2+i*.26)}" width="${w*.76*f}" height="${Math.max(3,h*.1)}" rx="1.6" fill="url(#qa-${id})"/>`});
+    return o+`<rect class="qa-caret" x="${x+w*.12+w*.76*.8+3}" y="${y+h*.2-1}" width="2" height="${Math.max(5,h*.13)}" rx="1" fill="${C[id.slice(-4)==='blue'?'blue':'blue'][1]}" style="display:${sc?'block':'none'}"/>`};
+  const arcs=(cx,cy,rs,id,w)=>rs.map((r,i)=>{const d=r*.707;return `<path class="qa-arc" style="animation-delay:${i*.28}s" d="M${cx-d} ${cy-d} A${r} ${r} 0 0 1 ${cx+d} ${cy-d}" fill="none" stroke="url(#qa-${id})" stroke-width="${w}" stroke-linecap="round"/>`}).join('');
+  let defs='',body='';
+  if(kind==='gaming'){
+    defs=grad('gm','coral',1);
+    body=`<circle class="qa-ripple" cx="60" cy="30" r="18" fill="none" stroke="#EF6F5E" stroke-width="2"/><circle class="qa-ripple" style="animation-delay:.9s" cx="60" cy="30" r="18" fill="none" stroke="#EF6F5E" stroke-width="2"/>${key(44,14,32,'gm','qa-press')}`;
+  }else if(kind==='work'){
+    defs=grad('wk','blue')+neutral;
+    body=doc(32,8,56,44,'wk',true);
+  }else if(kind==='both'){
+    defs=grad('bk','coral',1)+grad('bw','blue')+neutral;
+    body=`<circle class="qa-ripple" cx="34" cy="30" r="15" fill="none" stroke="#EF6F5E" stroke-width="1.6"/>${key(20,16,28,'bk','qa-press')}`+doc(62,10,40,40,'bw',true);
+  }else if(kind==='wired'){
+    defs=grad('wr','teal')+grad('wb','teal',1)+neutral;
+    body=`<path d="M6 30 H76" stroke="#D6D3D1" stroke-width="4" stroke-linecap="round" fill="none"/><path d="M6 30 H76" stroke="url(#qa-wr)" stroke-width="4" stroke-linecap="round" fill="none" opacity=".55"/><circle class="qa-flow" cx="10" cy="30" r="4" fill="#fff" stroke="#2BB3A3" stroke-width="2"/><rect x="70" y="23" width="14" height="14" rx="4" fill="url(#qa-wb)"/><rect x="82" y="12" width="32" height="36" rx="8" fill="url(#qa-n-wired)" stroke="#D6D3D1" stroke-width="1.2"/><rect class="qa-led" x="90" y="26" width="16" height="8" rx="4" fill="#2BB3A3"/>`;
+  }else if(kind==='wireless'){
+    defs=grad('wl','violet');
+    body=arcs(60,46,[14,26,38],'wl',4)+`<circle cx="60" cy="46" r="5.5" fill="#8B7CF6"/>`;
+  }else if(kind==='either-conn'){
+    defs=grad('ec','teal')+grad('ea','violet')+grad('eb','teal',1);
+    body=`<path d="M6 40 H30" stroke="url(#qa-ec)" stroke-width="3.5" stroke-linecap="round" fill="none" opacity=".8"/><rect x="28" y="34" width="12" height="12" rx="4" fill="url(#qa-eb)"/><circle class="qa-flow qa-flow-s" cx="10" cy="40" r="3" fill="#fff" stroke="#2BB3A3" stroke-width="1.8"/>`+arcs(84,46,[10,19,28],'ea',3.4)+`<circle cx="84" cy="46" r="4.5" fill="#8B7CF6"/>`;
+  }else if(kind==='hotswap'){
+    defs=grad('hs','amber',1)+`<linearGradient id="qa-hb" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#E7E5E4"/><stop offset="1" stop-color="#D6D3D1"/></linearGradient>`;
+    body=`<rect x="26" y="38" width="68" height="14" rx="6" fill="url(#qa-hb)"/><rect x="42" y="42" width="6" height="6" rx="2" fill="#A8A29E"/><rect x="72" y="42" width="6" height="6" rx="2" fill="#A8A29E"/><g class="qa-swap"><rect x="44" y="30" width="3" height="9" rx="1.5" fill="#A8A29E"/><rect x="73" y="30" width="3" height="9" rx="1.5" fill="#A8A29E"/><rect x="38" y="6" width="44" height="28" rx="8" fill="url(#qa-hs)"/><rect x="48" y="11" width="24" height="8" rx="4" fill="#fff" opacity=".3"/></g>`;
+  }else{
+    defs=grad('sd','coral',1)+`<radialGradient id="qa-sg"><stop offset="0" stop-color="#F59A8D"/><stop offset="1" stop-color="#EF6F5E" stop-opacity="0"/></radialGradient><linearGradient id="qa-si" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#78716C"/><stop offset="1" stop-color="#44403C"/></linearGradient>`;
+    body=`<rect x="14" y="44" width="92" height="8" rx="4" fill="#E7E5E4"/><circle class="qa-glow" cx="54" cy="42" r="14" fill="url(#qa-sg)"/><circle cx="54" cy="43" r="4.5" fill="url(#qa-sd)"/><g class="qa-iron"><path d="M54 42 L68 22" stroke="#A8A29E" stroke-width="3.4" stroke-linecap="round"/><path d="M66 25 L94 6" stroke="url(#qa-si)" stroke-width="8" stroke-linecap="round"/></g>`;
+  }
+  return `<svg viewBox="0 0 120 60" aria-hidden="true"><defs>${defs}</defs>${body}</svg>`;
 }
 function surpriseSVG(){
   const cap=(x,y,r,top,side,leg)=>`<g transform="translate(${x} ${y}) rotate(${r})"><rect x="-15" y="-15" width="30" height="30" rx="5" fill="${side}"/><rect x="-11" y="-14" width="22" height="22" rx="4" fill="${top}"/>${leg?`<text x="0" y="2" text-anchor="middle" dominant-baseline="middle" font-family="Inter,system-ui" font-weight="700" font-size="13" fill="${leg}">?</text>`:''}</g>`;
@@ -1360,6 +1428,73 @@ function evalAns(ans){
   if(evalCache.size>400) evalCache.clear();
   evalCache.set(key,res); return res;
 }
+/*COMBOS-START*/
+/* Possible build combinations for the quiz counter. A combination is one board + one switch + one keycap set the
+   finder could make. Kits/cases: every eligible switch x every keycap set that fits the board's layout (covers it, or
+   has an addon for it; imported sets with covers:null are unknown and left out). Assembled boards ship with their own
+   switches and keycaps, so they count 1 each. Each answered filter narrows the pool; a budget keeps only combinations
+   with board + switch (whole packs) + keycaps (+addon) <= budget, counted per board by two pointers over sorted prices. */
+const comboCache=new Map();
+function comboCount(ans){
+  const key=JSON.stringify(ans); if(comboCache.has(key)) return comboCache.get(key);
+  const L=ans.layout&&ans.layout!=='any'?ans.layout:null;
+  const budget=typeof ans.budget==='number'&&ans.budget<B_MAX?ans.budget:null;
+  const feel=ans.feel&&ans.feel!=='any'?ans.feel:null;
+  const look=ans.look&&ans.look!=='any'&&ans.look!=='surprise'?ans.look:null;
+  const sws=SWITCHES.filter(s=>{
+    if(feel&&!(feel==='Silent'?/Silent/.test(s.type):s.type===feel)) return false;
+    if(ans.sound==='quiet'&&!/Silent/.test(s.type)) return false;
+    if((ans.sound==='thock'||ans.sound==='creamy')&&s.type==='Clicky') return false;
+    if(ans.sound==='clack'&&/Silent/.test(s.type)) return false;
+    if(ans.use==='gaming'&&(s.type==='Clicky'||(s.force!=null&&s.force>55))) return false;
+    return true;
+  });
+  const kcs=KEYCAPS.filter(k=>k.covers&&(!look||(k.mood||[]).includes(look)));
+  const kcByLayout={}; // layout -> keycap prices (addon included), sorted ascending
+  const kcFor=lay=>kcByLayout[lay]||(kcByLayout[lay]=kcs.filter(k=>k.covers.includes(lay)||(k.addon&&k.addon[lay])).map(k=>k.price+(!k.covers.includes(lay)&&k.addon&&k.addon[lay]||0)).sort((a,b)=>a-b));
+  const swByQty=new Map(); // pack-rounded purchase size -> switch costs, sorted ascending
+  const swFor=q=>{let a=swByQty.get(q); if(!a){a=sws.map(s=>switchCost(s,q)).sort((x,y)=>x-y); swByQty.set(q,a)} return a};
+  let n=0;
+  for(const c of FINDER_CASES){
+    if(L&&c.layout!==L) continue;
+    const wl=/Tri|Blue|2\.4/.test(c.conn);
+    if(ans.wireless==='yes'&&!wl) continue;
+    if(ans.wireless==='wired'&&wl) continue;
+    if(ans.solder==='hotswap'&&c.kit&&c.kit.pcb.hotswap===false) continue;
+    if(c.assembled){ if(!budget||c.price<=budget) n++; continue; }
+    if(!c.kit&&!configsFor(c,ans).length) continue;
+    const kp=kcFor(c.layout), sc=swFor(switchQty({case:c.id})||70);
+    if(!kp.length||!sc.length) continue;
+    if(!budget){ n+=kp.length*sc.length; continue; }
+    const rem=budget-c.price+1e-9; if(rem<0) continue;
+    let j=kp.length; // two pointers: as the switch cost rises, fewer keycap sets fit
+    for(let i=0;i<sc.length;i++){ while(j>0&&kp[j-1]+sc[i]>rem) j--; if(!j) break; n+=j }
+  }
+  if(comboCache.size>400) comboCache.clear();
+  comboCache.set(key,n); return n;
+}
+/* Counter display: tween from the value currently shown to the new count. */
+let shownCombos=null, comboRaf=0;
+const fmtCombos=v=>{v=Math.round(v); if(innerWidth<760&&v>=1e5){const [d,u]=v>=1e9?[1e9,'B']:v>=1e6?[1e6,'M']:[1e3,'K']; return (v/d).toFixed(v/d<100?1:0)+u} return v.toLocaleString('en-US')};
+function paintCombos(n,animate){
+  const el=document.getElementById('qcount'); if(!el) return;
+  const b=el.querySelector('b'), w=el.querySelector('.w');
+  if(w) w.textContent=n===1?'combination':'combinations';
+  cancelAnimationFrame(comboRaf);
+  const from=shownCombos==null?n:shownCombos;
+  const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(reduce||from===n||!animate){shownCombos=n; if(b) b.textContent=fmtCombos(n); return}
+  if(b){b.textContent=fmtCombos(from); b.classList.remove('bump'); void b.offsetWidth; b.classList.add('bump')}
+  const t0=performance.now(), D=600;
+  const step=now=>{
+    const p=Math.min(1,(now-t0)/D), e=1-Math.pow(1-p,3);
+    shownCombos=p>=1?n:from+(n-from)*e;
+    const cur=document.querySelector('#qcount b'); if(cur) cur.textContent=fmtCombos(shownCombos);
+    if(p<1) comboRaf=requestAnimationFrame(step);
+  };
+  comboRaf=requestAnimationFrame(step);
+}
+/*COMBOS-END*/
 const answered=()=>Object.keys(quizAns).length>0;
 
 /* field of keyboards */
@@ -1426,7 +1561,7 @@ function renderQuiz(){
   const card=document.getElementById('qcard'), wrapEl=document.getElementById('qwrap');
   const oldH=card.offsetHeight;
   const done=quizStep>=QUESTIONS.length, Q=done?null:QUESTIONS[quizStep];
-  const n=evalAns(quizAns).list.length;
+  const n=evalAns(quizAns).list.length, combos=comboCount(quizAns);
   let title, body;
   if(done){
     title='Your matches';
@@ -1449,7 +1584,7 @@ function renderQuiz(){
   }
   wrapEl.classList.toggle('wide',!!(Q&&Q.opts&&Q.opts.length>5));
   card.innerHTML=`<div class="qhead"><div class="l"><button class="iconbtn" id="qback" aria-label="Previous question" ${quizStep===0?'disabled':''}>${icon('back')}</button><button class="iconbtn" id="qreset" aria-label="Start over" ${answered()?'':'disabled'}>${icon('reset')}</button></div>
-    <h1>${esc(title)}</h1><div class="r" id="qcount"><b>${n}</b><span class="w">${n===1?'keyboard':'keyboards'}</span></div></div>
+    <h1>${esc(title)}</h1><div class="r" id="qcount"><b>${fmtCombos(shownCombos==null?combos:shownCombos)}</b><span class="w">combinations</span></div></div>
     <div class="qbody ${qDir<0?'back':''}">${body}</div>`;
   // smooth height change
   if(oldH){const newH=card.offsetHeight; card.style.height=oldH+'px'; void card.offsetHeight; card.style.height=newH+'px'; clearTimeout(hT); hT=setTimeout(()=>{card.style.height=''; layoutField()},470)}
@@ -1459,10 +1594,11 @@ function renderQuiz(){
   const vm=card.querySelector('#viewmatches'); if(vm) vm.onclick=()=>openResults();
   card.querySelectorAll('.opt').forEach(b=>b.onclick=()=>choose_(Q,b));
   if(Q&&Q.budget) wireBudget(card);
+  paintCombos(combos,true);
   layoutField();
   if(Q&&Q.opts) setTimeout(()=>markDisabled(Q,card),30);
 }
-function setCount(){const n=evalAns(quizAns).list.length; const el=document.getElementById('qcount'); if(el) el.innerHTML=`<b>${n}</b><span class="w">${n===1?'keyboard':'keyboards'}</span>`}
+function setCount(){paintCombos(comboCount(quizAns),true)}
 function choose_(Q,btn){
   if(btn.disabled) return;
   quizAns[Q.key]=btn.dataset.v; if(btn.dataset.v==='surprise') quizAns.seed=Math.floor(Math.random()*1e6); store.set('sy.quiz',quizAns);
