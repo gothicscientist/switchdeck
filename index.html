@@ -456,7 +456,6 @@ a.listen.watch:hover{background:rgba(59,130,246,.2)}
 .part.inc .pn b{color:var(--muted);font-weight:500}
 .rdetail .rclose{left:auto;right:14px;top:14px}
 .rparts .phead{padding-right:58px}
-.rparts .pfoot{padding:14px 22px 20px;font-size:11.5px;color:var(--faint);line-height:1.5}
 .prow .stores{grid-column:auto;margin-top:4px}
 .prow .stores .store{font-size:11.5px;padding:4px 9px}
 
@@ -1883,7 +1882,7 @@ function renderRDetail(){
     </div>
     <div class="rparts swapin"><div class="phead"><h3>Parts in this build</h3><span>${nParts} parts · ${money(r.t)}</span></div>
       ${rows.join('')}
-      <p class="pfoot">Approximate list prices before shipping and tax. The dark button opens the maker's page; the others search that store.</p></div>`;
+      </div>`;
   el.querySelector('#rclose').onclick=closeResults;
   el.querySelector('#rbuild').onclick=()=>{build={...b,extras:[...b.extras],name:`My ${partName(c)} build`}; persist(); closeResults(); go('build'); toast('Loaded into the builder')};
   el.querySelector('#rcopy').onclick=()=>copyText(partsText({...b,name:`${partName(c)} build`}),el.querySelector('#rcopyfb'));
