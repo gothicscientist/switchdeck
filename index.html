@@ -427,27 +427,28 @@ h1,h2,h3{text-wrap:balance;margin:0;font-weight:700;letter-spacing:-.02em}
 .rsum .rcap{margin:-8px 0 0;font-size:12.5px;color:var(--muted);line-height:1.3}
 .rsum .rcap svg{width:12px;height:12px;margin-right:6px;vertical-align:-1px;color:var(--faint)}
 .rcap-n{display:none}
-/* Parts up close: a slow looping strip under the stats. It bleeds to the panel edges and fades out there; hover pauses it. */
-.rcar{flex:none;margin:0 -22px;overflow:hidden;-webkit-mask-image:linear-gradient(90deg,transparent,#000 30px,#000 calc(100% - 30px),transparent);mask-image:linear-gradient(90deg,transparent,#000 30px,#000 calc(100% - 30px),transparent)}
-.rcar-track{display:flex;width:max-content;padding:2px 0 8px}
-.rcar:not(.moving) .rcar-track{padding-left:22px;padding-right:22px}
-.rcar.moving .rcar-track{animation:rcar var(--dur,30s) linear infinite}
-.rcar.moving:hover .rcar-track,.rcar.moving:focus-within .rcar-track{animation-play-state:paused}
-@keyframes rcar{to{transform:translateX(-50%)}}
-.rcar-item{flex:none;width:132px;margin-right:10px;display:flex;flex-direction:column;gap:2px;padding:7px 7px 10px;border:0;border-radius:14px;background:var(--surface);box-shadow:inset 0 0 0 1px var(--line),0 1px 2px rgba(41,37,36,.04);text-align:left;font:inherit;color:inherit;cursor:pointer;transition:transform .5s var(--out),box-shadow .5s var(--out)}
-.rcar-item:hover,.rcar-item:focus-visible{transform:translateY(-3px);box-shadow:inset 0 0 0 1px var(--line),0 16px 30px -18px rgba(41,37,36,.45)}
-.rcar-img{display:grid;place-items:center;height:74px;margin-bottom:7px;padding:8px;border-radius:10px;background:var(--tile);overflow:hidden}
-.rcar-img svg{width:100%;height:100%;transition:transform .7s var(--out)}
-.rcar-item:hover .rcar-img svg{transform:scale(1.07)}
-.rcar-item small{padding:0 3px;font-size:9.5px;font-weight:500;letter-spacing:.05em;text-transform:uppercase;color:var(--faint)}
-.rcar-item b{padding:0 3px;font-size:12.5px;font-weight:600;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.part{transition:background-color .9s var(--ease)}
-.part.flash{background:var(--tile-hover);transition:none}
-@media (prefers-reduced-motion:reduce){
-  .rcar{overflow-x:auto}
-  .rcar.moving .rcar-track{animation:none;padding-left:22px;padding-right:22px}
-  .rcar-item[aria-hidden="true"]{display:none}
-}
+/* Sound and feel: four segmented level bars for this build. Lit segments rise in one after another and blend across
+   each bar's two colours; the top segment glows softly. A small pin marks what the quiz asked for. */
+.rsf{flex:none;display:grid;gap:9px;padding:12px 14px 13px;border-radius:14px;background:var(--tile)}
+.rsf-h{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:10.5px;font-weight:500;letter-spacing:.05em;text-transform:uppercase;color:var(--faint)}
+.rsf-h em{display:flex;align-items:center;gap:5px;font-style:normal;letter-spacing:0;text-transform:none;font-size:11px;color:var(--muted)}
+.rsf-key{width:7px;height:7px;border-radius:50%;background:var(--ink);box-shadow:0 0 0 2px var(--tile),0 0 0 3px rgba(41,37,36,.18)}
+.rsf-row{display:grid;grid-template-columns:76px minmax(0,1fr) 98px;align-items:center;gap:10px}
+.rsf-k{font-size:12px;color:var(--muted)}
+.rsf-w{font-size:12px;font-weight:600;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;animation:rsfWord .6s var(--out) both;animation-delay:calc(var(--r)*90ms + 260ms)}
+.rsf-bar{position:relative;display:flex;align-items:center;gap:2.5px;height:16px}
+.rsf-bar i{flex:1;height:10px;border-radius:3px;background:rgba(41,37,36,.07)}
+.rsf-bar i.on{color:var(--a);color:color-mix(in oklch,var(--a),var(--b) calc(var(--n)*100%/17));background:currentColor;transform-origin:50% 100%;animation:rsfSeg .55s var(--spring) both;animation-delay:calc(var(--r)*90ms + var(--n)*24ms)}
+.rsf-bar i.tip{height:15px;box-shadow:0 0 10px -1px currentColor;animation:rsfSeg .55s var(--spring) both,rsfGlow 2.6s ease-in-out infinite;animation-delay:calc(var(--r)*90ms + var(--n)*24ms),calc(var(--r)*90ms + var(--n)*24ms + .6s)}
+.rsf-pin{position:absolute;top:-3px;bottom:-3px;width:2px;margin-left:-1px;border-radius:1px;background:var(--ink);box-shadow:0 0 0 1.5px var(--tile);opacity:.8;animation:rsfPin 1s var(--out) both;animation-delay:calc(var(--r)*90ms + 200ms)}
+.rsf-pin::before{content:"";position:absolute;top:-3px;left:50%;width:7px;height:7px;margin-left:-3.5px;border-radius:50%;background:var(--ink);box-shadow:0 0 0 2px var(--tile)}
+.rsf-row.none .rsf-w{color:var(--faint);font-weight:500}
+@keyframes rsfSeg{from{opacity:0;transform:scaleY(.2)}}
+@keyframes rsfGlow{50%{box-shadow:0 0 14px 1px currentColor}}
+.rsf-row.mono .rsf-bar i.on{color:color-mix(in oklab,var(--a),var(--b) calc(var(--n)*100%/17))}
+@keyframes rsfPin{from{left:0;opacity:0}}
+@keyframes rsfWord{from{opacity:0;transform:translateX(6px)}}
+@media (prefers-reduced-motion:reduce){.rsf-bar i.on,.rsf-bar i.tip,.rsf-pin,.rsf-w{animation:none}}
 .stores .watchrow{flex:0 0 100%;display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:2px}
 a.listen{text-decoration:none}
 a.listen.watch{background:var(--accent-soft);color:var(--info)}
@@ -2041,13 +2042,17 @@ function renderRDetail(){
   else if(c.kit&&c.catalogId) rows.splice(1,0,`<div class="part inc" style="--i:1"><span class="pt">${pcbSVG(c.kit.pcb)}</span><div class="pn"><small>Kit</small><b>PCB and plate, per the listing</b><em>Check ${esc(storeOf(c))} for exactly what the ${esc(partName(c))} kit includes.</em></div><div class="pp"><span class="chip ok">Kit</span></div></div>`);
   else if(c.kit) rows.splice(1,0,`<div class="part inc" style="--i:1"><span class="pt">${pcbSVG(c.kit.pcb)}</span><div class="pn"><small>Included</small><b>PCB, ${esc(c.kit.plate)} plate${c.kit.stabs?' and stabilizers':''}</b><em>Comes with the ${esc(partName(c))}</em></div><div class="pp"><span class="chip ok">Included</span></div></div>`);
   const nParts=items.length+(c.kit?1:0);
-  // Parts up close: every part but the case, in a strip that drifts slowly and loops. Three or more parts move (one set is
-  // repeated to at least 8 cards so the loop never shows a gap); fewer sit still. Copies are hidden from screen readers.
-  const look=items.map((i,n)=>({i,n})).filter(x=>x.i.slot!=='case');
-  const moving=look.length>=3, reps=moving?Math.ceil(8/look.length):1;
-  const card=(x,copy)=>`<button type="button" class="rcar-item" data-pi="${x.n}"${copy?' aria-hidden="true" tabindex="-1"':''}><span class="rcar-img">${thumbFor(x.i.part,null,480)}</span><small>${esc(SL(x.i.slot))}</small><b>${esc(partName(x.i.part))}</b></button>`;
-  const set=first=>Array.from({length:reps},(_,k)=>look.map(x=>card(x,!first||k>0)).join('')).join('');
-  const carousel=look.length?`<div class="rcar${moving?' moving':''}" role="group" aria-label="Parts up close"><div class="rcar-track" style="--dur:${look.length*reps*3.6}s">${set(true)}${moving?set(false):''}</div></div>`:'';
+  // Sound and feel for this build, with a pin where the quiz's sound answer sits on pitch and volume.
+  const T=SOUND_T[quizAns.sound], N=18, e=r.e;
+  const sfRow=(k,label,v,word,a,bb,t,tWord,cls='')=>{const lit=v==null?0:Math.max(1,Math.round(v/100*N));
+    return `<div class="rsf-row${v==null?' none':''}${cls}" style="--r:${k};--a:${a};--b:${bb}" role="img" aria-label="${label}: ${esc(word)}${t!=null?`. You asked for ${tWord}`:''}"><span class="rsf-k" aria-hidden="true">${label}</span><span class="rsf-bar" aria-hidden="true">${Array.from({length:N},(_,n)=>`<i${n<lit?` class="on${n===lit-1?' tip':''}" style="--n:${n}"`:''}></i>`).join('')}${t!=null?`<s class="rsf-pin" style="left:${t}%"></s>`:''}</span><b class="rsf-w" aria-hidden="true">${esc(word)}</b></div>`};
+  const force=s&&s.force!=null?s.force:null, fPct=force==null?null:Math.max(3,Math.min(97,(force-30)*2));
+  const forceWord=g=>g<42?'Light':g<55?'Medium':g<67?'Firm':'Heavy';
+  const sf=`<div class="rsf" role="group" aria-label="Sound and feel estimate"><div class="rsf-h"><span>Sound and feel</span>${T?'<em><i class="rsf-key"></i>What you asked for</em>':''}</div>
+      ${sfRow(0,'Pitch',e.pitch,pitchWord(e.pitch),'#D9923B','#5B5BD6',T&&T.p,quizAns.sound)}
+      ${sfRow(1,'Volume',e.vol,volWord(e.vol),'#F2B98A','#E0453A',T&&T.v,quizAns.sound)}
+      ${sfRow(2,'Bounce',e.flex,flexWord(e.flex),'#9AD3B4','#1F8A66')}
+      ${sfRow(3,'Key weight',fPct,force==null?'As shipped':`${force} g, ${forceWord(force).toLowerCase()}`,'#BDB7B1','#292524',null,null,' mono')}</div>`;
   const el=document.getElementById('rdetail');
   el.innerHTML=`<button class="iconbtn rclose" id="rclose" aria-label="Close">${icon('close')}</button>
     <div class="rsum swapin">
@@ -2056,7 +2061,7 @@ function renderRDetail(){
       <div class="total"><b>${money(r.t)}</b><span>approx. total</span></div>
       <p class="rcap"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 8h11M9 4l4 4-4 4"/></svg>Made of the ${nParts} parts listed <span class="rcap-w">on the right</span><span class="rcap-n">below</span></p>
       <div class="stats3"><div><span>Match</span><b>${r.pct}%</b></div><div><span>Sound</span><b>${pitchWord(r.e.pitch)}</b></div><div><span>Feel</span><b>${esc(s?s.type:'As shipped')}</b></div></div>
-      ${carousel}
+      ${sf}
       <div class="ractions"><button class="btn primary" id="rbuild">Customize this build</button><button class="btn" id="rcopy">Copy parts list</button></div>
       ${s?'':`<p class="note" style="margin:0">Sold assembled: its switches and keycaps come with it. Swap them in the builder to change the feel or look.</p>`}
       <textarea id="rcopyfb" hidden aria-label="Parts list" style="width:100%;min-height:80px;font-size:12px;background:var(--tile);border:0;border-radius:8px;padding:8px"></textarea>
@@ -2067,12 +2072,6 @@ function renderRDetail(){
   el.querySelector('#rclose').onclick=closeResults;
   el.querySelector('#rbuild').onclick=()=>{build={...b,extras:[...b.extras],name:`My ${partName(c)} build`}; persist(); closeResults(); go('build'); toast('Loaded into the builder')};
   el.querySelector('#rcopy').onclick=()=>copyText(partsText({...b,name:`${partName(c)} build`}),el.querySelector('#rcopyfb'));
-  // A card in the strip brings its row in the parts list into view and lights it up briefly.
-  el.querySelectorAll('.rcar-item').forEach(btn=>btn.onclick=()=>{
-    const row=el.querySelector(`.part[data-pi="${btn.dataset.pi}"]`); if(!row) return;
-    row.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'center'});
-    row.classList.add('flash'); clearTimeout(row.__fl); row.__fl=setTimeout(()=>row.classList.remove('flash'),700);
-  });
   const rr=el.querySelector('#reroll'); if(rr) rr.onclick=()=>{
     quizAns.seed=Math.floor(Math.random()*1e6); store.set('sy.quiz',quizAns);
     const id=c.id; resList=evalAns(quizAns).list; resIdx=Math.max(0,resList.findIndex(x=>x.b.case===id)); renderRList(); renderRDetail(); layoutField();
