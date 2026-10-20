@@ -1,6 +1,9 @@
 name: Refresh keyboard catalog
 on:
   workflow_dispatch:
+  # Daily at 09:17 UTC. A failed refresh leaves the site on the last good catalog.
+  schedule:
+    - cron: '17 9 * * *'
 permissions:
   contents: write
 concurrency:
