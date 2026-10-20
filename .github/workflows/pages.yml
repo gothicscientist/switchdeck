@@ -4,7 +4,7 @@ on:
     branches: [main]
   workflow_dispatch:
   workflow_run:
-    workflows: [Refresh keyboard catalog]
+    workflows: [Refresh keyboard catalog, Build quiz sound examples]
     types: [completed]
 permissions:
   contents: read
