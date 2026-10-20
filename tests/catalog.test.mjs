@@ -13,9 +13,12 @@ test('separate actuation, bottom-out, travel and tolerance values',()=>{
 test('unknown force is not filled with bottom-out weight',()=>{
   const s=extractSpecs(raw({body_html:'<li>Bottom-out: 65g</li>'}),'switches');assert.equal(s.actuationForceG,undefined);assert.equal(s.bottomOutForceG,65);
 });
-test('magnetic, optical and low-profile systems never enter standard-MX builder',()=>{
-  for(const title of ['Gateron Magnetic Jade HE Linear Switches','Keychron Optical Linear Switches','Gateron KS-33 Low Profile Linear Switches']) {
-    const p=normalize(raw({title}),source,'2026-10-19T00:00:00Z');assert.notEqual(p.specs.system,'mx-mechanical');assert.equal(builderPart(p),null);
+// Behavior change: non-MX switches used to be left out of the builder; they are now admitted and carry their own switchSystem,
+// so a finder can filter them. They are still never labelled mx-mechanical.
+test('magnetic, optical and low-profile systems are admitted with their own switchSystem, never as standard MX',()=>{
+  for(const [title,system] of [['Gateron Magnetic Jade HE Linear Switches','hall-effect'],['Keychron Optical Linear Switches','optical'],['Gateron KS-33 Low Profile Linear Switches','low-profile']]) {
+    const p=normalize(raw({title}),source,'2026-10-19T00:00:00Z');assert.notEqual(p.specs.system,'mx-mechanical');
+    const b=builderPart(p);assert.equal(b.switchSystem,system,title);assert.equal(b.verified,false,title);
   }
 });
 test('incorrect collection tags do not turn a normal switch into low-profile',()=>{
@@ -68,13 +71,16 @@ test('builder admits kits, keycap sets and stabilizers only with the facts it ne
   const kb=(changes={})=>normalize(raw({title:'Example65 Barebones Keyboard Kit',product_type:'Keyboard Kit',vendor:'Example',body_html:'<li>Layout: 65%</li><li>Hot-swap PCB</li><li>Mount: Gasket</li>',options:[{name:'Color',values:['Black','White']}],variants:[{id:1,title:'Black',price:'129',available:true},{id:2,title:'White',price:'129',available:true}],...changes}),source,'2026-10-19T00:00:00Z');
   const k=builderPart(kb());assert.equal(k.cat,'case');assert.equal(k.layout,'65');assert.equal(k.kit.pcb.hotswap,true);assert.equal(k.kit.plate,null);assert.equal(k.kit.stabs,null);assert.deepEqual(k.colors.map(c=>c[0]),['Black','White']);
   assert.equal(builderPart(kb({title:'Example40 Keyboard Kit',body_html:'40% layout'})),null);
-  assert.equal(builderPart(kb({title:'Example65 Magnetic HE Keyboard'})),null);
+  // Behavior change: HE boards are admitted with switchSystem set (they were excluded before).
+  assert.equal(builderPart(kb({title:'Example65 Magnetic HE Keyboard'})).switchSystem,'hall-effect');
   assert.equal(builderPart(kb({title:'Example65 Keyboard Kit (UK ISO Layout)'})),null);
-  assert.equal(builderPart(kb({variants:[{id:1,title:'Black',price:'129',available:false}]})),null);
+  // Behavior change: a sold-out board is admitted through the same rules and marked soldOut.
+  const gone=builderPart(kb({variants:[{id:1,title:'Black',price:'129',available:false}]}));assert.equal(gone.soldOut,true);assert.equal(gone.retailers[0].available,false);assert.ok(!('soldOut' in k));
   const caps=(changes={})=>normalize(raw({title:'Example Keycap Set',product_type:'Keycaps',body_html:'Cherry profile, PBT, dye-sub, 129 keys',variants:[{id:1,title:'Base',price:'60',available:true},{id:2,title:'Numpad',price:'20',available:true}],...changes}),source,'2026-10-19T00:00:00Z');
   const c=builderPart(caps());assert.equal(c.profile,'Cherry');assert.equal(c.price,60);assert.ok(c.covers.includes('full'));
-  assert.equal(builderPart(caps({variants:[{id:1,title:'Kit A',price:'60',available:true},{id:2,title:'Kit B',price:'20',available:true}]})),null,'ambiguous kit choice');
-  assert.equal(builderPart(caps({body_html:'PBT, dye-sub'})),null,'no profile');
+  // Behavior change: with no variant named as a base kit, the cheapest non-add-on variant is the set; and a set with no stated profile has profile null.
+  assert.equal(builderPart(caps({variants:[{id:1,title:'Kit A',price:'60',available:true},{id:2,title:'Kit B',price:'20',available:true}]})).price,20,'cheapest non-add-on kit');
+  assert.equal(builderPart(caps({body_html:'PBT, dye-sub'})).profile,null,'no profile stated');
   const stab=normalize(raw({title:'Example Plate Mount Stabilizers',product_type:'Stabilizers',body_html:'Unlike screw-in stabilizers these clip into the plate'}),source,'2026-10-19T00:00:00Z');
   assert.equal(builderPart(stab).mount,'plate');
 });
