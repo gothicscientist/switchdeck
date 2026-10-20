@@ -86,6 +86,10 @@ h1,h2,h3{text-wrap:balance;margin:0;font-weight:700;letter-spacing:-.02em}
 /* FINDER: product field */
 #view-finder{position:relative;height:100vh;height:100dvh;overflow:hidden}
 .field{position:absolute;inset:0;z-index:1}
+/* Page-load entrance: each board drifts in toward its spot and sharpens; the centre three land last. */
+@keyframes fieldIn{from{opacity:0;transform:translate(var(--fx,0px),var(--fy,24px)) scale(.94);filter:blur(6px)}to{opacity:1;transform:none;filter:blur(0)}}
+.field.intro .fitem .art,.field.intro .fitem .cap{animation:fieldIn .8s cubic-bezier(.2,.8,.2,1) both;animation-delay:var(--d,0ms)}
+@media (prefers-reduced-motion:reduce){.field.intro .fitem .art,.field.intro .fitem .cap{animation:none}}
 /* Finder backdrop: a soft light from the top centre with a faint vignette, and a fine dot grid that fades out toward the edges. Static, no images. */
 #view-finder::before,#view-finder::after{content:"";position:absolute;inset:0;z-index:0;pointer-events:none}
 #view-finder::before{background:radial-gradient(ellipse 62% 52% at 50% -4%,rgba(255,255,255,.95),rgba(255,255,255,0) 72%),radial-gradient(ellipse 125% 105% at 50% 42%,rgba(41,37,36,0) 58%,rgba(41,37,36,.055) 100%)}
@@ -1669,6 +1673,8 @@ function fieldEl(id){
 function layoutField(){
   if(view!=='finder') return;
   initField();
+  if(!introDone){introDone=true; introOn=true; const f=document.getElementById('field'); f.classList.add('intro');
+    setTimeout(()=>{introOn=false},50); setTimeout(()=>f.classList.remove('intro'),1800)}
   const res=evalAns(quizAns), W=innerWidth, H=innerHeight, mobile=W<760;
   const card=document.getElementById('qwrap'), cardTop=card.getBoundingClientRect().top;
   const topBar=mobile?60:72, avail=Math.max(120,cardTop-topBar);
@@ -1749,8 +1755,15 @@ function layoutField(){
   }
   for(const id of rest.slice(used)) if(fieldEls[id]) fieldEls[id].className='fitem hidden-slot';
 }
+let introOn=false, introN=0, introFeat=0, introDone=false;
 function place(id,{x,y,w,max=Infinity,flat=false,cls,r}){
   const el=fieldEl(id), c=BYID[id];
+  if(introOn&&!el.dataset.intro){
+    el.dataset.intro='1';
+    if(cls==='feat'){el.style.setProperty('--d',(300+introFeat++*80)+'ms'); el.style.setProperty('--fx','0px'); el.style.setProperty('--fy','26px')}
+    else{const dx=x-innerWidth/2, dy=y-innerHeight*.45, n=Math.hypot(dx,dy)||1;
+      el.style.setProperty('--d',(introN++*25)+'ms'); el.style.setProperty('--fx',(dx/n*28).toFixed(1)+'px'); el.style.setProperty('--fy',(dy/n*28).toFixed(1)+'px')}
+  }
   el.style.left=x+'px'; el.style.top=y+'px'; el.style.width=Math.min(flat?w:w*LW[c.layout],max)+'px';
   el.className='fitem '+cls;
   if(r&&el.dataset.k!==r.b.keycaps){el.dataset.k=r.b.keycaps; el.querySelector('.art').innerHTML=fieldBoard(r.b)}
