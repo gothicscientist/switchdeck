@@ -23,7 +23,13 @@ jobs:
       - run: npm ci
       - run: npm run catalog:sync
       - run: npm run catalog:check
-      - run: npm test
+      - name: Run tests
+        shell: bash
+        # run logs aren't readable from cloud sessions, so failing test names are also posted as annotations
+        run: |
+          npm test 2>&1 | tee test.log; s=${PIPESTATUS[0]}
+          grep -E '^ *not ok' test.log | sed 's/^ */::error::/' || true
+          exit $s
       - name: Commit validated catalog
         run: |
           git config user.name "github-actions[bot]"

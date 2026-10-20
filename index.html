@@ -1675,7 +1675,7 @@ function mustSystem(must){return must==='rapid'?'hall-effect':must==='lowprofile
 function swSystem(s){return (s&&(s.switchSystem||s.system))||null}
 function boardHasMust(c,must){
   if(!must) return true; if(!c) return false;
-  if(must==='hotswap') return c.kit?c.kit.pcb&&c.kit.pcb.hotswap===true:PCBS.some(p=>p.fit===c.fit&&p.hotswap===true);
+  if(must==='hotswap') return c.kit?c.kit.pcb&&c.kit.pcb.hotswap===true:!!c.fit&&PCBS.some(p=>p.fit===c.fit&&p.hotswap===true);
   if(must==='knob') return c.knob===true;
   if(must==='rapid') return c.switchSystem==='hall-effect'||c.rapidTrigger===true;
   if(must==='lowprofile') return c.switchSystem==='low-profile';

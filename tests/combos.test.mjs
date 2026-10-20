@@ -40,7 +40,8 @@ test('two-pointer budget count equals a brute-force nested loop for a board',asy
       const only=CASES.filter(x=>x!==c);
       const L=c.layout, q=switchQty({case:c.id})||70;
       let brute=0;
-      for(const s of SWITCHES) for(const k of KEYCAPS){
+      // a board only takes switches of its own family (MX, magnetic, low-profile, optical)
+      for(const s of SWITCHES.filter(s=>swSystemOf(s)===boardSystem(c))) for(const k of KEYCAPS){
         if(!k.covers||!(k.covers.includes(L)||(k.addon&&k.addon[L]))) continue;
         const add=!k.covers.includes(L)&&k.addon&&k.addon[L]||0;
         if(c.price+switchCost(s,q)+k.price+add<=budget+1e-9) brute++;
