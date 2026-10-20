@@ -1646,6 +1646,9 @@ const FIELD_SLOTS=[[33,4.5],[67,4.5],[6,11],[94,11],[17,31],[83,31],[5,50],[95,5
 // Phone: [x% of width, y as a fraction of the band above the card, size factor].
 const MSLOTS=[[12,.05,1],[88,.05,.95],[10,.25,.9],[90,.25,1],[12,.45,1],[88,.45,.9],[11,.65,.9],[89,.65,1]];
 const MAX_BG=12, MAX_BG_MOBILE=6;
+// Set only for the one extra layout after an answer that left the background boards unchanged (see choose_).
+let bgShuffle=0, lastBg='';
+function shuffledTail(list,seed){const a=[...list]; let s=seed>>>0; for(let i=a.length-1;i>0;i--){s=(Math.imul(s,1664525)+1013904223)>>>0; const j=s%(i+1); [a[i],a[j]]=[a[j],a[i]]} return a}
 const LW={'60':.64,'65':.72,'75':.78,'tkl':.9,'full':1};
 // The three centre boards are fixed, calm designs so the field always opens on the same look.
 const FEATURED_IDS=['epomaker-9144581390644','mechanicalkeyboards-8930667331884','epomaker-9319480721716'];
@@ -1690,7 +1693,7 @@ function layoutField(){
   const pool=[...new Set([...featured,...hit,...cut])];
   const top=pool.slice(0,3);
   const maxBg=mobile?MAX_BG_MOBILE:MAX_BG, slots=mobile?MSLOTS:FIELD_SLOTS;
-  const rest=pool.slice(3,3+maxBg+(mobile?12:0)); // spares so culled slots can be skipped
+  const tail=pool.slice(3), rest=(bgShuffle?shuffledTail(tail,bgShuffle):tail).slice(0,maxBg+(mobile?12:0)); // spares so culled slots can be skipped
   for(const id in fieldEls) if(!top.includes(id)&&!rest.includes(id)) fieldEls[id].className='fitem hidden-slot';
   // Board size and its estimated box (the picture plus a caption line for the centre three).
   const CAP=36, GX=mobile?10:24, GY=mobile?14:18, halfW=(W-24-GX)/2;
@@ -1733,7 +1736,7 @@ function layoutField(){
     place(id,{x:fx[i],y:fy[i],w:featBase*sc,max:mobile&&i>0?halfW:Infinity,cls:'feat',r:res.byCase.get(id)});
     const m=12, hw=f.w[i]/2+m; taken.push([fx[i]-hw,fy[i]-f.h[i]/2-m,fx[i]+hw,fy[i]+f.h[i]/2+m]);
   });
-  let used=0;
+  let used=0; const placedBg=[];
   for(let s=0;s<slots.length&&used<maxBg&&used<rest.length;s++){
     const slot=slots[s], id=rest[used], x0=slot[0]/100*W, y=mobile?topBar+slot[1]*avail:slot[1]/100*H;
     let a=null, k=1, x=x0, yy=y;
@@ -1752,10 +1755,11 @@ function layoutField(){
       }
     }
     if(!a) continue; // that spot is taken: leave it empty
-    taken.push(a); used++;
+    taken.push(a); used++; placedBg.push(id);
     place(id,{x,y:yy,w:othW*k,flat:!mobile,cls:res.byCase.has(id)?'dim':'out',r:res.byCase.get(id)});
   }
   for(const id of rest.slice(used)) if(fieldEls[id]) fieldEls[id].className='fitem hidden-slot';
+  lastBg=placedBg.join();
 }
 let introOn=false, introN=0, introFeat=0, introDone=false;
 function place(id,{x,y,w,max=Infinity,flat=false,cls,r}){
@@ -1830,7 +1834,9 @@ function choose_(Q,btn){
   if(btn.disabled) return;
   quizAns[Q.key]=btn.dataset.v; if(btn.dataset.v==='surprise') quizAns.seed=Math.floor(Math.random()*1e6); store.set('sy.quiz',quizAns);
   btn.closest('.opts').querySelectorAll('.opt').forEach(o=>o.setAttribute('aria-pressed',o===btn));
-  setCount(); layoutField();
+  setCount(); const bgBefore=lastBg; layoutField();
+  // An answer that leaves the background boards where they were shuffles them once.
+  if(lastBg===bgBefore){bgShuffle=1+Math.floor(Math.random()*1e6); layoutField(); bgShuffle=0}
   // A must-have that leaves no boards stays on this step so the message can say why.
   if(Q.key==='must'&&mustBlocked()){clearTimeout(window.__adv); window.__adv=setTimeout(renderQuiz,200); return}
   clearTimeout(window.__adv); window.__adv=setTimeout(()=>{quizStep++;qDir=1;renderQuiz()},320);
