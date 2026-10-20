@@ -1672,9 +1672,11 @@ function layoutField(){
   // Only cut-out boards (transparent photo) are ever drawn. Matches fill the slots first, best first; slots with no
   // transparent match are left empty rather than filled with anything else.
   const cut=cutoutIds(), hit=res.list.map(r=>r.b.case).filter(id=>cut.has(id));
-  const top=hit.slice(0,3);
+  // Going back or narrowing answers can leave no match, so the field is never empty: other cut-out boards fill in faded.
+  const pool=[...hit,...[...cut].filter(id=>!hit.includes(id))];
+  const top=pool.slice(0,3);
   const nSlots=mobile?MSLOTS_N:FIELD_SLOTS.length;
-  const rest=hit.slice(3,3+nSlots+6); // a few spare so culled slots can be skipped
+  const rest=pool.slice(3,3+nSlots+6); // a few spare so culled slots can be skipped
   for(const id in fieldEls) if(!top.includes(id)&&!rest.includes(id)) fieldEls[id].className='fitem hidden-slot';
   // The area each board takes (with a margin and room for its label), so a background board never lands on the header, the card or another board.
   const cw=Math.min(card.classList.contains('wide')?1080:760,W-32), taken=[[0,0,W,topBar],[W/2-cw/2,cardTop,W/2+cw/2,H]];
