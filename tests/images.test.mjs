@@ -97,3 +97,13 @@ test('the floating field only draws boards whose photo has a transparent backgro
   ctx.FINDER_CASES=cases;
   assert.deepEqual([...vm.runInContext('cutoutBoards().map(c=>c.id)',ctx)],['ok'],'defaults to the finder boards');
 });
+test('photos rejected by eye are never picked again, whatever their version query',async()=>{
+  const {rejected,REJECTED}=await import('../scripts/photo-check.mjs');
+  const list=JSON.parse(await readFile(new URL('../scripts/photo-rejects.json',import.meta.url),'utf8'));
+  assert.ok(REJECTED.size>0);
+  for(const [u,v] of Object.entries(list)){
+    assert.ok(v.part&&v.reason,u);
+    assert.ok(rejected(u)&&rejected(u.split('?')[0]+'?v=1'),u);
+  }
+  assert.equal(rejected('https://cdn.shopify.com/s/files/1/0/files/other.png?v=1'),false);
+});

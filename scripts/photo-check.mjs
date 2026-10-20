@@ -18,6 +18,12 @@ async function features(url,sharp){
   }
 }
 
+// Photos a person checked by eye and found wrong (the bottom of a board, a layout diagram), keyed by
+// URL without its version query so a re-upload of the same file stays rejected.
+const bare=u=>u.split('?')[0];
+export const REJECTED=new Set(Object.keys(JSON.parse(await readFile(new URL('./photo-rejects.json',import.meta.url),'utf8'))).map(bare));
+export const rejected=u=>REJECTED.has(bare(u));
+
 // jobs: [{key, cat, layout, urls}] → Map key → photo record, or null when no photo passes.
 export async function pickPhotos(jobs,{cacheFile,log=console.log,concurrency=16}={}){
   const {default:sharp}=await import('sharp');
@@ -30,7 +36,7 @@ export async function pickPhotos(jobs,{cacheFile,log=console.log,concurrency=16}
   const out=new Map(); let shown=0;
   for(const j of jobs){
     let best=null,bs=0;
-    for(const u of j.urls){const f=cache[u]; const s=f&&!f.error&&!f.missing?judge(f,j.cat,j.layout):0; if(s>bs){bs=s;best=photoRecord(u,f,j.cat)}}
+    for(const u of j.urls){const f=cache[u]; const s=f&&!f.error&&!f.missing&&!rejected(u)?judge(f,j.cat,j.layout):0; if(s>bs){bs=s;best=photoRecord(u,f,j.cat)}}
     out.set(j.key,best); if(best) shown++;
   }
   const failed=urls.filter(u=>cache[u]?.error).length;
