@@ -16,7 +16,7 @@ for(const s of sources){
   const src=path.join(tmp,s.key+'.mp3'); await writeFile(src,Buffer.from(await r.arrayBuffer()));
   // Ten seconds from the steadiest stretch of typing, loudness-matched, with short fades so the loop doesn't click.
   execFileSync('ffmpeg',['-y','-loglevel','error','-ss',String(s.start),'-t','10','-i',src,
-    '-af',`highpass=f=35,loudnorm=I=${s.loudness}:TP=-2:LRA=11,afade=t=in:d=0.03,afade=t=out:st=9.94:d=0.06`,
+    '-af',`highpass=f=35,loudnorm=I=${s.loudness}:TP=-2:LRA=11,alimiter=limit=0.7:level=false,afade=t=in:d=0.03,afade=t=out:st=9.94:d=0.06`,
     '-ac','1','-ar','44100','-c:a','libmp3lame','-b:a','96k',path.join(out,s.key+'.mp3')]);
   credits.push(`- **${s.label}** (\`${s.key}.mp3\`): "${s.title}" by ${s.user}, https://freesound.org/s/${s.freesound}/ (${s.license}). ${s.note}. Trimmed to 10 s from ${s.start} s and loudness-matched.`);
 }
