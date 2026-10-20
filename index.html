@@ -1711,8 +1711,10 @@ function layoutField(){
   // transparent match are left empty rather than filled with anything else.
   const cut=cutoutIds(), hit=res.list.map(r=>r.b.case).filter(id=>cut.has(id));
   // Going back or narrowing answers can leave no match, so the field is never empty: other cut-out boards fill in faded.
-  const featured=FEATURED_IDS.filter(id=>cut.has(id));
-  const pool=[...new Set([...featured,...hit,...cut])];
+  // Before any answer the centre shows the three picks; once one is given, the best matches take the centre and the
+  // picks only fill in when fewer than three boards match.
+  const featured=FEATURED_IDS.filter(id=>cut.has(id)), answered=Object.keys(quizAns).some(k=>k!=='seed');
+  const pool=[...new Set(answered?[...hit,...featured,...cut]:[...featured,...hit,...cut])];
   const top=pool.slice(0,3);
   const maxBg=mobile?MAX_BG_MOBILE:MAX_BG, slots=mobile?MSLOTS:FIELD_SLOTS;
   const tail=pool.slice(3), rest=(bgSeed?shuffledTail(tail,bgSeed):tail).slice(0,maxBg+(mobile?12:0)); // spares so culled slots can be skipped
