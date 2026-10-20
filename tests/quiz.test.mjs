@@ -25,19 +25,11 @@ test('every sound option plays a credited clip that ships with the site',async()
     assert.ok(credits.includes(`freesound.org/s/${s.freesound}/`),k+' credit');
   }
 });
-test('questions run size, feel, sound, look, use, wireless, solder, must-haves, budget',()=>{
+test('questions run size, feel, sound, look, use, wireless, solder, budget',()=>{
   const s=html.indexOf('const QUESTIONS = [');
   const block=html.slice(s,html.indexOf('\n];',s));
-  assert.deepEqual([...block.matchAll(/\{key:'(\w+)'/g)].map(m=>m[1]),['layout','feel','sound','look','use','wireless','solder','must','budget']);
+  assert.deepEqual([...block.matchAll(/\{key:'(\w+)'/g)].map(m=>m[1]),['layout','feel','sound','look','use','wireless','solder','budget']);
   assert.doesNotMatch(step('feel'),/feel-graph/);
-});
-test('the must-have step offers hot-swap, knob and none (rapid and low profile wait for catalog data)',()=>{
-  const must=step('must');
-  assert.match(must,/title:'Any must-haves\?'/);
-  assert.deepEqual([...must.matchAll(/\{v:'(\w+)'/g)].map(m=>m[1]),['hotswap','knob','none']);
-  assert.deepEqual([...must.matchAll(/,b:'([^']+)',s:'([^']+)'/g)].map(m=>m[1]+' | '+m[2]),
-    ['Swappable switches | Hot-swap','Volume knob | Media control','No must-haves | Skip this']);
-  assert.equal([...must.matchAll(/art:\(\)=>quizArt\('(\w+)'\)/g)].length,3,'every option has an icon');
 });
 
 async function load(){

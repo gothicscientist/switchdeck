@@ -1411,11 +1411,6 @@ const QUESTIONS = [
     {v:'wired',b:'Wired only',s:'Nothing to charge',art:()=>quizArt('wired')},{v:'yes',b:'Wireless',s:'Bluetooth or 2.4 GHz',art:()=>quizArt('wireless')},{v:'any',b:'No preference',s:'Nothing ruled out',art:()=>quizArt('either-conn')}]},
   {key:'solder',title:'Will you solder?',info:'Soldering means melting metal to fix each switch permanently to the circuit board. Hot-swap boards have sockets instead, so switches press in and pull out by hand with no tools.',opts:[
     {v:'hotswap',b:'No, hot-swap',s:'Switches press in by hand',art:()=>quizArt('hotswap')},{v:'either',b:'Happy to solder',s:'Opens up more PCBs',art:()=>quizArt('solder')}]},
-  // Rapid trigger and low profile are hidden until the catalog records those switch systems; their rules stay in boardHasMust.
-  {key:'must',title:'Any must-haves?',hint:'Only boards whose listing confirms it are kept. If a store does not say, the board is left out.',opts:[
-    {v:'hotswap',b:'Swappable switches',s:'Hot-swap',art:()=>quizArt('hotswap')},
-    {v:'knob',b:'Volume knob',s:'Media control',art:()=>quizArt('knob')},
-    {v:'none',b:'No must-haves',s:'Skip this',art:()=>quizArt('nomust')}]},
   {key:'budget',title:"What's your budget?",budget:true},
 ];
 function waveSVG(pitch,amp=1){
