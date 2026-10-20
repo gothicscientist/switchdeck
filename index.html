@@ -55,6 +55,13 @@ h1,h2,h3{text-wrap:balance;margin:0;font-weight:700;letter-spacing:-.02em}
 .pricepill{border:0;background:transparent;color:var(--muted);font-size:14px;padding:6px 2px;display:inline-flex;align-items:center;gap:7px;transition:color .2s}
 .pricepill:hover{color:var(--ink)}
 .statusdot{display:inline-block;width:7px;height:7px;border-radius:50%}
+.fp-in{display:inline-flex;align-items:center;gap:8px;transition:opacity .4s ease,transform .4s ease}
+.fp-in.swap{opacity:0;transform:translateY(5px)}
+.fp-th{width:44px;height:22px;flex:none;display:grid;place-items:center;overflow:hidden;border-radius:4px}
+.fp-th>svg,.fp-th .pf-photo,.fp-th .pf-alt,.fp-th .pf-alt>svg{width:100%;height:100%;max-width:44px;max-height:22px;display:block}
+.fp-name{white-space:nowrap;max-width:200px;overflow:hidden;text-overflow:ellipsis}
+.fp-tag{font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:var(--faint)}
+@media (prefers-reduced-motion:reduce){.fp-in{transition:none}}
 .has-scroll .top{background:var(--glass);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
 
 /* generic */
@@ -117,7 +124,7 @@ h1,h2,h3{text-wrap:balance;margin:0;font-weight:700;letter-spacing:-.02em}
 .opt .art{height:58px;width:100%;display:flex;align-items:center;justify-content:center;margin-bottom:10px}
 .opt .art svg,.opt .art img{max-height:58px;max-width:100%}
 .opt .art{position:relative}
-.qa-press,.qa-ripple,.qa-line,.qa-caret,.qa-arc,.qa-flow,.qa-led,.qa-swap,.qa-glow,.qa-iron{transform-box:fill-box;transform-origin:center;animation-timing-function:ease-in-out;animation-iteration-count:infinite}
+.qa-press,.qa-ripple,.qa-line,.qa-caret,.qa-arc,.qa-flow,.qa-led,.qa-swap,.qa-glow,.qa-iron,.qa-btn,.qa-float,.qa-plug{transform-box:fill-box;transform-origin:center;animation-timing-function:ease-in-out;animation-iteration-count:infinite}
 .qa-press{animation:qaPress 1.8s}
 .qa-ripple{animation:qaRipple 1.8s ease-out infinite}
 .qa-line{transform-origin:left center;animation:qaType 2.6s}
@@ -129,6 +136,10 @@ h1,h2,h3{text-wrap:balance;margin:0;font-weight:700;letter-spacing:-.02em}
 .qa-swap{animation:qaSwap 3s}
 .qa-glow{animation:qaGlow 2s}
 .qa-iron{animation:qaIron 3s}
+.qa-btn{animation:qaBtn 1.8s}
+.qa-float{animation:qaFloat 3.2s}
+.qa-plug{animation:qaPlug 2.6s}
+.qa-cable{transform-box:view-box;offset-rotate:0deg;animation:qaCable 2.6s linear infinite}
 .opt:hover .qa-press{animation-duration:.9s}.opt:hover .qa-ripple{animation-duration:1s}.opt:hover .qa-arc{animation-duration:1.4s}.opt:hover .qa-flow{animation-duration:1.3s}.opt:hover .qa-swap{animation-duration:1.8s}.opt:hover .qa-glow{animation-duration:1.2s}
 @keyframes qaPress{0%,100%{transform:translateY(0)}20%{transform:translateY(3px)}40%{transform:translateY(0)}}
 @keyframes qaRipple{0%{transform:scale(.7);opacity:.7}100%{transform:scale(1.7);opacity:0}}
@@ -139,12 +150,12 @@ h1,h2,h3{text-wrap:balance;margin:0;font-weight:700;letter-spacing:-.02em}
 @keyframes qaFlowS{0%{transform:translateX(0);opacity:0}15%{opacity:1}85%{opacity:1}100%{transform:translateX(20px);opacity:0}}
 @keyframes qaSwap{0%,30%,100%{transform:translateY(0)}50%,70%{transform:translateY(-12px)}}
 @keyframes qaGlow{0%,100%{transform:scale(.8);opacity:.55}50%{transform:scale(1.15);opacity:1}}
+@keyframes qaBtn{0%,100%{transform:scale(1);opacity:.92}15%{transform:scale(1.3);opacity:1}35%{transform:scale(1);opacity:.92}}
+@keyframes qaFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-2px)}}
+@keyframes qaPlug{0%,100%{transform:translateX(0)}50%{transform:translateX(2px)}}
+@keyframes qaCable{0%{offset-distance:0%;opacity:0}15%{opacity:1}85%{opacity:1}100%{offset-distance:100%;opacity:0}}
 @keyframes qaIron{0%,100%{transform:translate(0,0)}50%{transform:translate(-1.5px,2px)}}
-@media (prefers-reduced-motion:reduce){.qa-press,.qa-ripple,.qa-line,.qa-caret,.qa-arc,.qa-flow,.qa-led,.qa-swap,.qa-glow,.qa-iron{animation:none!important}.qa-ripple,.qa-flow{opacity:0}}
-.feel-pic,.feel-graph{display:flex;align-items:center;justify-content:center;width:100%;height:100%;transition:opacity .25s ease,transform .25s ease}
-.feel-graph{position:absolute;inset:0;opacity:0;transform:translateY(4px)}
-.opt:hover .feel-pic,.opt:focus-visible .feel-pic,.opt[aria-pressed="true"] .feel-pic{opacity:0}
-.opt:hover .feel-graph,.opt:focus-visible .feel-graph,.opt[aria-pressed="true"] .feel-graph{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){.qa-press,.qa-ripple,.qa-line,.qa-caret,.qa-arc,.qa-flow,.qa-led,.qa-swap,.qa-glow,.qa-iron,.qa-btn,.qa-float,.qa-plug,.qa-cable{animation:none!important}.qa-ripple,.qa-flow,.qa-cable{opacity:0}}
 .opt[aria-pressed="true"]{background:var(--tile-hover);box-shadow:inset 0 0 0 1.5px var(--ink)}
 .opt .tick{position:absolute;top:-7px;right:-7px;width:20px;height:20px;border-radius:50%;background:var(--ink);color:var(--surface);display:none;place-items:center;box-shadow:0 0 0 2px var(--surface)}
 .opt[aria-pressed="true"] .tick{display:grid;animation:pop .35s var(--spring)}
@@ -154,8 +165,12 @@ h1,h2,h3{text-wrap:balance;margin:0;font-weight:700;letter-spacing:-.02em}
 .budget{display:grid;gap:10px}
 .brow{display:flex;gap:10px;align-items:center}
 .btrack{position:relative;flex:1;height:48px;border-radius:var(--r-tile);background:var(--tile);cursor:pointer;touch-action:none;user-select:none}
-.bfill{position:absolute;left:0;top:0;bottom:0;border-radius:var(--r-tile);background:var(--accent);transition:width .12s linear}
-.bknob{position:absolute;top:50%;transform:translate(-50%,-50%);background:var(--surface);color:var(--ink);font-weight:600;font-size:13px;padding:10px 10px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.18);white-space:nowrap;transition:left .12s linear;pointer-events:none}
+.bfill{position:absolute;left:0;top:0;bottom:0;border-radius:var(--r-tile);background:var(--accent);will-change:width}
+.btrack.snap .bfill{transition:width .2s cubic-bezier(.2,.8,.2,1)}
+.bknob{position:absolute;top:50%;left:0;transform:translate3d(0,-50%,0) translateX(-50%);will-change:transform;background:var(--surface);color:var(--ink);font-weight:600;font-size:13px;padding:10px 10px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.18);white-space:nowrap;pointer-events:none}
+.btrack.snap .bknob{transition:transform .2s cubic-bezier(.2,.8,.2,1)}
+.btrack.drag{cursor:grabbing}
+@media (prefers-reduced-motion:reduce){.btrack.snap .bfill,.btrack.snap .bknob{transition:none}}
 .btrack:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
 .nolimit{border:0;background:var(--tile);border-radius:var(--r-tile);height:48px;padding:0 16px;font-weight:600;transition:background .2s,box-shadow .2s}
 .nolimit:hover{background:var(--tile-hover)}
@@ -372,6 +387,11 @@ h1,h2,h3{text-wrap:balance;margin:0;font-weight:700;letter-spacing:-.02em}
 .listen.playing{background:var(--ink);color:var(--surface)}
 .listen.playing svg{display:none}.listen.playing .eq{display:flex}
 .qhint{margin:-6px 0 12px;text-align:center;font-size:12.5px;color:var(--muted)}
+.qinfo{display:inline-flex;align-items:center;justify-content:center;vertical-align:middle;width:18px;height:18px;margin-left:8px;border-radius:50%;border:1px solid var(--line);background:var(--surface);color:var(--muted);font:italic 600 11px Georgia,serif;cursor:pointer;transition:background .2s,color .2s}
+.qinfo:hover,.qinfo[aria-expanded="true"]{background:var(--tile-hover);color:var(--ink)}
+.qinfotext{text-align:center;font-size:13px;color:var(--ink-2);background:var(--tile);border-radius:10px;padding:10px 14px;max-width:520px;margin:0 auto 12px;animation:qinfoIn .25s ease both}
+.qinfotext[hidden]{display:none}
+@keyframes qinfoIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
 .qcredit{margin:10px 0 0;text-align:center;font-size:11.5px;color:var(--faint)}
 .qcredit a{color:inherit;text-decoration:underline;text-underline-offset:2px}
 
@@ -456,6 +476,7 @@ h1,h2,h3{text-wrap:balance;margin:0;font-weight:700;letter-spacing:-.02em}
   .pick .thumb{width:76px;height:56px}
   .pick .side{grid-column:1 / -1;flex-direction:row;justify-content:space-between;align-items:center;text-align:left}
   .pricepill .pname{display:none}
+  .fp-name,.fp-tag{display:none}
   .rscrim{padding:0}
   .rgrid{border-radius:0}
   .rinfo{padding:20px 18px}
@@ -1249,6 +1270,7 @@ let view='finder';
 function go(v,push=true){
   closeSoundPreview();
   view=v;
+  renderPill();
   for(const id of ['finder','build','saved','directory']){
     const el=document.getElementById('view-'+id), on=id===v;
     el.hidden=!on;
@@ -1265,11 +1287,56 @@ window.addEventListener('scroll',onScroll,{passive:true});
 document.addEventListener('click',e=>{const g=e.target.closest('[data-go]'); if(g){e.preventDefault(); go(g.dataset.go)}});
 document.getElementById('brandlink').addEventListener('click',e=>{e.preventDefault();go('finder')});
 
+let fpCur=null, fpTimer=null, fpHold=false;
+const fpReduce=()=>window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+function fpPool(){return CASES.filter(c=>c.photo&&Array.isArray(c.photo.box)&&c.photo.ar>0&&c.price>0)}
+function fpPick(){const p=fpPool(); if(!p.length) return null; const q=p.length>1?p.filter(c=>c!==fpCur):p; return q[Math.floor(Math.random()*q.length)]}
+function fpHTML(c){
+  const icon=buildBoard({case:c.id,color:0,keycaps:null,extras:[]},{legends:false,u:6,cls:''})||'';
+  return `<span class="fp-in"><span class="fp-th">${framedPhoto(c.photo,c.name,icon,120)}</span><span class="fp-name pname">${esc(c.brand)} ${esc(c.name)} · </span><span>${money(c.price)}</span></span>`;
+}
+function fpShow(c,animate){
+  const pill=document.getElementById('pricepill'); fpCur=c;
+  pill.setAttribute('aria-label',`Featured: ${c.brand} ${c.name}, open in builder`);
+  pill.title='Featured keyboard: open in builder';
+  const swapIn=()=>{pill.innerHTML=fpHTML(c); const el=pill.firstElementChild; if(animate){el.classList.add('swap'); void el.offsetWidth; el.classList.remove('swap')}};
+  const old=pill.firstElementChild;
+  if(animate&&old&&old.classList.contains('fp-in')){old.classList.add('swap'); setTimeout(()=>{if(fpCur===c&&view==='finder')swapIn()},400)}
+  else swapIn();
+}
+function fpStop(){clearInterval(fpTimer); fpTimer=null}
+function fpStart(){
+  fpStop(); if(fpReduce()) return;
+  fpTimer=setInterval(()=>{if(view!=='finder'){fpStop();return} if(fpHold||document.hidden) return; const c=fpPick(); if(c) fpShow(c,true)},7000);
+}
+(function(){
+  const pill=document.getElementById('pricepill');
+  const hold=v=>()=>{fpHold=v};
+  pill.addEventListener('mouseenter',hold(true)); pill.addEventListener('mouseleave',hold(false));
+  pill.addEventListener('focus',hold(true)); pill.addEventListener('blur',hold(false));
+})();
+function fpOpen(){
+  const c=fpCur; if(!c) return;
+  build={case:c.id,color:0,pcb:null,plate:null,switches:null,stabs:null,keycaps:null,extras:[],name:`My ${c.name} build`};
+  persist(); go('build'); toast('Loaded into the builder');
+}
 function renderPill(){
-  const pill=document.getElementById('pricepill'), v=verdict(compat(build)), col={ok:'var(--ok)',warn:'var(--warn)',fail:'var(--fail)',info:'var(--info)'}[v.level];
+  const pill=document.getElementById('pricepill');
+  if(view==='finder'){
+    const c=(fpCur&&fpPool().includes(fpCur))?fpCur:fpPick();
+    if(c){
+      pill.removeAttribute('data-go'); pill.onclick=e=>{e.preventDefault(); fpOpen()};
+      if(!pill.querySelector('.fp-in')) fpShow(c,false);
+      if(!fpTimer) fpStart();
+      return;
+    }
+  }
+  fpStop(); fpHold=false; pill.onclick=null; pill.setAttribute('data-go','build'); pill.removeAttribute('aria-label'); pill.title='Open your build';
+  const v=verdict(compat(build)), col={ok:'var(--ok)',warn:'var(--warn)',fail:'var(--fail)',info:'var(--info)'}[v.level];
   const c=caseOf(build);
   pill.innerHTML=`<span class="statusdot" style="background:${col}"></span>${c?`<span class="pname">${esc(c.name)} · </span>`:'<span class="pname">Your build · </span>'}${money(total(build))}`;
 }
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&view==='finder'&&!fpTimer)fpStart()});
 
 /* =========================================================
    FINDER: questions and matching
@@ -1277,6 +1344,18 @@ function renderPill(){
 const STONE_PAL={alpha:'#E7E5E4',mod:'#A8A29E',accent:'#78716C',leg:null,modleg:null,accleg:null};
 const miniBoard=l=>boardSVG({layout:l,caseColor:'#57534E',pal:STONE_PAL,legends:false,u:12,cls:'',label:LAYOUT_NAMES[l]});
 const QUESTIONS = [
+  {key:'feel',title:'How should a key feel to press?',hint:'Feel only: how the key moves under your finger. Sound is the next step.',opts:[
+    {v:'Linear',b:'Linear',s:'Smooth and even, top to bottom',art:()=>switchSVG(BYID.milkyyp)},
+    {v:'Tactile',b:'Tactile',s:'A bump partway down',art:()=>switchSVG(BYID.u4t)},
+    {v:'Clicky',b:'Clicky',s:'A sharp, snappy bump',art:()=>switchSVG(BYID.boxjade)},
+    {v:'Silent',b:'Cushioned',s:'Soft landing at the bottom',art:()=>switchSVG(BYID.silentred)},
+    {v:'any',b:'Not sure'}]},
+  {key:'sound',title:'What should it sound like?',hint:'Press play to hear a 10-second example, looped. Real recordings; your case, plate and keycaps also shape the sound.',opts:[
+    {v:'thock',b:'Deep thock',s:'Low and rounded',clip:'thock',art:()=>waveSVG(.18)},{v:'creamy',b:'Creamy',s:'Soft and muted',clip:'creamy',art:()=>waveSVG(.38)},
+    {v:'clack',b:'Crisp clack',s:'Bright and sharp',clip:'clack',art:()=>waveSVG(.82)},{v:'quiet',b:'Quiet',s:'For calls and shared rooms',clip:'quiet',art:()=>waveSVG(.4,.3)},{v:'any',b:'No preference'}]},
+  {key:'look',title:'Pick a look',opts:[
+    {v:'dark',b:'Dark',s:'Black and charcoal',art:()=>capsSVG(BYID.gmkwob)},{v:'light',b:'Light',s:'White and cream',art:()=>capsSVG(BYID.bow)},
+    {v:'colorful',b:'Colorful',s:'Bold accents',art:()=>capsSVG(BYID.gmklaser)},{v:'retro',b:'Retro',s:'Vintage beige',art:()=>capsSVG(BYID.devtty)},{v:'surprise',b:'Surprise me',s:'We pick a set for you',art:()=>surpriseSVG()}]},
   {key:'layout',title:'How big should it be?',opts:[
     {v:'60',b:'60%',s:'No arrows',art:()=>miniBoard('60')},
     {v:'65',b:'65%',s:'Adds arrows',art:()=>miniBoard('65')},
@@ -1284,36 +1363,14 @@ const QUESTIONS = [
     {v:'tkl',b:'TKL',s:'No numpad',art:()=>miniBoard('tkl')},
     {v:'full',b:'Full size',s:'Full numpad',art:()=>miniBoard('full')},
     {v:'any',b:'No preference'}]},
-  {key:'feel',title:'How should a key feel to press?',hint:'Feel only: how the key moves under your finger. Hover a switch to see its force curve. Sound is the next step.',opts:[
-    {v:'Linear',b:'Linear',s:'Smooth and even, top to bottom',art:()=>`<span class="feel-pic">${switchSVG(BYID.milkyyp)}</span><span class="feel-graph">${feelSVG('linear')}</span>`},
-    {v:'Tactile',b:'Tactile',s:'A bump partway down',art:()=>`<span class="feel-pic">${switchSVG(BYID.u4t)}</span><span class="feel-graph">${feelSVG('tactile')}</span>`},
-    {v:'Clicky',b:'Clicky',s:'A sharp, snappy bump',art:()=>`<span class="feel-pic">${switchSVG(BYID.boxjade)}</span><span class="feel-graph">${feelSVG('clicky')}</span>`},
-    {v:'Silent',b:'Cushioned',s:'Soft landing at the bottom',art:()=>`<span class="feel-pic">${switchSVG(BYID.silentred)}</span><span class="feel-graph">${feelSVG('cushioned')}</span>`},
-    {v:'any',b:'Not sure'}]},
-  {key:'sound',title:'What should it sound like?',hint:'Press play to hear a 10-second example, looped. Real recordings; your case, plate and keycaps also shape the sound.',opts:[
-    {v:'thock',b:'Deep thock',s:'Low and rounded',clip:'thock',art:()=>waveSVG(.18)},{v:'creamy',b:'Creamy',s:'Soft and muted',clip:'creamy',art:()=>waveSVG(.38)},
-    {v:'clack',b:'Crisp clack',s:'Bright and sharp',clip:'clack',art:()=>waveSVG(.82)},{v:'quiet',b:'Quiet',s:'For calls and shared rooms',clip:'quiet',art:()=>waveSVG(.4,.3)},{v:'any',b:'No preference'}]},
   {key:'use',title:'What is it for?',opts:[
     {v:'gaming',b:'Gaming',s:'Fast, light presses',art:()=>quizArt('gaming')},{v:'work',b:'Work',s:'Typing and coding',art:()=>quizArt('work')},{v:'any',b:'No preference',s:'A bit of both',art:()=>quizArt('both')}]},
   {key:'wireless',title:'How should it connect?',opts:[
     {v:'wired',b:'Wired only',s:'Nothing to charge',art:()=>quizArt('wired')},{v:'yes',b:'Wireless',s:'Bluetooth or 2.4 GHz',art:()=>quizArt('wireless')},{v:'any',b:'No preference',s:'Nothing ruled out',art:()=>quizArt('either-conn')}]},
-  {key:'solder',title:'Will you solder?',opts:[
+  {key:'solder',title:'Will you solder?',info:'Soldering means melting metal to fix each switch permanently to the circuit board. Hot-swap boards have sockets instead, so switches press in and pull out by hand with no tools.',opts:[
     {v:'hotswap',b:'No, hot-swap',s:'Switches press in by hand',art:()=>quizArt('hotswap')},{v:'either',b:'Happy to solder',s:'Opens up more PCBs',art:()=>quizArt('solder')}]},
   {key:'budget',title:"What's your budget?",budget:true},
-  {key:'look',title:'Pick a look',opts:[
-    {v:'dark',b:'Dark',s:'Black and charcoal',art:()=>capsSVG(BYID.gmkwob)},{v:'light',b:'Light',s:'White and cream',art:()=>capsSVG(BYID.bow)},
-    {v:'colorful',b:'Colorful',s:'Bold accents',art:()=>capsSVG(BYID.gmklaser)},{v:'retro',b:'Retro',s:'Vintage beige',art:()=>capsSVG(BYID.devtty)},{v:'surprise',b:'Surprise me',s:'We pick a set for you',art:()=>surpriseSVG()}]},
 ];
-// Force against key travel, the way switch makers chart feel.
-function feelSVG(kind){
-  const P={
-    linear:'M8 50 L112 18',
-    tactile:'M8 50 C22 44 30 22 40 20 C48 19 50 38 58 38 L112 18',
-    clicky:'M8 50 L36 18 L40 18 L44 40 L112 18',
-    cushioned:'M8 50 L92 22 C100 20 104 16 112 8',
-  }[kind];
-  return `<svg viewBox="0 0 120 60" aria-hidden="true"><path d="M8 6v46h106" fill="none" stroke="#D6D3D1" stroke-width="1.5" stroke-linecap="round"/><path d="${P}" fill="none" stroke="#57534E" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>${kind==='cushioned'?'<rect x="94" y="8" width="18" height="44" rx="3" fill="#57534E" opacity=".08"/>':''}</svg>`;
-}
 function waveSVG(pitch,amp=1){
   const n=26, pts=[]; for(let i=0;i<n;i++){const x=4+i*(112/(n-1)), env=Math.exp(-((i%13)/(2+ (1-pitch)*5))), y=30+Math.sin(i*(1.1+pitch*2.4))*env*20*amp; pts.push(`${x.toFixed(1)},${y.toFixed(1)}`)}
   return `<svg viewBox="0 0 120 60" aria-hidden="true"><polyline points="${pts.join(' ')}" fill="none" stroke="#57534E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
@@ -1327,25 +1384,29 @@ function quizArt(kind){
     lw.forEach((f,i)=>{o+=`<rect class="qa-line" style="animation-delay:${i*.35}s" x="${x+w*.12}" y="${y+h*(.2+i*.26)}" width="${w*.76*f}" height="${Math.max(3,h*.1)}" rx="1.6" fill="url(#qa-${id})"/>`});
     return o+`<rect class="qa-caret" x="${x+w*.12+w*.76*.8+3}" y="${y+h*.2-1}" width="2" height="${Math.max(5,h*.13)}" rx="1" fill="${C[id.slice(-4)==='blue'?'blue':'blue'][1]}" style="display:${sc?'block':'none'}"/>`};
   const arcs=(cx,cy,rs,id,w)=>rs.map((r,i)=>{const d=r*.707;return `<path class="qa-arc" style="animation-delay:${i*.28}s" d="M${cx-d} ${cy-d} A${r} ${r} 0 0 1 ${cx+d} ${cy-d}" fill="none" stroke="url(#qa-${id})" stroke-width="${w}" stroke-linecap="round"/>`}).join('');
+  const ctrl=(id,tf)=>{const bt=[[82,23],[88,29],[82,35],[76,29]].map((p,i)=>`<circle class="qa-btn" style="animation-delay:${i*.45}s" cx="${p[0]}" cy="${p[1]}" r="3" fill="#fff"/>`).join('');
+    return `<g${tf?` transform="${tf}"`:''}><g class="qa-float"><path d="M36 13 H84 C93 13 99 19 102 31 L105 43 C106 50 102 54 97 54 C92 54 90 51 87 47 C85 44 83 43 80 43 H40 C37 43 35 44 33 47 C30 51 28 54 23 54 C18 54 14 50 15 43 L18 31 C21 19 27 13 36 13 Z" fill="url(#qa-${id})"/><path d="M36 13 H84 C93 13 99 19 102 31 L103 36 C90 22 30 22 17 36 L18 31 C21 19 27 13 36 13 Z" fill="#fff" opacity=".18"/><rect x="31" y="26.5" width="14" height="5" rx="2" fill="#fff" opacity=".92"/><rect x="35.5" y="22" width="5" height="14" rx="2" fill="#fff" opacity=".92"/>${bt}</g></g>`};
+  const plug=(tf)=>{const cp='M4 48 C28 48 32 30 58 30 H68';return `<g${tf?` transform="${tf}"`:''}><path d="${cp}" stroke="#D6D3D1" stroke-width="5" stroke-linecap="round" fill="none"/><path d="${cp}" stroke="url(#qa-pc)" stroke-width="5" stroke-linecap="round" fill="none" opacity=".75"/><circle class="qa-cable" style="offset-path:path('${cp}')" r="2.6" cx="0" cy="0" fill="#fff" stroke="#2BB3A3" stroke-width="1.4"/><g class="qa-plug"><rect x="64" y="21" width="24" height="18" rx="6" fill="url(#qa-ph)"/><rect x="68" y="24" width="14" height="4" rx="2" fill="#fff" opacity=".28"/><rect x="87" y="23.5" width="22" height="13" rx="6.5" fill="url(#qa-pm)" stroke="#A8A29E" stroke-width="1"/><rect x="93" y="28.3" width="11" height="3.4" rx="1.7" fill="#78716C"/></g></g>`};
+  const pdefs=grad('pc','teal')+grad('ph','teal',1)+`<linearGradient id="qa-pm" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F5F5F4"/><stop offset="1" stop-color="#C7C3C0"/></linearGradient>`;
   let defs='',body='';
   if(kind==='gaming'){
     defs=grad('gm','coral',1);
-    body=`<circle class="qa-ripple" cx="60" cy="30" r="18" fill="none" stroke="#EF6F5E" stroke-width="2"/><circle class="qa-ripple" style="animation-delay:.9s" cx="60" cy="30" r="18" fill="none" stroke="#EF6F5E" stroke-width="2"/>${key(44,14,32,'gm','qa-press')}`;
+    body=ctrl('gm');
   }else if(kind==='work'){
     defs=grad('wk','blue')+neutral;
     body=doc(32,8,56,44,'wk',true);
   }else if(kind==='both'){
     defs=grad('bk','coral',1)+grad('bw','blue')+neutral;
-    body=`<circle class="qa-ripple" cx="34" cy="30" r="15" fill="none" stroke="#EF6F5E" stroke-width="1.6"/>${key(20,16,28,'bk','qa-press')}`+doc(62,10,40,40,'bw',true);
+    body=ctrl('bk','translate(34 30) scale(.5) translate(-60 -30)')+doc(62,10,40,40,'bw',true);
   }else if(kind==='wired'){
-    defs=grad('wr','teal')+grad('wb','teal',1)+neutral;
-    body=`<path d="M6 30 H76" stroke="#D6D3D1" stroke-width="4" stroke-linecap="round" fill="none"/><path d="M6 30 H76" stroke="url(#qa-wr)" stroke-width="4" stroke-linecap="round" fill="none" opacity=".55"/><circle class="qa-flow" cx="10" cy="30" r="4" fill="#fff" stroke="#2BB3A3" stroke-width="2"/><rect x="70" y="23" width="14" height="14" rx="4" fill="url(#qa-wb)"/><rect x="82" y="12" width="32" height="36" rx="8" fill="url(#qa-n-wired)" stroke="#D6D3D1" stroke-width="1.2"/><rect class="qa-led" x="90" y="26" width="16" height="8" rx="4" fill="#2BB3A3"/>`;
+    defs=pdefs;
+    body=plug('translate(6 0)');
   }else if(kind==='wireless'){
     defs=grad('wl','violet');
     body=arcs(60,46,[14,26,38],'wl',4)+`<circle cx="60" cy="46" r="5.5" fill="#8B7CF6"/>`;
   }else if(kind==='either-conn'){
-    defs=grad('ec','teal')+grad('ea','violet')+grad('eb','teal',1);
-    body=`<path d="M6 40 H30" stroke="url(#qa-ec)" stroke-width="3.5" stroke-linecap="round" fill="none" opacity=".8"/><rect x="28" y="34" width="12" height="12" rx="4" fill="url(#qa-eb)"/><circle class="qa-flow qa-flow-s" cx="10" cy="40" r="3" fill="#fff" stroke="#2BB3A3" stroke-width="1.8"/>`+arcs(84,46,[10,19,28],'ea',3.4)+`<circle cx="84" cy="46" r="4.5" fill="#8B7CF6"/>`;
+    defs=pdefs+grad('ea','violet');
+    body=plug('translate(0 8) scale(.5)')+arcs(88,46,[10,19,28],'ea',3.4)+`<circle cx="88" cy="46" r="4.5" fill="#8B7CF6"/>`;
   }else if(kind==='hotswap'){
     defs=grad('hs','amber',1)+`<linearGradient id="qa-hb" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#E7E5E4"/><stop offset="1" stop-color="#D6D3D1"/></linearGradient>`;
     body=`<rect x="26" y="38" width="68" height="14" rx="6" fill="url(#qa-hb)"/><rect x="42" y="42" width="6" height="6" rx="2" fill="#A8A29E"/><rect x="72" y="42" width="6" height="6" rx="2" fill="#A8A29E"/><g class="qa-swap"><rect x="44" y="30" width="3" height="9" rx="1.5" fill="#A8A29E"/><rect x="73" y="30" width="3" height="9" rx="1.5" fill="#A8A29E"/><rect x="38" y="6" width="44" height="28" rx="8" fill="url(#qa-hs)"/><rect x="48" y="11" width="24" height="8" rx="4" fill="#fff" opacity=".3"/></g>`;
@@ -1573,18 +1634,18 @@ function renderQuiz(){
     const frac=(val-B_MIN)/(B_MAX-B_MIN);
     body=`<div class="budget"><div class="brow">
       <div class="btrack" id="btrack" tabindex="0" role="slider" aria-label="Budget" aria-valuemin="${B_MIN}" aria-valuemax="${B_MAX}" aria-valuenow="${val}" style="${any?'opacity:.45':''}">
-        <div class="bfill" id="bfill" style="width:${Math.max(6,frac*100)}%"></div><div class="bknob" id="bknob" style="left:${Math.min(94,Math.max(6,frac*100))}%">${val>=B_MAX?'$'+B_MAX+'+':'$'+val}</div></div>
+        <div class="bfill" id="bfill" style="width:${Math.max(6,frac*100)}%"></div><div class="bknob" id="bknob" style="left:${Math.min(94,Math.max(6,frac*100))}%;transform:translateX(-50%) translateY(-50%)">${val>=B_MAX?'$'+B_MAX+'+':'$'+val}</div></div>
       <button class="nolimit" id="nolimit" aria-pressed="${any}">No limit</button></div>
       <div class="bticks" id="bticks">${[100,250,400,600].map(t=>`<span style="left:${(t-B_MIN)/(B_MAX-B_MIN)*100}%">$${t}${t===B_MAX?'+':''}</span>`).join('')}</div>
       <button class="btn primary block" id="bcontinue">Continue</button></div>`;
   } else {
     title=Q.title;
     const optB=(o,i)=>`<button class="opt" style="--i:${i}" aria-pressed="${quizAns[Q.key]===o.v}" data-v="${o.v}">${o.art?`<span class="art">${o.art()}</span>`:''}<b>${esc(o.b)}</b>${o.s?`<span>${esc(o.s)}</span>`:''}<i class="tick">${icon('tick')}</i></button>`;
-    body=`${Q.hint?`<p class="qhint">${esc(Q.hint)}</p>`:''}<div class="opts">${Q.opts.map((o,i)=>o.clip?`<div class="optw" style="--i:${i}">${optB(o,i)}${clipBtn(o.clip,o.b)}</div>`:optB(o,i)).join('')}</div>${Q.key==='sound'?`<p class="qcredit" id="qcredit" aria-live="polite">Recordings from <a href="assets/sounds/CREDITS.md" target="_blank" rel="noopener">Freesound, CC0</a></p>`:''}`;
+    body=`${Q.info?`<p class="qinfotext" id="qinfotext" hidden>${esc(Q.info)}</p>`:''}${Q.hint?`<p class="qhint">${esc(Q.hint)}</p>`:''}<div class="opts">${Q.opts.map((o,i)=>o.clip?`<div class="optw" style="--i:${i}">${optB(o,i)}${clipBtn(o.clip,o.b)}</div>`:optB(o,i)).join('')}</div>${Q.key==='sound'?`<p class="qcredit" id="qcredit" aria-live="polite">Recordings from <a href="assets/sounds/CREDITS.md" target="_blank" rel="noopener">Freesound, CC0</a></p>`:''}`;
   }
   wrapEl.classList.toggle('wide',!!(Q&&Q.opts&&Q.opts.length>5));
   card.innerHTML=`<div class="qhead"><div class="l"><button class="iconbtn" id="qback" aria-label="Previous question" ${quizStep===0?'disabled':''}>${icon('back')}</button><button class="iconbtn" id="qreset" aria-label="Start over" ${answered()?'':'disabled'}>${icon('reset')}</button></div>
-    <h1>${esc(title)}</h1><div class="r" id="qcount"><b>${fmtCombos(shownCombos==null?combos:shownCombos)}</b><span class="w">combinations</span></div></div>
+    <h1>${esc(title)}${Q&&Q.info?`<button type="button" class="qinfo" aria-label="What does this mean?" aria-expanded="false" aria-controls="qinfotext">i</button>`:''}</h1><div class="r" id="qcount"><b>${fmtCombos(shownCombos==null?combos:shownCombos)}</b><span class="w">combinations</span></div></div>
     <div class="qbody ${qDir<0?'back':''}">${body}</div>`;
   // smooth height change
   if(oldH){const newH=card.offsetHeight; card.style.height=oldH+'px'; void card.offsetHeight; card.style.height=newH+'px'; clearTimeout(hT); hT=setTimeout(()=>{card.style.height=''; layoutField()},470)}
@@ -1593,6 +1654,7 @@ function renderQuiz(){
   const r2=card.querySelector('#qreset2'); if(r2) r2.onclick=()=>{quizAns={};store.set('sy.quiz',quizAns);quizStep=0;qDir=-1;renderQuiz()};
   const vm=card.querySelector('#viewmatches'); if(vm) vm.onclick=()=>openResults();
   card.querySelectorAll('.opt').forEach(b=>b.onclick=()=>choose_(Q,b));
+  const qi=card.querySelector('.qinfo'); if(qi) qi.onclick=()=>{const open=qi.getAttribute('aria-expanded')!=='true'; qi.setAttribute('aria-expanded',String(open)); card.querySelector('#qinfotext').hidden=!open};
   if(Q&&Q.budget) wireBudget(card);
   paintCombos(combos,true);
   layoutField();
@@ -1617,14 +1679,44 @@ function wireBudget(card){
   const tr=card.querySelector('#btrack'), fill=card.querySelector('#bfill'), knob=card.querySelector('#bknob'), nl=card.querySelector('#nolimit');
   card.querySelector('#bticks').style.setProperty('--nl',nl.offsetWidth+'px');
   if(quizAns.budget==null){quizAns.budget=300}
-  const set=(v)=>{v=Math.round(Math.min(B_MAX,Math.max(B_MIN,v))/10)*10; quizAns.budget=v; store.set('sy.quiz',quizAns);
-    const f=(v-B_MIN)/(B_MAX-B_MIN); fill.style.width=Math.max(6,f*100)+'%'; knob.style.left=Math.min(94,Math.max(6,f*100))+'%'; knob.textContent=v>=B_MAX?`$${B_MAX}+`:`$${v}`;
-    tr.setAttribute('aria-valuenow',v); tr.style.opacity=''; nl.setAttribute('aria-pressed','false');
-    cancelAnimationFrame(window.__bf); window.__bf=requestAnimationFrame(()=>{setCount(); layoutField()})};
-  const fromX=x=>{const r=tr.getBoundingClientRect(); return B_MIN+(x-r.left)/r.width*(B_MAX-B_MIN)};
-  tr.addEventListener('pointerdown',e=>{tr.setPointerCapture(e.pointerId); set(fromX(e.clientX)); const mv=ev=>set(fromX(ev.clientX)); const up=()=>{tr.removeEventListener('pointermove',mv);tr.removeEventListener('pointerup',up)}; tr.addEventListener('pointermove',mv); tr.addEventListener('pointerup',up)});
-  tr.addEventListener('keydown',e=>{const v=typeof quizAns.budget==='number'?quizAns.budget:300; if(e.key==='ArrowRight'||e.key==='ArrowUp'){e.preventDefault();set(v+10)} if(e.key==='ArrowLeft'||e.key==='ArrowDown'){e.preventDefault();set(v-10)}});
-  nl.onclick=()=>{const on=quizAns.budget!=='any'; quizAns.budget=on?'any':300; store.set('sy.quiz',quizAns); nl.setAttribute('aria-pressed',on); tr.style.opacity=on?'.45':''; setCount(); layoutField()};
+  const clampV=v=>Math.min(B_MAX,Math.max(B_MIN,v)), snap=v=>Math.round(clampV(v)/10)*10;
+  let W=tr.getBoundingClientRect().width, cur=typeof quizAns.budget==='number'?quizAns.budget:300, raf=0, last=0, tmr=0, dragging=false;
+  if(window.ResizeObserver){const ro=new ResizeObserver(()=>{W=tr.getBoundingClientRect().width;paint()}); ro.observe(tr)}
+  const label=v=>{const r=snap(v); return r>=B_MAX?`$${B_MAX}+`:`$${r}`};
+  function paint(){raf=0;
+    const f=(cur-B_MIN)/(B_MAX-B_MIN), pc=Math.min(94,Math.max(6,f*100));
+    fill.style.width=Math.max(6,f*100)+'%';
+    knob.style.left='0'; knob.style.transform=`translate3d(${(W*pc/100).toFixed(2)}px,-50%,0) translateX(-50%)`;
+    const t=label(cur); if(knob.textContent!==t) knob.textContent=t;
+    tr.setAttribute('aria-valuenow',snap(cur));
+  }
+  const sched=()=>{if(!raf) raf=requestAnimationFrame(paint)};
+  const recount=(final)=>{clearTimeout(tmr); const run=()=>{last=performance.now(); setCount(); layoutField()};
+    if(final){run(); return} const dt=performance.now()-last; if(dt>=120) run(); else tmr=setTimeout(run,120-dt)};
+  const commit=(v,final)=>{const sv=snap(v); quizAns.budget=sv; tr.style.opacity=''; nl.setAttribute('aria-pressed','false');
+    if(final) store.set('sy.quiz',quizAns); recount(final)};
+  const fromX=x=>{const r=tr.getBoundingClientRect(); return clampV(B_MIN+(x-r.left)/r.width*(B_MAX-B_MIN))};
+  paint();
+  let sx=0, moved=false;
+  tr.addEventListener('pointerdown',e=>{
+    if(e.button!==undefined&&e.button>0) return;
+    try{tr.setPointerCapture(e.pointerId)}catch(_){}
+    dragging=true; moved=false; sx=e.clientX; tr.classList.add('drag','snap'); tr.focus({preventScroll:true});
+    cur=fromX(e.clientX); commit(cur,false); sched(); e.preventDefault()});
+  tr.addEventListener('pointermove',e=>{
+    if(!dragging) return;
+    if(!moved&&Math.abs(e.clientX-sx)>3){moved=true; tr.classList.remove('snap')}
+    if(!moved) return;
+    cur=fromX(e.clientX); commit(cur,false); sched()});
+  const end=()=>{ if(!dragging) return; dragging=false; tr.classList.remove('drag'); tr.classList.add('snap');
+    cur=snap(cur); commit(cur,true); sched()};
+  tr.addEventListener('pointerup',end); tr.addEventListener('pointercancel',end);
+  tr.addEventListener('keydown',e=>{
+    const v=typeof quizAns.budget==='number'?quizAns.budget:300, st=e.shiftKey?50:10; let n=null;
+    if(e.key==='ArrowRight'||e.key==='ArrowUp') n=v+st; else if(e.key==='ArrowLeft'||e.key==='ArrowDown') n=v-st;
+    else if(e.key==='Home') n=B_MIN; else if(e.key==='End') n=B_MAX;
+    if(n==null) return; e.preventDefault(); tr.classList.add('snap'); cur=snap(n); commit(cur,true); sched()});
+  nl.onclick=()=>{const on=quizAns.budget!=='any'; quizAns.budget=on?'any':snap(cur); store.set('sy.quiz',quizAns); nl.setAttribute('aria-pressed',on); tr.style.opacity=on?'.45':''; setCount(); layoutField()};
   card.querySelector('#bcontinue').onclick=()=>{quizStep++;qDir=1;renderQuiz()};
 }
 document.addEventListener('keydown',e=>{

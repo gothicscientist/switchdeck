@@ -24,3 +24,9 @@ test('every sound option plays a credited clip that ships with the site',async()
     assert.ok(credits.includes(`freesound.org/s/${s.freesound}/`),k+' credit');
   }
 });
+test('questions run feel, sound, look, layout, use, wireless, solder, budget',()=>{
+  const s=html.indexOf('const QUESTIONS = [');
+  const block=html.slice(s,html.indexOf('\n];',s));
+  assert.deepEqual([...block.matchAll(/\{key:'(\w+)'/g)].map(m=>m[1]),['feel','sound','look','layout','use','wireless','solder','budget']);
+  assert.doesNotMatch(step('feel'),/feel-graph/);
+});
