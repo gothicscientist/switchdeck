@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 if(process.env.GITHUB_ACTIONS) process.on('uncaughtException',e=>{console.log('::error title=catalog check::'+String(e.message).replace(/\n/g,' ').slice(0,900));process.exit(1)});
 import {readFile} from 'node:fs/promises';
 import vm from 'node:vm';
-import {digest,requiredFields,EXTRA_KINDS,SWITCH_SYSTEMS} from './catalog-lib.mjs';
+import {digest,requiredFields,EXTRA_KINDS,SWITCH_SYSTEMS,soundFromMaterials} from './catalog-lib.mjs';
 const base=new URL('../data/',import.meta.url);
 const load=async name=>JSON.parse(await readFile(new URL(name,base),'utf8'));
 const manifest=await load('catalog-manifest.json'),index=await load('catalog-index.json');
@@ -42,7 +42,7 @@ for(const b of [...catalog.switches,...catalog.extras,...(catalog.cases||[]),...
 }
 for(const b of catalog.switches){const p=byId.get(b.id.split('~')[0]);assert.ok(b.switchSystem===undefined||b.switchSystem===null||SWITCH_SYSTEMS.includes(b.switchSystem),b.id);if(!b.switchSystem)assert.ok(!p.specs.system||p.specs.system==='mx-mechanical',b.id);// A spec is either extracted from the retailer's text or read from its published spec table; it is never invented.
   const stated=(v,x)=>x===null||x===v||Object.values(p.publishedSpecs||{}).some(t=>String(t).includes(String(x)));
-  if(!b.id.includes('~'))assert.ok(stated(p.specs.actuationForceG,b.force),b.id+' force');assert.ok(stated(p.specs.totalTravelMm,b.travel),b.id+' travel');assert.ok(b.packQuantity&&b.packPrice);assert.equal(b.sound,null)}
+  if(!b.id.includes('~'))assert.ok(stated(p.specs.actuationForceG,b.force),b.id+' force');assert.ok(stated(p.specs.totalTravelMm,b.travel),b.id+' travel');assert.ok(b.packQuantity&&b.packPrice);assert.ok(b.sound===null||b.sound===soundFromMaterials(p.specs.topHousing,p.specs.bottomHousing,p.specs.stemMaterial),b.id+' sound must come from published materials')}
 for(const b of catalog.cases||[]){const p=byId.get(b.id.split('~')[0]);assert.ok(['60','65','75','tkl','full'].includes(b.layout));if(b.kit)assert.ok(b.kit.pcb.hotswap===null||typeof b.kit.pcb.hotswap==='boolean');assert.ok(b.switchSystem===undefined||SWITCH_SYSTEMS.includes(b.switchSystem),b.id);assert.ok(b.fit==null||b.fit.startsWith(p.sourceId+':'),b.id)}
 for(const b of catalog.keycaps||[]){const p=byId.get(b.id.split('~')[0]);assert.ok(b.profile===null||typeof b.profile==='string',b.id)}
 // The admission-report format marks a catalog built by the current rules: extras there carry a known kind and no sound or feel effect.
