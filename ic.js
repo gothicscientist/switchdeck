@@ -38,11 +38,14 @@ function region(mask,W,H,keep){
   const xs=span(cols,H), ys=span(rows,W); if(!xs||!ys) return null;
   const [x0,x1]=xs,[y0,y1]=ys, bw=x1-x0, bh=y1-y0;
   let inBox=0; for(let y=y0;y<y1;y++)for(let x=x0;x<x1;x++){const i=y*W+x; if(mask[i]&&keep(i)) inBox++}
-  return {aspect:bw/bh,fill:inBox/(bw*bh),box:[x0/W,y0/H,bw/W,bh/H].map(v=>Math.round(v*1000)/10),touches:x0===0||y0===0||x1===W||y1===H};
+  // Width near the top against near the bottom: a board shot at an angle narrows toward the back.
+  const rowW=y=>{let n=0;for(let x=x0;x<x1;x++){const i=y*W+x; if(mask[i]&&keep(i)) n++}return n};
+  const a=rowW(y0+Math.floor(bh*0.2)), b=rowW(y0+Math.floor(bh*0.8));
+  return {aspect:bw/bh,fill:inBox/(bw*bh),taper:Math.min(a,b)/Math.max(a,b,1),box:[x0/W,y0/H,bw/W,bh/H].map(v=>Math.round(v*1000)/10),touches:x0===0||y0===0||x1===W||y1===H};
 }
 
 // Expected outline of a keyboard seen from straight above, by layout.
-const BOARD_ASPECT={'60':[2.3,3.5],'65':[2.3,3.6],'75':[2.0,3.2],tkl:[2.3,3.4],full:[2.7,4.3]};
+const BOARD_ASPECT={'60':[2.3,3.5],'65':[2.3,3.6],'75':[2.0,3.2],tkl:[2.3,3.4],full:[2.45,4.3]};
 
 // Returns a score above zero when the photo can be shown for this kind of part, else 0.
 function judge(f,cat,layout){
@@ -51,7 +54,7 @@ function judge(f,cat,layout){
   if(f.uniform<0.88) return 0;
   if(cat==='case'){
     const m=f.main, [lo,hi]=BOARD_ASPECT[layout]||[2.0,4.3];
-    if(m.touches||m.share<0.6||m.aspect<lo||m.aspect>hi||m.fill<0.72) return 0;
+    if(m.touches||m.share<0.6||m.aspect<lo||m.aspect>hi||m.fill<0.6||m.taper<0.85) return 0;
     const mid=(lo+hi)/2;
     return 1+m.fill-Math.abs(m.aspect-mid)/mid;
   }
@@ -63,4 +66,7 @@ function judge(f,cat,layout){
 }
 
 // Compact record the site uses to frame a photo tightly around the product.
-const photoRecord=(img,f,cat)=>({img,box:cat==='case'?f.main.box:f.box,bg:f.transparent?null:'#'+f.bg.map(v=>v.toString(16).padStart(2,'0')).join('')});
+function photoRecord(img,f,cat){
+  const r=cat==='case'?f.main:f;
+  return {img,box:r.box,ar:Math.round(r.aspect*1000)/1000,bg:f.transparent?null:'#'+f.bg.map(v=>v.toString(16).padStart(2,'0')).join('')};
+}
