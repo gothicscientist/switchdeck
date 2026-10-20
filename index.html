@@ -1235,12 +1235,8 @@ function soundPart(key){
 function soundSearchLink(p,label,plain){
   return p?`<a class="${plain?'textlink':'store sound-search'}" href="${esc(soundSearchUrl(p))}" target="_blank" rel="noopener noreferrer">${esc(label||'YouTube: '+switchName(p)+' sound tests')}${plain?'':' ↗'}</a>`:'';
 }
-// One-click "Watch test": the curated recording when we have one, otherwise a YouTube search.
-function soundWatchUrl(p){
-  const t=SOUND_TESTS[p.id];
-  return t?'https://www.youtube.com/watch?v='+t.video+(t.start?'&t='+t.start+'s':''):soundSearchUrl(p);
-}
-const soundWatchLink=p=>p?`<a class="listen watch" href="${esc(soundWatchUrl(p))}" target="_blank" rel="noopener noreferrer" aria-label="Watch a sound test of ${esc(switchName(p))} on YouTube (opens in a new tab)">${SPK}Watch test</a>`:'';
+// Open the exact switch's recording in the site's sound-test player.
+const soundWatchLink=p=>p?soundButton('part:'+p.id,'Sound test'):'';
 const EQ='<span class="eq" aria-hidden="true"><i></i><i></i><i></i></span>';
 const SPK='<svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M4 2.5v11L13 8z"/></svg>';
 function soundButton(key,label,compact=false){
