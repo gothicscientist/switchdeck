@@ -1347,7 +1347,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden) closeSound
    WHERE TO BUY: exact product pages, Amazon first
    ========================================================= */
 const ARROW='<svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M3 2h5v5M8 2L2.5 7.5"/></svg>';
-const AFF_NOTE='Some store links are affiliate links. We may earn a commission when you buy through them, at no extra cost to you.';
+const AFF_NOTE='Some store links are affiliate links. We may earn a commission when you buy through them, at no extra cost to you.'+(globalThis.SWITCHDECK_AFFILIATES?.['amazon.com']?.code?' As an Amazon Associate we earn from qualifying purchases.':'');
 const affNote=()=>globalThis.SwitchdeckLinks.hasAffiliates()?`<p class="note affnote">${AFF_NOTE}</p>`:'';
 function buyLinks(p){return globalThis.SwitchdeckLinks.linksFor(p).map(r=>({n:r.name,u:r.href||r.url,maker:true,available:r.available}))}
 // Each store's own favicon (https://<store domain>/favicon.ico), drawn as an SVG <image> so the page has no raw image tag.
