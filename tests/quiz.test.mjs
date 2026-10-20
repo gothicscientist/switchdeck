@@ -36,6 +36,7 @@ async function load(){
   const inline=[...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g)].map(m=>m[1]).filter(Boolean).join('\n');
   const ctx={URL,window:{},localStorage:{getItem:()=>null},innerWidth:1300};vm.createContext(ctx);
   for(const file of ['assets/product-links.js','data/product-links.js'])vm.runInContext(await readFile(new URL('../'+file,import.meta.url),'utf8'),ctx);
+  vm.runInContext(await readFile(new URL('../assets/part-names.js',import.meta.url),'utf8'),ctx);
   vm.runInContext(await readFile(new URL('../data/builder-catalog.js',import.meta.url),'utf8'),ctx);
   vm.runInContext(inline.slice(0,inline.indexOf('const LAYOUTS =')),ctx);
   const cfg=inline.match(/function configsFor\(c,ans\)\{[\s\S]*?\n\}/)[0];

@@ -1,3 +1,4 @@
+import '../assets/part-names.js';
 import {createHash} from 'node:crypto';
 import '../assets/product-links.js';
 
@@ -173,7 +174,7 @@ export function normalize(p,source,checkedAt) {
   const titleBrand=first(plain(p.title),/^(Keychron|Gateron|Everfree|Cherry|Kailh|Akko|Monsgeek|KBDfans|PBTfans|GMK|HMX|Huano|Haimu|Durock|JWK|TTC|Tecsee|TX|Geon|Wuque|WS|Owlab|Glorious|SP-Star|Mode|NovelKeys|NK|CannonKeys|CannonCaps|NicePBT|EnjoyPBT|ePBT|Domikey|Gazzew|KFA|Meletrix|QwertyKeys)\b/i);
   const vendor=plain(p.vendor);
   const brand=titleBrand||maker||(!/^(?:Stocked|Group Buy|Hidden|Accessories|Keycaps|Keyboard|Switches?|Various|Invis Addon)$/i.test(vendor)&&vendor)||source.name;
-  return {id:source.id+'-'+p.id,name:plain(p.title),brand,category:cat,sourceId:source.id,retailer:source.name,url,images,priceMin,priceMax,currency:source.currency,available,options,variants,specs,publishedSpecs:publishedSpecs(p),checkedAt,sourceUpdatedAt:p.updated_at||null,provenance:{url,method:'public-shopify-product-feed',specs:'retailer-published; not independently measured'},missingFields:requiredFields(cat).filter(k=>specs[k]===undefined)};
+  return {id:source.id+'-'+p.id,name:plain(p.title),displayName:SwitchdeckNames.name(plain(p.title),cat,brand),brand,category:cat,sourceId:source.id,retailer:source.name,url,images,priceMin,priceMax,currency:source.currency,available,options,variants,specs,publishedSpecs:publishedSpecs(p),checkedAt,sourceUpdatedAt:p.updated_at||null,provenance:{url,method:'public-shopify-product-feed',specs:'retailer-published; not independently measured'},missingFields:requiredFields(cat).filter(k=>specs[k]===undefined)};
 }
 export function requiredFields(cat) {return {switches:['type','system','pins','actuationForceG','totalTravelMm'],keycaps:['profile','material','legends'],keyboards:['layout','material','mount','connection'],cases:['layout','material','mount'],pcb:['layout','hotswap'],plate:['layout','material'],stabs:['mount']}[cat]||[]}
 const titleCase=t=>t.replace(/\b\w/g,c=>c.toUpperCase());
@@ -588,6 +589,7 @@ export function admit(p) {
 // One listing → its builder part (or an array of parts when the listing sells several distinct switches/PCBs/plates), else null.
 export function builderPart(p) {
   const r=admit(p); if(!r.parts) return null;
+  r.parts=r.parts.map(part=>SwitchdeckNames.part(part));
   return r.many?r.parts:r.parts[0];
 }
 
@@ -614,6 +616,7 @@ export function catalogParts(products) {
     const r=admit(p); if(!r.parts) continue;
     const f=['cases','pcb','plate'].includes(r.cat)?familyOf(p):null;
     for(const part of r.parts) {
+      Object.assign(part,SwitchdeckNames.part(part));
       out.push(part);
       if(f&&((part.cat==='case'&&!part.kit)||part.cat==='pcb'||part.cat==='plate')) {
         const k=`${p.sourceId}:${f.token}${f.rev.length?'-'+f.rev.join('-'):''}`; if(!fam.has(k)) fam.set(k,{base:`${p.sourceId}:${f.token}`,case:[],pcb:[],plate:[]});

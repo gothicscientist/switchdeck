@@ -24,7 +24,7 @@ test('the real finder, builder and directory data resolve only to product pages'
  const html=await readFile(new URL('../index.html',import.meta.url),'utf8');
  const script=html.match(/<script>([\s\S]*?)<\/script>/)[1];
  const ctx={URL,window:{},localStorage:{getItem:()=>null},innerWidth:1300};vm.createContext(ctx);
- for(const f of ['assets/product-links.js','data/product-links.js','data/builder-catalog.js'])vm.runInContext(await readFile(new URL('../'+f,import.meta.url),'utf8'),ctx);
+ for(const f of ['assets/part-names.js','assets/product-links.js','data/product-links.js','data/builder-catalog.js'])vm.runInContext(await readFile(new URL('../'+f,import.meta.url),'utf8'),ctx);
  vm.runInContext(script.slice(0,script.indexOf('const LAYOUTS =')),ctx);
  const results=vm.runInContext('ALLPARTS.map(p=>({id:p.id,links:SwitchdeckLinks.linksFor(p)}))',ctx);
  const report=JSON.parse(await readFile(new URL('../data/product-link-report.json',import.meta.url),'utf8'));

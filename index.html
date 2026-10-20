@@ -609,6 +609,7 @@ a.listen.watch:hover{background:rgba(59,130,246,.2)}
 <div id="picker" hidden></div>
 <div class="toast" id="toast" hidden role="status"></div>
 
+<script src="assets/part-names.js"></script>
 <script src="assets/product-links.js"></script>
 <script src="data/product-links.js"></script>
 <script src="data/builder-catalog.js"></script>
@@ -802,6 +803,7 @@ const PENDING_PARTS=[];
 for(const pool of [CASES,PCBS,PLATES,SWITCHES,KEYCAPS,STABS,EXTRAS])for(let i=pool.length-1;i>=0;i--)if(!globalThis.SwitchdeckLinks.linksFor(pool[i]).length)PENDING_PARTS.push(...pool.splice(i,1));
 const FINDER_CASES=[...CASES];
 const ALLPARTS = [...CASES,...PCBS,...PLATES,...SWITCHES,...KEYCAPS,...STABS,...EXTRAS,...PENDING_PARTS];
+for(const p of ALLPARTS) Object.assign(p,SwitchdeckNames.part(p));
 // Reviewed, version-specific matches enrich existing parts without replacing kit prices or fit rules.
 for(const [id,meta] of Object.entries(window.SWITCHDECK_CATALOG?.curated||{})){const p=ALLPARTS.find(p=>p.id===id);if(p&&meta.retailers){p.photo=meta.photo?{...meta.photo}:(p.photo&&{page:p.photo.page});p.retailers=meta.retailers}}
 const BYID = Object.fromEntries(ALLPARTS.map(p=>[p.id,p]));
@@ -2250,7 +2252,7 @@ function renderPickList(){
   const slot=pk.slot, pool=POOLS[slot], facets=FACETS[slot]||[];
   let rows=pool.map(p=>({p,price:partPrice(slot,p),pr:partProblems(slot,p)}));
   rows=rows.filter(({p,price})=>{
-    if(pk.q && !pk.q.split(/\s+/).every(w=>`${p.brand} ${p.name} ${p.profile||''} ${p.type||''} ${p.layoutLabel||''} ${storeOf(p)}`.toLowerCase().includes(w))) return false;
+    if(pk.q && !pk.q.split(/\s+/).every(w=>`${p.brand} ${p.name} ${p.sourceName||''} ${p.profile||''} ${p.type||''} ${p.layoutLabel||''} ${storeOf(p)}`.toLowerCase().includes(w))) return false;
     if(price>pk.maxPrice+0.001) return false;
     if(slot==='switches'&&p.force>pk.maxF) return false;
     for(const [k,,fn] of facets){const sel=pk.f[k]; if(sel&&sel.length&&!sel.includes(fn(p))) return false}

@@ -31,7 +31,7 @@ test('ambiguous switch quantity or variant cannot become a builder part',()=>{
   const p=normalize(raw({body_html:'Actuation: 45g\nTotal Travel: 3.6mm\n5-pin',variants:[{id:456,title:'Default Title',price:'9',available:true}]}),source,'2026-10-19T00:00:00Z');assert.equal(p.variants[0].quantity,null);assert.equal(builderPart(p),null);
   const multi=normalize(raw({variants:[{id:1,title:'18 Set / 45g',price:'9',available:true},{id:2,title:'18 Set / 55g',price:'10',available:true}]}),source,'2026-10-19T00:00:00Z');
   // Spring weights become separate parts; a weight with no stated meaning is not reported as actuation force.
-  const split=builderPart(multi);assert.equal(split.length,2);assert.deepEqual(split.map(x=>x.name),['Example Linear Switches · 45g','Example Linear Switches · 55g']);assert.ok(split.every(x=>x.force===null&&x.id.startsWith(multi.id+'~')));
+  const split=builderPart(multi);assert.equal(split.length,2);assert.deepEqual(split.map(x=>x.name),['Example · 45g','Example · 55g']);assert.ok(split.every(x=>x.force===null&&x.id.startsWith(multi.id+'~')));
 });
 test('quantity parsing does not confuse force weight with pack count',()=>{
   assert.equal(packQuantity(raw({body_html:'',options:[{name:'Spring weight'}]}),{title:'45'},'switches'),null);
@@ -60,6 +60,7 @@ test('site scripts compile and builder rounds switch purchases to whole packs',a
   const inline=[...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g)].map(m=>m[1]).filter(Boolean).join('\n');new vm.Script(inline);
   const ctx={URL,window:{},localStorage:{getItem:()=>null}};vm.createContext(ctx);
   for(const file of ['assets/product-links.js','data/product-links.js'])vm.runInContext(await readFile(new URL('../'+file,import.meta.url),'utf8'),ctx);
+  vm.runInContext(await readFile(new URL('../assets/part-names.js',import.meta.url),'utf8'),ctx);
   vm.runInContext(await readFile(new URL('../data/builder-catalog.js',import.meta.url),'utf8'),ctx);
   const beforeRendering=inline.slice(0,inline.indexOf('const LAYOUTS ='));
   vm.runInContext(beforeRendering,ctx);

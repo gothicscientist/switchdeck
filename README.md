@@ -35,3 +35,7 @@ Imported parts do not invent sound measurements, physical fit, keycap kitting, o
 ## Local preview
 
 Serve this folder with any static HTTP server (for example `python -m http.server 4173`) rather than opening `index.html` as a `file:` URL. The directory uses same-origin JSON requests. GitHub Pages publishes the repository root.
+
+## Part display names
+
+`assets/part-names.js` is the shared naming policy for every category in the builder, finder, and directory. Display names keep the model/colourway and selected variant, removing retailer SEO, stock badges, compatibility lists, pack counts, and specifications already shown separately. Brand is displayed separately. Original retailer titles remain in `name` on source listings and `sourceName` on builder parts for searching and technical extraction; never parse compatibility from the shortened display name. The importer writes `displayName` for new listings and normalizes generated builder names automatically. The browser applies the same rule to existing data and curated parts, so refreshing the catalog cannot reintroduce long titles. Model revisions and variant choices must remain identifiable. Run `npm test` when changing these rules.

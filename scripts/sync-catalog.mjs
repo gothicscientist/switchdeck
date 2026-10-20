@@ -71,7 +71,7 @@ export async function syncCatalog({offline=false,log=console.log,photos=true}={}
   const index=[],files=[];
   for(let start=0;start<products.length;start+=80){const chunk=products.slice(start,start+80),name='parts/'+String(start/80).padStart(4,'0')+'.json';
     files.push({name,body:JSON.stringify(chunk)});
-    for(const p of chunk)index.push({id:p.id,name:p.name,brand:p.brand,category:p.category,sourceId:p.sourceId,retailer:p.retailer,image:p.images[0],price:p.priceMin,priceMax:p.priceMax,currency:p.currency,available:p.available,url:p.url,specs:p.specs,missingFields:p.missingFields,shard:name});
+    for(const p of chunk)index.push({id:p.id,name:p.name,displayName:p.displayName,brand:p.brand,category:p.category,sourceId:p.sourceId,retailer:p.retailer,image:p.images[0],price:p.priceMin,priceMax:p.priceMax,currency:p.currency,available:p.available,url:p.url,specs:p.specs,missingFields:p.missingFields,shard:name});
   }
   // Every listing is either a builder part (in stock, or marked soldOut) or counted under a named exclusion reason in builderAdmission.
   let builder=catalogParts(products);

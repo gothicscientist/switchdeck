@@ -23,7 +23,7 @@
     root.innerHTML='<div class="card directory-error" role="status">Loading the parts directory…</div>';
     try {
       state.loading ||= Promise.all([json('catalog-index.json'),json('catalog-manifest.json')]);
-      const [index,manifest]=await state.loading;state.index=index;state.manifest=manifest;shell();
+      const [index,manifest]=await state.loading;state.index=index.map(p=>SwitchdeckNames.part(p));state.manifest=manifest;shell();
     }catch(e){state.loading=null;root.innerHTML='<div class="card directory-error" role="alert"><h2>The directory couldn’t load.</h2><p>Check your connection, then try again.</p><button class="btn" id="directory-retry">Try again</button></div>';$('#directory-retry').onclick=open}
   }
   function shell() {
@@ -49,7 +49,7 @@
       if(state.brand!=='all'&&p.brand!==state.brand)return false;
       if(state.system!=='all'&&(p.category!=='switches'||(p.specs.system||'unknown')!==state.system))return false;
       if(state.stock&&!p.available||state.builder&&!isBuilder(p)||state.max!==null&&p.price>state.max)return false;
-      const hay=(p.name+' '+p.brand+' '+p.retailer+' '+Object.values(p.specs).join(' ')).toLowerCase();return words.every(w=>hay.includes(w));
+      const hay=(p.name+' '+p.sourceName+' '+p.brand+' '+p.retailer+' '+Object.values(p.specs).join(' ')).toLowerCase();return words.every(w=>hay.includes(w));
     });
     list.sort(state.sort==='price'?(a,b)=>a.price-b.price:state.sort==='name'?(a,b)=>a.name.localeCompare(b.name):(a,b)=>Number(b.available)-Number(a.available)||a.name.localeCompare(b.name));
     const shown=list.slice(0,state.page*48);
@@ -67,7 +67,7 @@
     dialog.innerHTML='<button class="btn small directory-close" aria-label="Close product details">Close</button><div role="status">Loading product details…</div>';dialog.querySelector('button').onclick=()=>dialog.close();if(!dialog.open)dialog.showModal();
     try {
       if(!shards.has(item.shard))shards.set(item.shard,json(item.shard).catch(e=>{shards.delete(item.shard);throw e}));
-      const p=(await shards.get(item.shard)).find(p=>p.id===id);if(request!==detailRequest||!dialog.open)return;if(!p)throw Error('Product missing from shard');
+      const raw=(await shards.get(item.shard)).find(p=>p.id===id);const p=raw&&SwitchdeckNames.part(raw);if(request!==detailRequest||!dialog.open)return;if(!p)throw Error('Product missing from shard');
       const variants=[...p.variants].sort((a,b)=>Number(b.available)-Number(a.available)||a.price-b.price);let v=variants[0];
       dialog.innerHTML=`<button class="btn small directory-close" aria-label="Close product details">Close</button><div class="directory-detail"><div>${image(p.images[0],'directory-main-photo',p.name)}<div class="directory-gallery">${p.images.map((src,i)=>`<button data-gallery="${i}" aria-label="View image ${i+1}">${image(src,'',p.name+' photo '+(i+1))}</button>`).join('')}</div></div><div><span class="note">${esc(p.brand)} · ${esc(p.retailer)}</span><h2 id="directory-detail-title">${esc(p.name)}</h2><label for="directory-variant">Choose exact variant</label><select id="directory-variant">${variants.map((v,i)=>`<option value="${i}">${esc(v.name)} · ${price(v.price)}${v.available?'':' · unavailable'}</option>`).join('')}</select><div id="directory-variant-price"></div><a id="directory-buy" class="btn primary" target="_blank" rel="noopener noreferrer">View this variant ↗</a><div class="directory-actions">${purchaseLinks(p)}</div>${isBuilder(p)?'<button class="btn" id="directory-add">Add to build</button>':''}<h3>Published specifications</h3><dl>${Object.entries(p.specs).map(([k,v])=>`<dt>${esc(fields[k]||k)}</dt><dd>${esc(typeof v==='boolean'?(v?'Yes':'No'):v)}</dd>`).join('')||'<dt>Details</dt><dd>Not published in feed</dd>'}</dl><details><summary>More retailer specifications</summary><dl>${Object.entries(p.publishedSpecs||{}).map(([k,v])=>`<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join('')}</dl></details>${p.missingFields.length?`<p class="note">Not published: ${p.missingFields.map(k=>esc(fields[k]||k)).join(', ')}.</p>`:''}<p class="directory-source">Checked ${esc(new Date(p.checkedAt).toLocaleString())}. Retailer-published information; not independently measured. Confirm kit contents, stock and compatibility on the product page.${p.category==='keycaps'?' Base, novelty, accent, and spacebar kits are separate variants; a low starting price may be for an add-on.':''}${p.category==='switches'?' Hall effect, optical and low-profile parts require matching PCBs. MX-style stems alone do not establish compatibility.':''}</p></div></div>`;
       dialog.setAttribute('aria-labelledby','directory-detail-title');dialog.querySelector('.directory-close').onclick=()=>dialog.close();
