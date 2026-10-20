@@ -83,7 +83,7 @@ h1,h2,h3{text-wrap:balance;margin:0;font-weight:700;letter-spacing:-.02em}
   transition:left .9s var(--out),top .9s var(--out),width .9s var(--out),opacity .6s var(--ease),filter .6s var(--ease)}
 .fitem svg,.fitem img{width:100%;height:auto;display:block;transition:transform .4s var(--out),filter .4s var(--ease)}
 .fitem:hover svg,.fitem:hover img{transform:translateY(-3px)}
-.fitem .cap{font-size:11px;line-height:1.3;color:var(--ink-2);text-align:center;white-space:nowrap;opacity:0;transition:opacity .4s var(--ease)}
+.fitem .cap{font-size:11px;line-height:1.3;color:var(--ink-2);text-align:center;white-space:nowrap;max-width:min(240px,42vw);overflow:hidden;text-overflow:ellipsis;opacity:0;transition:opacity .4s var(--ease)}
 .fitem .cap small{display:block;color:var(--faint);font-size:10px}
 .fitem.feat .cap{opacity:1}
 .fitem.dim{opacity:.4;filter:grayscale(1)}
@@ -184,7 +184,7 @@ h1,h2,h3{text-wrap:balance;margin:0;font-weight:700;letter-spacing:-.02em}
 /* BUILDER */
 .page{padding-top:calc(72px + env(safe-area-inset-top,0px));padding-bottom:80px}
 .bhead{padding-block:24px 22px;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;align-items:flex-end}
-.bhead input{border:0;background:transparent;font-size:clamp(26px,3.4vw,36px);font-weight:700;letter-spacing:-.03em;width:100%;padding:2px 6px;margin-left:-6px;color:var(--ink);border-radius:8px;transition:background .2s}
+.bhead input{border:0;background:transparent;text-overflow:ellipsis;font-size:clamp(26px,3.4vw,36px);font-weight:700;letter-spacing:-.03em;width:100%;padding:2px 6px;margin-left:-6px;color:var(--ink);border-radius:8px;transition:background .2s}
 .bhead input:hover,.bhead input:focus{background:var(--tile-hover);outline:none}
 .bgrid{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:16px;align-items:start}
 .stage{overflow:hidden}
@@ -941,7 +941,7 @@ function switchSVG(sw){
   </svg>`;
 }
 function capsSVG(k){
-  const p=k.pal, keys=[['accent',p.accent,p.accleg,'Esc'],['alpha',p.alpha,p.leg,'A'],['alpha',p.alpha,p.leg,'S'],['mod',p.mod,p.modleg,'⇧']];
+  const p=k.pal||NEUTRAL_PAL, keys=[['accent',p.accent,p.accleg,'Esc'],['alpha',p.alpha,p.leg,'A'],['alpha',p.alpha,p.leg,'S'],['mod',p.mod,p.modleg,'⇧']];
   const prof={Cherry:[8,4],OEM:[8,4],SA:[10,8],MT3:[11,9],XDA:[5,6]}[k.profile]||[8,4];
   let s=`<svg viewBox="0 0 96 72" aria-hidden="true">`;
   keys.forEach(([r,base,leg,t],i)=>{
@@ -1009,7 +1009,7 @@ function framedPhoto(ph,alt,icon,width=400){
 function buildBoard(b,opts={}){
   const c=caseOf(b); if(!c) return null;
   const kc=BYID[b.keycaps], col=(c.colors[b.color||0]||c.colors[0])[1], pcb=effPcb(b);
-  return boardSVG({layout:c.layout,caseColor:col,pal:kc?kc.pal:NEUTRAL_PAL,profile:kc?kc.profile:'Cherry',legends:!!kc,knob:c.knob,glow:!!(kc&&kc.shine&&pcb&&pcb.rgb),label:`${c.name} with ${kc?kc.name:'no keycaps yet'}`,...opts});
+  return boardSVG({layout:c.layout,caseColor:col,pal:kc?.pal||NEUTRAL_PAL,profile:kc?kc.profile:'Cherry',legends:!!kc,knob:c.knob,glow:!!(kc&&kc.shine&&pcb&&pcb.rgb),label:`${c.name} with ${kc?kc.name:'no keycaps yet'}`,...opts});
 }
 
 /* =========================================================
