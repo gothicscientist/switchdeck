@@ -34,7 +34,8 @@ test('questions run size, feel, sound, look, use, wireless, solder, budget',()=>
 
 async function load(){
   const inline=[...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g)].map(m=>m[1]).filter(Boolean).join('\n');
-  const ctx={window:{},localStorage:{getItem:()=>null},innerWidth:1300};vm.createContext(ctx);
+  const ctx={URL,window:{},localStorage:{getItem:()=>null},innerWidth:1300};vm.createContext(ctx);
+  for(const file of ['assets/product-links.js','data/product-links.js'])vm.runInContext(await readFile(new URL('../'+file,import.meta.url),'utf8'),ctx);
   vm.runInContext(await readFile(new URL('../data/builder-catalog.js',import.meta.url),'utf8'),ctx);
   vm.runInContext(inline.slice(0,inline.indexOf('const LAYOUTS =')),ctx);
   const cfg=inline.match(/function configsFor\(c,ans\)\{[\s\S]*?\n\}/)[0];
@@ -89,3 +90,4 @@ test('each must-have narrows the finder results and the combination count',async
   kept.rapid.forEach(c=>assert.equal(c.sys,'hall-effect',c.id));
   kept.lowprofile.forEach(c=>assert.equal(c.sys,'low-profile',c.id));
 });
+

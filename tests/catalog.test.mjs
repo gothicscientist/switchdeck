@@ -58,7 +58,8 @@ test('generic Shopify vendor is replaced by published manufacturer',()=>{
 test('site scripts compile and builder rounds switch purchases to whole packs',async()=>{
   const html=await readFile(new URL('../index.html',import.meta.url),'utf8');
   const inline=[...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g)].map(m=>m[1]).filter(Boolean).join('\n');new vm.Script(inline);
-  const ctx={window:{},localStorage:{getItem:()=>null}};vm.createContext(ctx);
+  const ctx={URL,window:{},localStorage:{getItem:()=>null}};vm.createContext(ctx);
+  for(const file of ['assets/product-links.js','data/product-links.js'])vm.runInContext(await readFile(new URL('../'+file,import.meta.url),'utf8'),ctx);
   vm.runInContext(await readFile(new URL('../data/builder-catalog.js',import.meta.url),'utf8'),ctx);
   const beforeRendering=inline.slice(0,inline.indexOf('const LAYOUTS ='));
   vm.runInContext(beforeRendering,ctx);
@@ -144,3 +145,4 @@ test('builder case parts use the short board name and a clean brand',()=>{
   const p=normalize(raw({title:'Lemokey X1 QMK/VIA Wired Mechanical Keyboard',product_type:'Keyboard Kit',vendor:'Lemokey X series',body_html:'<li>Layout: 75%</li><li>Hot-swap PCB</li><li>Mount: Gasket</li>',options:[{name:'Color',values:['Black']}],variants:[{id:1,title:'Barebone / Black',price:'149',available:true},{id:2,title:'Assembled / Black',price:'169',available:true}]}),source,'2026-10-19T00:00:00Z');
   const k=builderPart(p);assert.equal(k.cat,'case');assert.equal(k.brand+' '+k.name,'Lemokey X1');
 });
+

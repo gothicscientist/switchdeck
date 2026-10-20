@@ -1,4 +1,5 @@
 import {createHash} from 'node:crypto';
+import '../assets/product-links.js';
 
 export const SOURCES = [
   {id:'cannonkeys',name:'CannonKeys',url:'https://cannonkeys.com',currency:'USD'},
@@ -155,6 +156,7 @@ export function normalize(p,source,checkedAt) {
   // Remote mirrors are excluded, including patterns disallowed in some Shopify robots files.
   if(/-[a-f0-9]{8}-remote$/i.test(p.handle)) return null;
   const url=https(source.url+'/products/'+encodeURIComponent(p.handle));
+  if(!globalThis.SwitchdeckLinks.productURL(url))return null;
   const variants=(p.variants||[]).filter(v=>Number.isFinite(Number(v.price))&&Number(v.price)>0).map(v=>{
     const quantity=packQuantity(p,v,cat), price=Number(v.price);
     return {id:String(v.id),name:plain(v.title),sku:v.sku||null,price,currency:source.currency,available:v.available===true,quantity,unitPrice:quantity?Math.round(price/quantity*100000)/100000:null,url:url+'?variant='+v.id,image:https(v.featured_image?.src||'')};
@@ -638,3 +640,4 @@ export function admissionReport(products) {
 }
 
 export const digest=v=>createHash('sha256').update(JSON.stringify(v)).digest('hex');
+

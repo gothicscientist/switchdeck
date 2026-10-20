@@ -4,7 +4,9 @@
   "type": "module",
   "scripts": {
     "catalog:sync": "node scripts/sync-catalog.mjs",
-    "catalog:check": "node scripts/validate-catalog.mjs",
+    "catalog:check": "node scripts/validate-catalog.mjs && npm run catalog:links:check",
+    "catalog:links": "node scripts/build-product-links.mjs",
+    "catalog:links:check": "node scripts/validate-product-links.mjs",
     "test": "node --test tests/*.test.*"
   },
   "engines": {
@@ -14,3 +16,4 @@
     "sharp": "^0.34.4"
   }
 }
+

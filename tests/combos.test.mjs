@@ -6,7 +6,8 @@ import vm from 'node:vm';
 async function load(){
   const html=await readFile(new URL('../index.html',import.meta.url),'utf8');
   const inline=[...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g)].map(m=>m[1]).filter(Boolean).join('\n');
-  const ctx={window:{},localStorage:{getItem:()=>null},innerWidth:1300};vm.createContext(ctx);
+  const ctx={URL,window:{},localStorage:{getItem:()=>null},innerWidth:1300};vm.createContext(ctx);
+  for(const file of ['assets/product-links.js','data/product-links.js'])vm.runInContext(await readFile(new URL('../'+file,import.meta.url),'utf8'),ctx);
   vm.runInContext(await readFile(new URL('../data/builder-catalog.js',import.meta.url),'utf8'),ctx);
   vm.runInContext(inline.slice(0,inline.indexOf('const LAYOUTS =')),ctx);
   // comboCount lives after the renderer; evaluate only the pieces it needs.
@@ -56,3 +57,4 @@ test('two-pointer budget count equals a brute-force nested loop for a board',asy
   for(const [brute,fast] of r) assert.equal(fast,brute);
   assert.ok(r.some(([b])=>b>0));
 });
+

@@ -1,0 +1,542 @@
+[
+  {
+    "id": "kc-q1max",
+    "brand": "Keychron",
+    "name": "Q1 Max",
+    "cat": "case",
+    "photo": {
+      "page": "https://www.keychron.com/products/keychron-q1-max-qmk-via-wireless-custom-mechanical-keyboard"
+    }
+  },
+  {
+    "id": "kc-q3max",
+    "brand": "Keychron",
+    "name": "Q3 Max",
+    "cat": "case",
+    "photo": {
+      "page": "https://www.keychron.com/products/keychron-q3-max-qmk-via-wireless-custom-mechanical-keyboard"
+    }
+  },
+  {
+    "id": "kc-q6max",
+    "brand": "Keychron",
+    "name": "Q6 Max",
+    "cat": "case",
+    "photo": {
+      "page": "https://www.keychron.com/products/keychron-q6-max-qmk-via-wireless-custom-mechanical-keyboard"
+    }
+  },
+  {
+    "id": "kc-v1max",
+    "brand": "Keychron",
+    "name": "V1 Max",
+    "cat": "case",
+    "photo": {
+      "page": "https://www.keychron.com/products/keychron-v1-max-qmk-via-wireless-custom-mechanical-keyboard"
+    }
+  },
+  {
+    "id": "kc-q4pro",
+    "brand": "Keychron",
+    "name": "Q4 Pro",
+    "cat": "case",
+    "photo": {
+      "page": "https://www.keychron.com/products/keychron-q4-pro-qmk-via-wireless-custom-mechanical-keyboard"
+    }
+  },
+  {
+    "id": "kbd67lite",
+    "brand": "KBDfans",
+    "name": "KBD67 Lite R4 Kit",
+    "cat": "case"
+  },
+  {
+    "id": "nk65e",
+    "brand": "NovelKeys",
+    "name": "NK65 Entry Edition",
+    "cat": "case",
+    "photo": {
+      "page": "https://novelkeys.com/products/nk65-entry-edition"
+    }
+  },
+  {
+    "id": "qk65v2",
+    "brand": "QwertyKeys",
+    "name": "QK65 v2",
+    "cat": "case"
+  },
+  {
+    "id": "modeenvoy",
+    "brand": "Mode Designs",
+    "name": "Envoy",
+    "cat": "case"
+  },
+  {
+    "id": "modesonnet",
+    "brand": "Mode Designs",
+    "name": "Sonnet",
+    "cat": "case"
+  },
+  {
+    "id": "zoom75",
+    "brand": "Meletrix",
+    "name": "Zoom75 TIGA",
+    "cat": "case",
+    "photo": {
+      "page": "https://meletrix.com/products/zoom75-tiga-e-white"
+    }
+  },
+  {
+    "id": "rainy75",
+    "brand": "Wobkey",
+    "name": "Rainy75 Standard",
+    "cat": "case",
+    "photo": {
+      "page": "https://www.wobkey.com/products/rainy75"
+    }
+  },
+  {
+    "id": "m1w",
+    "brand": "MonsGeek",
+    "name": "M1W",
+    "cat": "case"
+  },
+  {
+    "id": "tofu60",
+    "brand": "KBDfans",
+    "name": "Tofu60 2.0 Case",
+    "cat": "case"
+  },
+  {
+    "id": "tofu65",
+    "brand": "KBDfans",
+    "name": "Tofu65 2.0 Case",
+    "cat": "case"
+  },
+  {
+    "id": "kbd8x",
+    "brand": "KBDfans",
+    "name": "KBD8X MKIII Case",
+    "cat": "case",
+    "photo": {
+      "page": "https://divinikey.com/products/kbdfans-kbd8x-mkiii-case"
+    }
+  },
+  {
+    "id": "dz60rgb",
+    "brand": "KBDfans",
+    "name": "DZ60RGB-ANSI V2",
+    "cat": "pcb",
+    "photo": {
+      "page": "https://divinikey.com/products/kbdfans-dz60-rgb-ansi-v2-hot-swap-pcb"
+    }
+  },
+  {
+    "id": "h60",
+    "brand": "Hineybush",
+    "name": "h60",
+    "cat": "pcb"
+  },
+  {
+    "id": "dz65rgb",
+    "brand": "KBDfans",
+    "name": "DZ65RGB V3",
+    "cat": "pcb",
+    "photo": {
+      "page": "https://divinikey.com/products/kbdfans-dz65-rgb-hot-swap-v2-pcb"
+    }
+  },
+  {
+    "id": "kbd8xhs",
+    "brand": "KBDfans",
+    "name": "KBD8X MKIII Hot-swap PCB",
+    "cat": "pcb"
+  },
+  {
+    "id": "kbd8xsol",
+    "brand": "KBDfans",
+    "name": "KBD8X MKIII Solder PCB",
+    "cat": "pcb"
+  },
+  {
+    "id": "plate-gh60-aluminum",
+    "brand": "KBDfans",
+    "name": "GH60-style 60% Plate · Aluminum",
+    "cat": "plate"
+  },
+  {
+    "id": "plate-gh60-brass",
+    "brand": "KBDfans",
+    "name": "GH60-style 60% Plate · Brass",
+    "cat": "plate"
+  },
+  {
+    "id": "plate-gh60-fr4",
+    "brand": "KBDfans",
+    "name": "GH60-style 60% Plate · FR4",
+    "cat": "plate"
+  },
+  {
+    "id": "plate-gh60-carbonfiber",
+    "brand": "KBDfans",
+    "name": "GH60-style 60% Plate · Carbon fiber",
+    "cat": "plate"
+  },
+  {
+    "id": "plate-gh60-pom",
+    "brand": "KBDfans",
+    "name": "GH60-style 60% Plate · POM",
+    "cat": "plate"
+  },
+  {
+    "id": "plate-gh60-pc",
+    "brand": "KBDfans",
+    "name": "GH60-style 60% Plate · PC",
+    "cat": "plate"
+  },
+  {
+    "id": "plate-tofu65-aluminum",
+    "brand": "KBDfans",
+    "name": "Tofu65 2.0 Plate · Aluminum",
+    "cat": "plate"
+  },
+  {
+    "id": "plate-tofu65-brass",
+    "brand": "KBDfans",
+    "name": "Tofu65 2.0 Plate · Brass",
+    "cat": "plate"
+  },
+  {
+    "id": "plate-tofu65-fr4",
+    "brand": "KBDfans",
+    "name": "Tofu65 2.0 Plate · FR4",
+    "cat": "plate"
+  },
+  {
+    "id": "plate-tofu65-carbonfiber",
+    "brand": "KBDfans",
+    "name": "Tofu65 2.0 Plate · Carbon fiber",
+    "cat": "plate"
+  },
+  {
+    "id": "plate-tofu65-pom",
+    "brand": "KBDfans",
+    "name": "Tofu65 2.0 Plate · POM",
+    "cat": "plate"
+  },
+  {
+    "id": "plate-tofu65-pc",
+    "brand": "KBDfans",
+    "name": "Tofu65 2.0 Plate · PC",
+    "cat": "plate"
+  },
+  {
+    "id": "plate-kbd8x-aluminum",
+    "brand": "KBDfans",
+    "name": "KBD8X MKIII Plate · Aluminum",
+    "cat": "plate"
+  },
+  {
+    "id": "plate-kbd8x-brass",
+    "brand": "KBDfans",
+    "name": "KBD8X MKIII Plate · Brass",
+    "cat": "plate"
+  },
+  {
+    "id": "plate-kbd8x-fr4",
+    "brand": "KBDfans",
+    "name": "KBD8X MKIII Plate · FR4",
+    "cat": "plate"
+  },
+  {
+    "id": "plate-kbd8x-carbonfiber",
+    "brand": "KBDfans",
+    "name": "KBD8X MKIII Plate · Carbon fiber",
+    "cat": "plate"
+  },
+  {
+    "id": "plate-kbd8x-pom",
+    "brand": "KBDfans",
+    "name": "KBD8X MKIII Plate · POM",
+    "cat": "plate"
+  },
+  {
+    "id": "plate-kbd8x-pc",
+    "brand": "KBDfans",
+    "name": "KBD8X MKIII Plate · PC",
+    "cat": "plate"
+  },
+  {
+    "id": "milkyyp",
+    "brand": "Gateron",
+    "name": "Milky Yellow Pro",
+    "cat": "switches",
+    "photo": {
+      "page": "https://divinikey.com/products/gateron-ks-3-milky-yellow-pro-linear-switches"
+    }
+  },
+  {
+    "id": "ks3yellow",
+    "brand": "Gateron",
+    "name": "Yellow KS-3",
+    "cat": "switches"
+  },
+  {
+    "id": "oilking",
+    "brand": "Gateron",
+    "name": "Oil King",
+    "cat": "switches",
+    "photo": {
+      "page": "https://divinikey.com/products/gateron-oil-king-linear-switches"
+    }
+  },
+  {
+    "id": "blackink",
+    "brand": "Gateron",
+    "name": "Black Ink V2",
+    "cat": "switches",
+    "photo": {
+      "page": "https://keebsforall.com/products/gateron-black-ink-v2-switches"
+    }
+  },
+  {
+    "id": "akkocream",
+    "brand": "Akko",
+    "name": "V3 Cream Yellow Pro",
+    "cat": "switches",
+    "photo": {
+      "page": "https://divinikey.com/products/akko-cream-yellow-pro-linear-switches"
+    }
+  },
+  {
+    "id": "nkcream",
+    "brand": "NovelKeys",
+    "name": "Cream",
+    "cat": "switches",
+    "photo": {
+      "page": "https://novelkeys.com/products/nk-cream-series"
+    }
+  },
+  {
+    "id": "mx2ared",
+    "brand": "Cherry",
+    "name": "MX2A Red",
+    "cat": "switches"
+  },
+  {
+    "id": "alpacav2",
+    "brand": "Various",
+    "name": "Alpaca V2",
+    "cat": "switches"
+  },
+  {
+    "id": "u4t",
+    "brand": "Gazzew",
+    "name": "Boba U4T",
+    "cat": "switches"
+  },
+  {
+    "id": "panda",
+    "brand": "Glorious",
+    "name": "Panda",
+    "cat": "switches",
+    "photo": {
+      "page": "https://divinikey.com/products/glorious-panda-tactile-switches"
+    }
+  },
+  {
+    "id": "kangaroo",
+    "brand": "Gateron",
+    "name": "Baby Kangaroo",
+    "cat": "switches"
+  },
+  {
+    "id": "lavender",
+    "brand": "Akko",
+    "name": "V3 Lavender Purple Pro",
+    "cat": "switches",
+    "photo": {
+      "page": "https://divinikey.com/products/akko-v3-lavender-purple-pro-switches"
+    }
+  },
+  {
+    "id": "banana",
+    "brand": "Keychron",
+    "name": "K Pro Banana",
+    "cat": "switches"
+  },
+  {
+    "id": "u4",
+    "brand": "Gazzew",
+    "name": "Boba U4 Silent",
+    "cat": "switches"
+  },
+  {
+    "id": "silentred",
+    "brand": "Cherry",
+    "name": "MX Silent Red",
+    "cat": "switches"
+  },
+  {
+    "id": "mx2ablue",
+    "brand": "Cherry",
+    "name": "MX2A Blue",
+    "cat": "switches",
+    "photo": {
+      "page": "https://keebsforall.com/products/cherry-mx2a-blue-switches"
+    }
+  },
+  {
+    "id": "boxjade",
+    "brand": "Kailh",
+    "name": "Box Jade",
+    "cat": "switches",
+    "photo": {
+      "page": "https://divinikey.com/products/kailh-box-jade-thick-switches"
+    }
+  },
+  {
+    "id": "boxwhite",
+    "brand": "Kailh",
+    "name": "Box White",
+    "cat": "switches",
+    "photo": {
+      "page": "https://keebsforall.com/products/kailh-box-white-switches"
+    }
+  },
+  {
+    "id": "gmkolivia",
+    "brand": "GMK",
+    "name": "Olivia++ Dark",
+    "cat": "keycaps"
+  },
+  {
+    "id": "gmklaser",
+    "brand": "GMK",
+    "name": "Laser",
+    "cat": "keycaps"
+  },
+  {
+    "id": "gmkwob",
+    "brand": "GMK",
+    "name": "WoB",
+    "cat": "keycaps"
+  },
+  {
+    "id": "bow",
+    "brand": "PBTfans",
+    "name": "BOW",
+    "cat": "keycaps",
+    "photo": {
+      "page": "https://kbdfans.com/products/pbtfans-bow"
+    }
+  },
+  {
+    "id": "susuwatari",
+    "brand": "Drop",
+    "name": "MiTo MT3 Susuwatari",
+    "cat": "keycaps"
+  },
+  {
+    "id": "devtty",
+    "brand": "Drop",
+    "name": "MT3 /dev/tty",
+    "cat": "keycaps"
+  },
+  {
+    "id": "saretro",
+    "brand": "Domikey",
+    "name": "SA Classic Retro",
+    "cat": "keycaps"
+  },
+  {
+    "id": "pudding",
+    "brand": "Ducky",
+    "name": "Pudding Black",
+    "cat": "keycaps"
+  },
+  {
+    "id": "hk9009",
+    "brand": "HK Gaming",
+    "name": "9009 Dye-Sub PBT",
+    "cat": "keycaps"
+  },
+  {
+    "id": "xdablank",
+    "brand": "YMDK",
+    "name": "XDA Blank PBT White",
+    "cat": "keycaps"
+  },
+  {
+    "id": "durockv2",
+    "brand": "Durock",
+    "name": "V2 Screw-in Stabilizers",
+    "cat": "stabs",
+    "photo": {
+      "page": "https://keebsforall.com/products/durock-v2-screw-in-stabilizers"
+    }
+  },
+  {
+    "id": "txap",
+    "brand": "TX",
+    "name": "AP Stabilizers Rev. 4",
+    "cat": "stabs",
+    "photo": {
+      "page": "https://divinikey.com/products/tx-ap-stabilizers-rev-4"
+    }
+  },
+  {
+    "id": "cherryclip",
+    "brand": "Cherry",
+    "name": "Clip-in PCB Stabilizers",
+    "cat": "stabs"
+  },
+  {
+    "id": "cherryplate",
+    "brand": "Cherry",
+    "name": "Plate-mount Stabilizers",
+    "cat": "stabs"
+  },
+  {
+    "id": "casefoam",
+    "brand": "Various",
+    "name": "Poron case foam",
+    "cat": "extras"
+  },
+  {
+    "id": "pefoam",
+    "brand": "Various",
+    "name": "PE foam sheet (switch pad mod)",
+    "cat": "extras"
+  },
+  {
+    "id": "tapemod",
+    "brand": "Various",
+    "name": "Tape mod (painter's tape)",
+    "cat": "extras"
+  },
+  {
+    "id": "krytox",
+    "brand": "Krytox",
+    "name": "205g0 switch lube, 5 ml",
+    "cat": "extras"
+  },
+  {
+    "id": "opener",
+    "brand": "Various",
+    "name": "Switch opener",
+    "cat": "extras"
+  },
+  {
+    "id": "puller",
+    "brand": "Various",
+    "name": "Switch + keycap puller",
+    "cat": "extras"
+  },
+  {
+    "id": "coiled",
+    "brand": "Various",
+    "name": "Coiled USB-C cable with aviator",
+    "cat": "extras"
+  }
+]

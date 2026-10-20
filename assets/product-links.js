@@ -1,0 +1,35 @@
+/* Shared browser/Node purchase-link policy. No homepages or search fallbacks. */
+(()=>{
+  function productURL(value){
+    try{
+      const u=new URL(value);
+      if(u.protocol!=='https:'||u.username||u.password||u.port)return null;
+      const host=u.hostname.toLowerCase();
+      if(/^(?:www\.)?amazon\.com$/.test(host)){
+        const asin=u.pathname.match(/\/(?:dp|gp\/product)\/([A-Z0-9]{10})(?:\/|$)/i)?.[1];
+        return asin?'https://www.amazon.com/dp/'+asin.toUpperCase():null;
+      }
+      if(!/\/(?:products?|buy)\/[^/]+/i.test(u.pathname)||/\/(?:search|collections?|categories?|stores?|pages)(?:\/|$)/i.test(u.pathname)||/\.(?:json|js|png|jpg|webp)$/i.test(u.pathname))return null;
+      if([...u.searchParams.keys()].some(k=>/^(?:q|query|search|s|k|url|redirect)$/i.test(k)))return null;
+      for(const k of [...u.searchParams.keys()])if(/^(?:utm_|srsltid|fbclid|gclid|ref$|ref_|tag$)/i.test(k))u.searchParams.delete(k);
+      u.hash='';return u.href;
+    }catch{return null}
+  }
+  const isAmazon=url=>{try{return /^(?:www\.)?amazon\.com$/.test(new URL(url).hostname)}catch{return false}};
+  function orderLinks(links=[]){
+    const out=[],seen=new Set();
+    for(const r of links){const url=productURL(r?.url);if(!url||seen.has(url))continue;seen.add(url);
+      const name=isAmazon(url)?'Amazon':r.name||new URL(url).hostname.replace(/^www\./,'');
+      out.push({...r,name,url});
+    }
+    return out.sort((a,b)=>Number(isAmazon(b.url))-Number(isAmazon(a.url))||Number(a.available===false)-Number(b.available===false));
+  }
+  function linksFor(p,registry=globalThis.SWITCHDECK_PRODUCT_LINKS||{}){
+    if(!p)return [];
+    const id=p.catalogId||p.id?.split('~')[0];
+    return orderLinks([...(p.id===id?registry[p.id]||[]:[]),...(p.retailers||[]),...(p.id===id?[]:[...(registry[p.id]||[]),...(registry[id]||[])]),
+      ...(p.url?[{name:p.retailer||p.brand,url:p.url,available:p.available}]:[]),
+      ...(p.photo?.page?[{name:p.brand,url:p.photo.page}]:[])]);
+  }
+  globalThis.SwitchdeckLinks={productURL,isAmazon,orderLinks,linksFor};
+})();

@@ -1,0 +1,54 @@
+{
+  "generatedAt": "2026-10-20T08:28:48.850Z",
+  "catalogProducts": 8896,
+  "curatedProducts": 78,
+  "curatedLinked": 69,
+  "amazonProducts": 37,
+  "missing": [
+    {
+      "id": "tofu60",
+      "name": "KBDfans Tofu60 2.0 Case",
+      "reason": "No confirmed exact product listing; no search/homepage substituted."
+    },
+    {
+      "id": "tofu65",
+      "name": "KBDfans Tofu65 2.0 Case",
+      "reason": "No confirmed exact product listing; no search/homepage substituted."
+    },
+    {
+      "id": "plate-gh60-fr4",
+      "name": "KBDfans GH60-style 60% Plate · FR4",
+      "reason": "No confirmed exact product listing; no search/homepage substituted."
+    },
+    {
+      "id": "plate-gh60-pom",
+      "name": "KBDfans GH60-style 60% Plate · POM",
+      "reason": "No confirmed exact product listing; no search/homepage substituted."
+    },
+    {
+      "id": "plate-tofu65-brass",
+      "name": "KBDfans Tofu65 2.0 Plate · Brass",
+      "reason": "No confirmed exact product listing; no search/homepage substituted."
+    },
+    {
+      "id": "plate-tofu65-pom",
+      "name": "KBDfans Tofu65 2.0 Plate · POM",
+      "reason": "No confirmed exact product listing; no search/homepage substituted."
+    },
+    {
+      "id": "plate-kbd8x-brass",
+      "name": "KBDfans KBD8X MKIII Plate · Brass",
+      "reason": "No confirmed exact product listing; no search/homepage substituted."
+    },
+    {
+      "id": "plate-kbd8x-pom",
+      "name": "KBDfans KBD8X MKIII Plate · POM",
+      "reason": "No confirmed exact product listing; no search/homepage substituted."
+    },
+    {
+      "id": "saretro",
+      "name": "Domikey SA Classic Retro",
+      "reason": "No confirmed exact product listing; no search/homepage substituted."
+    }
+  ]
+}

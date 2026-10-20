@@ -1,0 +1,675 @@
+{
+  "kc-q1max": {
+    "links": [
+      {
+        "name": "Amazon",
+        "url": "https://www.amazon.com/dp/B0CR1JTHWV",
+        "title": "Keychron Q1 Max QMK/VIA Wireless Custom Mechanical Keyboard Barebone Knob Version",
+        "evidenceUrl": "https://www.amazon.com/dp/B0CR1JTHWV",
+        "checkedAt": "2026-10-20T08:00:00Z"
+      }
+    ]
+  },
+  "kc-v1max": {
+    "links": [
+      {
+        "name": "Amazon",
+        "url": "https://www.amazon.com/dp/B0CR148FPX",
+        "title": "Keychron V1 Max 75% Custom Mechanical Keyboard Kit — Barebones",
+        "evidenceUrl": "https://www.amazon.com/dp/B0CR148FPX",
+        "checkedAt": "2026-10-20T08:00:00Z"
+      }
+    ]
+  },
+  "oilking": {
+    "links": [
+      {
+        "name": "Amazon",
+        "url": "https://www.amazon.com/dp/B0BB1T952R",
+        "title": "Gateron Oil King Switches, Pre-Lubed Linear Switches 55g, 108 Pack",
+        "evidenceUrl": "https://www.amazon.com/dp/B0BB1T952R",
+        "checkedAt": "2026-10-20T08:00:00Z"
+      }
+    ]
+  },
+  "milkyyp": {
+    "links": [
+      {
+        "name": "Amazon",
+        "url": "https://www.amazon.com/dp/B0CH87QLQ9",
+        "title": "Gateron Milky Yellow Pro, 5 Pin Switches, 50gf, 4mm travel",
+        "evidenceUrl": "https://www.amazon.com/dp/B0CH87QLQ9",
+        "checkedAt": "2026-10-20T08:00:00Z"
+      }
+    ]
+  },
+  "blackink": {
+    "links": [
+      {
+        "name": "Amazon",
+        "url": "https://www.amazon.com/dp/B09PL6Z4L5",
+        "title": "Gateron Black Ink v2 Pro Switches, Pre Lubed 5pin Linear, 108PCS",
+        "evidenceUrl": "https://www.amazon.com/dp/B09PL6Z4L5",
+        "checkedAt": "2026-10-20T08:00:00Z"
+      }
+    ]
+  },
+  "lavender": {
+    "links": [
+      {
+        "name": "Amazon",
+        "url": "https://www.amazon.com/dp/B0CBTLK5Z5",
+        "title": "Akko V3 Lavender Purple Pro Keyboard Switch, 5-Pin Tactile, 45pcs",
+        "evidenceUrl": "https://www.amazon.com/dp/B0CBTLK5Z5",
+        "checkedAt": "2026-10-20T08:00:00Z"
+      }
+    ]
+  },
+  "boxjade": {
+    "links": [
+      {
+        "name": "Amazon",
+        "url": "https://www.amazon.com/dp/B0924LY9Z6",
+        "title": "Kailh Box Jade Switch 65 Pack RGB SMD 3 pin",
+        "evidenceUrl": "https://www.amazon.com/dp/B0924LY9Z6",
+        "checkedAt": "2026-10-20T08:00:00Z"
+      }
+    ]
+  },
+  "boxwhite": {
+    "links": [
+      {
+        "name": "Amazon",
+        "url": "https://www.amazon.com/dp/B0B1HWQH47",
+        "title": "KAILH Box Switches White 3 Pin, 90pcs",
+        "evidenceUrl": "https://www.amazon.com/dp/B0B1HWQH47",
+        "checkedAt": "2026-10-20T08:00:00Z"
+      }
+    ]
+  },
+  "silentred": {
+    "links": [
+      {
+        "name": "Amazon",
+        "url": "https://www.amazon.com/dp/B001G98T98",
+        "title": "Cherry MX Silent RED Switches RGB, Pack of 10",
+        "evidenceUrl": "https://www.amazon.com/dp/B001G98T98",
+        "checkedAt": "2026-10-20T08:00:00Z"
+      }
+    ]
+  },
+  "xdablank": {
+    "links": [
+      {
+        "name": "Amazon",
+        "url": "https://www.amazon.com/dp/B0B6J15N65",
+        "title": "YMDK 127 Key White Blank ZDA XDA V2 Keycaps PBT",
+        "evidenceUrl": "https://www.amazon.com/dp/B0B6J15N65",
+        "checkedAt": "2026-10-20T08:00:00Z"
+      }
+    ]
+  },
+  "durockv2": {
+    "links": [
+      {
+        "name": "Amazon",
+        "url": "https://www.amazon.com/dp/B0CK56GYJZ",
+        "title": "Zkeebs DUROCK V2 Screw-in Stabilizers, 7U, 6.25U, 2U",
+        "evidenceUrl": "https://www.amazon.com/dp/B0CK56GYJZ",
+        "checkedAt": "2026-10-20T08:00:00Z"
+      }
+    ]
+  },
+  "susuwatari": {
+    "links": [
+      {
+        "name": "Amazon",
+        "url": "https://www.amazon.com/dp/B08HPWX9HG",
+        "title": "Drop + Matt3o MT3 Susuwatari Custom Keycap Set — Base",
+        "evidenceUrl": "https://www.amazon.com/dp/B08HPWX9HG",
+        "checkedAt": "2026-10-20T08:00:00Z"
+      }
+    ]
+  },
+  "coiled": {
+    "links": [
+      {
+        "name": "Amazon",
+        "url": "https://www.amazon.com/dp/B0CCMLMXC3",
+        "title": "PWNAGE Ultra Custom Coiled Aviator USB C Cable, USB-A to USB-C, 1.8M",
+        "evidenceUrl": "https://www.amazon.com/dp/B0CCMLMXC3",
+        "checkedAt": "2026-10-20T08:00:00Z"
+      },
+      {
+        "name": "CannonKeys",
+        "url": "https://cannonkeys.com/products/nylon-coiled-aviator-cables",
+        "title": "Nylon Coiled Aviator Cables",
+        "available": false,
+        "evidenceUrl": "https://cannonkeys.com/products/nylon-coiled-aviator-cables",
+        "checkedAt": "2026-10-20T07:25:03.098Z"
+      }
+    ]
+  },
+  "opener": {
+    "links": [
+      {
+        "name": "Amazon",
+        "url": "https://www.amazon.com/dp/B0C8B3J7FF",
+        "title": "Tugeta Gateron Switches Opener for Mechanical Keyboard",
+        "evidenceUrl": "https://www.amazon.com/dp/B0C8B3J7FF",
+        "checkedAt": "2026-10-20T08:00:00Z"
+      }
+    ]
+  },
+  "cherryclip": {
+    "links": [
+      {
+        "name": "CannonKeys",
+        "url": "https://cannonkeys.com/products/cherry-stabilizers?variant=32257338998895",
+        "title": "Cherry Clip-in Stabilizers — 4x 2U Stab + 1x 6.25U Stab + 1x 7U Wire Only",
+        "available": true,
+        "evidenceUrl": "https://cannonkeys.com/products/cherry-stabilizers",
+        "checkedAt": "2026-10-20T07:25:03.098Z"
+      },
+      {
+        "name": "KeebsForAll",
+        "url": "https://keebsforall.com/products/cherry-clip-in-stabilizers",
+        "title": "Cherry Clip-In Stabilizers",
+        "available": false,
+        "evidenceUrl": "https://keebsforall.com/products/cherry-clip-in-stabilizers",
+        "checkedAt": "2026-10-20T07:25:07.239Z"
+      }
+    ]
+  },
+  "cherryplate": {
+    "links": [
+      {
+        "name": "MechanicalKeyboards.com",
+        "url": "https://mechanicalkeyboards.com/products/cherry-genuine-cherry-stabilizers-plate-mount",
+        "title": "Cherry Genuine Stabilizers Plate Mount",
+        "available": false,
+        "evidenceUrl": "https://mechanicalkeyboards.com/products/cherry-genuine-cherry-stabilizers-plate-mount",
+        "checkedAt": "2026-10-20T07:25:33.508Z"
+      }
+    ]
+  },
+  "krytox": {
+    "links": [
+      {
+        "name": "KeebsForAll",
+        "url": "https://keebsforall.com/products/krytox-205-g0-switch-lubricant?variant=37613303496862",
+        "title": "Krytox 205 g0 Switch Lubricant — 5ml",
+        "available": true,
+        "evidenceUrl": "https://keebsforall.com/products/krytox-205-g0-switch-lubricant",
+        "checkedAt": "2026-10-20T07:25:07.239Z"
+      },
+      {
+        "name": "MechanicalKeyboards.com",
+        "url": "https://mechanicalkeyboards.com/products/mk-krytox-205g0-lube-5ml",
+        "title": "MK Krytox 205g0 Lube 5ml",
+        "available": true,
+        "evidenceUrl": "https://mechanicalkeyboards.com/products/mk-krytox-205g0-lube-5ml",
+        "checkedAt": "2026-10-20T07:25:33.508Z"
+      }
+    ]
+  },
+  "puller": {
+    "links": [
+      {
+        "name": "KBDfans",
+        "url": "https://kbdfans.com/products/kbdfans-switch-and-keycaps-puller",
+        "title": "KBDfans Switch And Keycaps Puller",
+        "available": true,
+        "evidenceUrl": "https://kbdfans.com/products/kbdfans-switch-and-keycaps-puller",
+        "checkedAt": "2026-10-20T07:25:01.260Z"
+      },
+      {
+        "name": "KeebsForAll",
+        "url": "https://keebsforall.com/products/cy-stainless-steel-keycap-switch-puller",
+        "title": "CY Stainless Steel Keycap & Switch Puller",
+        "available": true,
+        "evidenceUrl": "https://keebsforall.com/products/cy-stainless-steel-keycap-switch-puller",
+        "checkedAt": "2026-10-20T07:25:07.239Z"
+      },
+      {
+        "name": "Keychron",
+        "url": "https://www.keychron.com/products/keychron-2-in-1-switch-and-keycap-puller",
+        "title": "Keychron 2-in-1 Switch and Keycap Puller",
+        "available": true,
+        "evidenceUrl": "https://www.keychron.com/products/keychron-2-in-1-switch-and-keycap-puller",
+        "checkedAt": "2026-10-20T07:25:06.470Z"
+      }
+    ]
+  },
+  "casefoam": {
+    "links": [
+      {
+        "name": "KPrepublic",
+        "url": "https://kprepublic.com/products/kprepublic-gasket-poron-bottom-pad-pads-foam-for-mechanical-keyboard-le20-case-reduce-noise-damper-pad-40-60-65-68-87-104-108",
+        "title": "KPrepublic Gasket Poron Bottom Pad Pads Foam for Mechanical Keyboard LE20 Case Reduce Noise Damper Pad 40 60 65 68 87 104 108",
+        "available": true,
+        "evidenceUrl": "https://kprepublic.com/products/kprepublic-gasket-poron-bottom-pad-pads-foam-for-mechanical-keyboard-le20-case-reduce-noise-damper-pad-40-60-65-68-87-104-108",
+        "checkedAt": "2026-10-20T07:25:18.971Z"
+      }
+    ]
+  },
+  "ks3yellow": {
+    "links": [
+      {
+        "name": "CannonKeys",
+        "url": "https://cannonkeys.com/products/gateron-yellow-switch-full-nylon-10",
+        "title": "Gateron Full Nylon Yellow Linear Switch",
+        "available": false,
+        "evidenceUrl": "https://cannonkeys.com/products/gateron-yellow-switch-full-nylon-10",
+        "checkedAt": "2026-10-20T07:25:03.098Z"
+      }
+    ]
+  },
+  "pudding": {
+    "links": [
+      {
+        "name": "MechanicalKeyboards.com",
+        "url": "https://mechanicalkeyboards.com/products/ducky-black-pudding-108-key-oem-profile-double-shot-pbt-keycap-set",
+        "title": "Ducky Black Pudding 108 Key OEM Profile Double Shot PBT Keycap Set",
+        "available": true,
+        "evidenceUrl": "https://mechanicalkeyboards.com/products/ducky-black-pudding-108-key-oem-profile-double-shot-pbt-keycap-set",
+        "checkedAt": "2026-10-20T07:25:33.508Z"
+      }
+    ]
+  },
+  "dz60rgb": {
+    "links": [
+      {
+        "name": "MechanicalKeyboards.com",
+        "url": "https://mechanicalkeyboards.com/products/kbdfans-dz60rgb-ansi-v2-60-mechanical-keyboard-pcb",
+        "title": "KBDFans DZ60RGB-ANSI V2 60% Mechanical Keyboard PCB",
+        "available": false,
+        "evidenceUrl": "https://mechanicalkeyboards.com/products/kbdfans-dz60rgb-ansi-v2-60-mechanical-keyboard-pcb",
+        "checkedAt": "2026-10-20T07:25:33.508Z"
+      }
+    ]
+  },
+  "kbd8xhs": {
+    "links": [
+      {
+        "name": "KBDfans",
+        "url": "https://kbdfans.com/products/kbd8x-mkiii-pcb?variant=42402227257483",
+        "title": "KBD8X MKIII PCB — ANSI hot-swap PCB",
+        "available": true,
+        "evidenceUrl": "https://kbdfans.com/products/kbd8x-mkiii-pcb",
+        "checkedAt": "2026-10-20T07:25:01.260Z"
+      },
+      {
+        "name": "Divinikey",
+        "url": "https://divinikey.com/products/kbdfans-kbd8x-mkiii-pcb?variant=40562551357505",
+        "title": "KBDfans KBD8X MKIII PCB — Hotswap ANSI + Foam",
+        "available": false,
+        "evidenceUrl": "https://divinikey.com/products/kbdfans-kbd8x-mkiii-pcb",
+        "checkedAt": "2026-10-20T07:25:06.008Z"
+      }
+    ]
+  },
+  "kbd8xsol": {
+    "links": [
+      {
+        "name": "KBDfans",
+        "url": "https://kbdfans.com/products/kbd8x-mkiii-pcb?variant=42402227290251",
+        "title": "KBD8X MKIII PCB — Solder PCB",
+        "available": false,
+        "evidenceUrl": "https://kbdfans.com/products/kbd8x-mkiii-pcb",
+        "checkedAt": "2026-10-20T07:25:01.260Z"
+      },
+      {
+        "name": "Divinikey",
+        "url": "https://divinikey.com/products/kbdfans-kbd8x-mkiii-pcb?variant=40566850519105",
+        "title": "KBDfans KBD8X MKIII PCB — Solder + Foam",
+        "available": false,
+        "evidenceUrl": "https://divinikey.com/products/kbdfans-kbd8x-mkiii-pcb",
+        "checkedAt": "2026-10-20T07:25:06.008Z"
+      }
+    ]
+  },
+  "plate-gh60-aluminum": {
+    "links": [
+      {
+        "name": "Divinikey",
+        "url": "https://divinikey.com/products/kbdfans-dz60-cnc-60-plate-aluminum-brass?variant=39278824947777",
+        "title": "KBDfans DZ60 CNC 60% Plate Aluminum/Brass — Aluminum / Plate B (Left Shift 2.25U)",
+        "available": false,
+        "evidenceUrl": "https://divinikey.com/products/kbdfans-dz60-cnc-60-plate-aluminum-brass",
+        "checkedAt": "2026-10-20T07:25:06.008Z"
+      }
+    ]
+  },
+  "plate-gh60-brass": {
+    "links": [
+      {
+        "name": "Divinikey",
+        "url": "https://divinikey.com/products/kbdfans-dz60-cnc-60-plate-aluminum-brass?variant=39278827798593",
+        "title": "KBDfans DZ60 CNC 60% Plate Aluminum/Brass — Brass / Plate B (Left Shift 2.25U)",
+        "available": false,
+        "evidenceUrl": "https://divinikey.com/products/kbdfans-dz60-cnc-60-plate-aluminum-brass",
+        "checkedAt": "2026-10-20T07:25:06.008Z"
+      }
+    ]
+  },
+  "plate-gh60-carbonfiber": {
+    "links": [
+      {
+        "name": "Divinikey",
+        "url": "https://divinikey.com/products/kbdfans-60-carbon-fiber-plate",
+        "title": "KBDfans 60% Carbon Fiber Plate",
+        "available": false,
+        "evidenceUrl": "https://divinikey.com/products/kbdfans-60-carbon-fiber-plate",
+        "checkedAt": "2026-10-20T07:25:06.008Z"
+      }
+    ]
+  },
+  "plate-gh60-pc": {
+    "links": [
+      {
+        "name": "Divinikey",
+        "url": "https://divinikey.com/products/kbdfans-60-polycarbonate-plate?variant=39298288058433",
+        "title": "KBDfans 60% Polycarbonate Plate — Plate B (Left Shift 2.25U)",
+        "available": false,
+        "evidenceUrl": "https://divinikey.com/products/kbdfans-60-polycarbonate-plate",
+        "checkedAt": "2026-10-20T07:25:06.008Z"
+      }
+    ]
+  },
+  "plate-tofu65-aluminum": {
+    "links": [
+      {
+        "name": "Divinikey",
+        "url": "https://divinikey.com/products/kbdfans-tofu65-2-0-accessories?variant=40436463566913",
+        "title": "KBDfans TOFU65 2.0 Accessories — Aluminum Plate",
+        "available": false,
+        "evidenceUrl": "https://divinikey.com/products/kbdfans-tofu65-2-0-accessories",
+        "checkedAt": "2026-10-20T07:25:06.008Z"
+      }
+    ]
+  },
+  "plate-kbd8x-aluminum": {
+    "links": [
+      {
+        "name": "Divinikey",
+        "url": "https://divinikey.com/products/kbdfans-kbd8x-mkiii-plate?variant=40562546180161",
+        "title": "KBDfans KBD8X MKIII Plate — Aluminum",
+        "available": false,
+        "evidenceUrl": "https://divinikey.com/products/kbdfans-kbd8x-mkiii-plate",
+        "checkedAt": "2026-10-20T07:25:06.008Z"
+      }
+    ]
+  },
+  "plate-tofu65-fr4": {
+    "links": [
+      {
+        "name": "Divinikey",
+        "url": "https://divinikey.com/products/kbdfans-tofu65-2-0-accessories?variant=40436463599681",
+        "title": "KBDfans TOFU65 2.0 Accessories — FR4 Plate",
+        "available": false,
+        "evidenceUrl": "https://divinikey.com/products/kbdfans-tofu65-2-0-accessories",
+        "checkedAt": "2026-10-20T07:25:06.008Z"
+      }
+    ]
+  },
+  "plate-kbd8x-fr4": {
+    "links": [
+      {
+        "name": "Divinikey",
+        "url": "https://divinikey.com/products/kbdfans-kbd8x-mkiii-plate?variant=40566848159809",
+        "title": "KBDfans KBD8X MKIII Plate — FR4",
+        "available": false,
+        "evidenceUrl": "https://divinikey.com/products/kbdfans-kbd8x-mkiii-plate",
+        "checkedAt": "2026-10-20T07:25:06.008Z"
+      }
+    ]
+  },
+  "plate-tofu65-carbonfiber": {
+    "links": [
+      {
+        "name": "Divinikey",
+        "url": "https://divinikey.com/products/kbdfans-tofu65-2-0-accessories?variant=40436463632449",
+        "title": "KBDfans TOFU65 2.0 Accessories — Carbon Fiber Plate",
+        "available": false,
+        "evidenceUrl": "https://divinikey.com/products/kbdfans-tofu65-2-0-accessories",
+        "checkedAt": "2026-10-20T07:25:06.008Z"
+      }
+    ]
+  },
+  "plate-kbd8x-carbonfiber": {
+    "links": [
+      {
+        "name": "Divinikey",
+        "url": "https://divinikey.com/products/kbdfans-kbd8x-mkiii-plate?variant=40566848192577",
+        "title": "KBDfans KBD8X MKIII Plate — Carbon Fiber",
+        "available": false,
+        "evidenceUrl": "https://divinikey.com/products/kbdfans-kbd8x-mkiii-plate",
+        "checkedAt": "2026-10-20T07:25:06.008Z"
+      }
+    ]
+  },
+  "plate-tofu65-pc": {
+    "links": [
+      {
+        "name": "Divinikey",
+        "url": "https://divinikey.com/products/kbdfans-tofu65-2-0-accessories?variant=40436463665217",
+        "title": "KBDfans TOFU65 2.0 Accessories — Polycarbonate Plate",
+        "available": false,
+        "evidenceUrl": "https://divinikey.com/products/kbdfans-tofu65-2-0-accessories",
+        "checkedAt": "2026-10-20T07:25:06.008Z"
+      }
+    ]
+  },
+  "plate-kbd8x-pc": {
+    "links": [
+      {
+        "name": "Divinikey",
+        "url": "https://divinikey.com/products/kbdfans-kbd8x-mkiii-plate?variant=40566848127041",
+        "title": "KBDfans KBD8X MKIII Plate — Polycarbonate",
+        "available": false,
+        "evidenceUrl": "https://divinikey.com/products/kbdfans-kbd8x-mkiii-plate",
+        "checkedAt": "2026-10-20T07:25:06.008Z"
+      }
+    ]
+  },
+  "alpacav2": {
+    "links": [
+      {
+        "name": "PrimeKB",
+        "url": "https://www.primekb.com/products/alpaca-linears",
+        "title": "Alpaca Linears V2",
+        "evidenceUrl": "https://www.primekb.com/products/alpaca-linears",
+        "checkedAt": "2026-10-20T08:00:00Z"
+      }
+    ]
+  },
+  "h60": {
+    "links": [
+      {
+        "name": "Hineybush",
+        "url": "https://hineybush.com/products/h60-cem3",
+        "title": "h60 CEM3 Solder PCB",
+        "evidenceUrl": "https://hineybush.com/products/h60-cem3",
+        "checkedAt": "2026-10-20T08:00:00Z"
+      }
+    ]
+  },
+  "gmkolivia": {
+    "links": [
+      {
+        "name": "Oblotzky Industries",
+        "url": "https://oblotzky.industries/products/gmk-cyl-olivia-plusplus",
+        "title": "GMK CYL Olivia++ — Dark Base",
+        "evidenceUrl": "https://oblotzky.industries/products/gmk-cyl-olivia-plusplus",
+        "checkedAt": "2026-10-20T08:00:00Z"
+      }
+    ]
+  },
+  "modesonnet": {
+    "links": [
+      {
+        "name": "Mode Designs",
+        "url": "https://modedesigns.com/products/sonnet",
+        "title": "Sonnet Custom Keyboard",
+        "evidenceUrl": "https://modedesigns.com/products/sonnet",
+        "checkedAt": "2026-10-20T08:00:00Z"
+      }
+    ]
+  },
+  "gmklaser": {
+    "links": [
+      {
+        "name": "Amazon",
+        "url": "https://www.amazon.com/dp/B096SW9S7P",
+        "title": "Drop + MiTo GMK Laser Custom Mechanical Keyboard Keycap Set — 129 keys",
+        "evidenceUrl": "https://www.amazon.com/dp/B096SW9S7P",
+        "checkedAt": "2026-10-20T08:00:00Z"
+      }
+    ]
+  },
+  "gmkwob": {
+    "links": [
+      {
+        "name": "Amazon",
+        "url": "https://www.amazon.com/dp/B081BB148L",
+        "title": "Drop GMK White-On-Black Custom Mechanical Keyboard Keycap Set — 146 keys",
+        "evidenceUrl": "https://www.amazon.com/dp/B081BB148L",
+        "checkedAt": "2026-10-20T08:00:00Z"
+      }
+    ]
+  },
+  "hk9009": {
+    "links": [
+      {
+        "name": "Amazon",
+        "url": "https://www.amazon.com/dp/B085249L6R",
+        "title": "HK Gaming Custom Keycaps — 9009, 139 Keys, Cherry Profile",
+        "evidenceUrl": "https://www.amazon.com/dp/B085249L6R",
+        "checkedAt": "2026-10-20T08:00:00Z"
+      }
+    ]
+  },
+  "tapemod": {
+    "links": [
+      {
+        "name": "Amazon",
+        "url": "https://www.amazon.com/dp/B00004Z4CP",
+        "title": "ScotchBlue Original Multi-Surface Painters Tape 2090, 1 Inch",
+        "evidenceUrl": "https://www.amazon.com/dp/B00004Z4CP",
+        "checkedAt": "2026-10-20T08:00:00Z"
+      }
+    ]
+  },
+  "kc-q6max": {
+    "links": [
+      {
+        "name": "Amazon",
+        "url": "https://www.amazon.com/dp/B0CSYGRQ5Q",
+        "title": "Keychron Q6 Max QMK/VIA Wireless Custom Mechanical Keyboard Knob Barebone Version",
+        "evidenceUrl": "https://www.amazon.com/dp/B0CSYGRQ5Q",
+        "checkedAt": "2026-10-20T08:00:00Z"
+      }
+    ]
+  },
+  "mx2ared": {
+    "links": [
+      {
+        "name": "Dangkeebs",
+        "url": "https://dangkeebs.com/products/cherry-mx2a-red-switches",
+        "title": "Cherry MX2A Red Switches",
+        "available": false,
+        "evidenceUrl": "https://dangkeebs.com/products/cherry-mx2a-red-switches",
+        "checkedAt": "2026-10-20T07:25:12.183Z"
+      },
+      {
+        "name": "MechanicalKeyboards.com",
+        "url": "https://mechanicalkeyboards.com/products/cherry-mx2a-red-45g-linear",
+        "title": "Cherry MX2A Red 45g Linear Switch",
+        "available": true,
+        "evidenceUrl": "https://mechanicalkeyboards.com/products/cherry-mx2a-red-45g-linear",
+        "checkedAt": "2026-10-20T07:25:33.508Z"
+      }
+    ]
+  },
+  "banana": {
+    "links": [
+      {
+        "name": "Keychron",
+        "url": "https://www.keychron.com/products/keychron-k-pro-switch?variant=40299927240793",
+        "title": "Keychron K Pro Switch — Banana / 110 Switches",
+        "available": false,
+        "evidenceUrl": "https://www.keychron.com/products/keychron-k-pro-switch",
+        "checkedAt": "2026-10-20T07:25:06.470Z"
+      }
+    ]
+  },
+  "modeenvoy": {
+    "links": [
+      {
+        "name": "Deskhero (CAD)",
+        "url": "https://www.deskhero.ca/products/mode-envoy-65-keyboard",
+        "title": "MODE Envoy 65% Keyboard",
+        "evidenceUrl": "https://www.deskhero.ca/products/mode-envoy-65-keyboard",
+        "checkedAt": "2026-10-20T08:00:00Z"
+      }
+    ]
+  },
+  "u4t": {
+    "links": [
+      {
+        "name": "RingerKeys",
+        "url": "https://ringerkeys.com/products/gazzew-boba-u4t-thocky-tactile-switches?variant=33205934751826",
+        "title": "Gazzew Boba U4T — white 62g Pearl top",
+        "evidenceUrl": "https://ringerkeys.com/products/gazzew-boba-u4t-thocky-tactile-switches?variant=33205934751826",
+        "checkedAt": "2026-10-20T08:00:00Z",
+        "available": false
+      }
+    ]
+  },
+  "u4": {
+    "links": [
+      {
+        "name": "RingerKeys",
+        "url": "https://ringerkeys.com/products/gazzew-boba-u4-silent-tactile-switches?variant=40184474009682",
+        "title": "Gazzew Boba U4 — black 62g black top",
+        "evidenceUrl": "https://ringerkeys.com/products/gazzew-boba-u4-silent-tactile-switches?variant=40184474009682",
+        "checkedAt": "2026-10-20T08:00:00Z",
+        "available": false
+      }
+    ]
+  },
+  "qk65v2": {
+    "links": [
+      {
+        "name": "Ashkeebs (CAD)",
+        "url": "https://www.ashkeebs.com/product/qwertykeys-qk65v2-keyboard/",
+        "title": "QwertyKeys QK65v2 Keyboard",
+        "evidenceUrl": "https://www.ashkeebs.com/product/qwertykeys-qk65v2-keyboard/",
+        "checkedAt": "2026-10-20T08:00:00Z"
+      }
+    ]
+  },
+  "pefoam": {
+    "links": [
+      {
+        "name": "KeyCrox (GBP)",
+        "url": "https://www.keycrox.co.uk/product/keyboard-pe-foam-sheet",
+        "title": "Keyboard PE Foam Sheet",
+        "evidenceUrl": "https://www.keycrox.co.uk/product/keyboard-pe-foam-sheet",
+        "checkedAt": "2026-10-20T08:00:00Z"
+      }
+    ]
+  },
+  "devtty": {
+    "links": [
+      {
+        "name": "Amazon",
+        "url": "https://www.amazon.com/dp/B081DDDK4H",
+        "title": "DROP + Matt3o MT3 /dev/tty Keycap Set for Full-Size Keyboards — 1800 Layout 122-Key Kit",
+        "evidenceUrl": "https://www.kanbkam.com/sa/en/drop-matt3o-mt3-devtty-keycap-set-for-fullsize-keyboards-compatible-with-cherry-mx-switches-and-clones-1800-layout-122key-kit-B081DDDK4H",
+        "checkedAt": "2026-10-20T08:00:00Z"
+      }
+    ]
+  }
+}

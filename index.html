@@ -609,24 +609,15 @@ a.listen.watch:hover{background:rgba(59,130,246,.2)}
 <div id="picker" hidden></div>
 <div class="toast" id="toast" hidden role="status"></div>
 
+<script src="assets/product-links.js"></script>
+<script src="data/product-links.js"></script>
 <script src="data/builder-catalog.js"></script>
 <script src="assets/directory.js"></script>
 <script>
 /* =========================================================
    CATALOG
    ========================================================= */
-const SHOPS = {
-  Keychron:'https://www.keychron.com/', KBDfans:'https://kbdfans.com/', NovelKeys:'https://novelkeys.com/',
-  'Mode Designs':'https://modedesigns.com/', Meletrix:'https://meletrix.com/', Wobkey:'https://www.wobkey.com/',
-  MonsGeek:'https://www.monsgeek.com/', QwertyKeys:'https://qwertykeys.com/', Gateron:'https://www.gateron.com/',
-  Akko:'https://en.akkogear.com/', Cherry:'https://www.cherry.de/', Kailh:'https://www.kailh.com/',
-  Gazzew:'https://www.google.com/search?q=Gazzew+Boba', Glorious:'https://www.gloriousgaming.com/',
-  Drop:'https://drop.com/', GMK:'https://www.gmk.net/', PBTfans:'https://kbdfans.com/', Ducky:'https://www.duckychannel.com.tw/',
-  'HK Gaming':'https://www.google.com/search?q=HK+Gaming+keycaps', Domikey:'https://www.google.com/search?q=Domikey+keycaps',
-  YMDK:'https://www.google.com/search?q=YMDK+keycaps', Durock:'https://www.google.com/search?q=Durock+stabilizers',
-  TX:'https://www.google.com/search?q=TX+AP+stabilizers', Hineybush:'https://www.google.com/search?q=Hineybush+h60',
-  Krytox:'https://www.google.com/search?q=Krytox+205g0', Various:'https://www.google.com/search?q=mechanical+keyboard+'
-};
+
 const LAYOUT_NAMES = {'60':'60%','65':'65%','75':'75%','tkl':'TKL','full':'Full-size'};
 const LAYOUT_KEYS  = {'60':61,'65':68,'75':84,'tkl':87,'full':104};
 
@@ -805,8 +796,12 @@ for(const [id,ph] of Object.entries(PHOTOS)){const p=[...CASES,...SWITCHES,...KE
   add(CASES,cat.cases); add(SWITCHES,cat.switches); add(KEYCAPS,cat.keycaps); add(STABS,cat.stabs); add(EXTRAS,cat.extras); add(PCBS,cat.pcbs); add(PLATES,cat.plates);}
 // The finder ranks every board. Imported kits are paired with curated switches and keycaps,
 // whose sound data drives the ranking; assembled boards are matched as they ship.
+// Historical/generic placeholders without an exact listing are kept for saved builds,
+// but cannot be offered as purchasable choices in the finder or part picker.
+const PENDING_PARTS=[];
+for(const pool of [CASES,PCBS,PLATES,SWITCHES,KEYCAPS,STABS,EXTRAS])for(let i=pool.length-1;i>=0;i--)if(!globalThis.SwitchdeckLinks.linksFor(pool[i]).length)PENDING_PARTS.push(...pool.splice(i,1));
 const FINDER_CASES=[...CASES];
-const ALLPARTS = [...CASES,...PCBS,...PLATES,...SWITCHES,...KEYCAPS,...STABS,...EXTRAS];
+const ALLPARTS = [...CASES,...PCBS,...PLATES,...SWITCHES,...KEYCAPS,...STABS,...EXTRAS,...PENDING_PARTS];
 // Reviewed, version-specific matches enrich existing parts without replacing kit prices or fit rules.
 for(const [id,meta] of Object.entries(window.SWITCHDECK_CATALOG?.curated||{})){const p=ALLPARTS.find(p=>p.id===id);if(p&&meta.retailers){p.photo=meta.photo?{...meta.photo}:(p.photo&&{page:p.photo.page});p.retailers=meta.retailers}}
 const BYID = Object.fromEntries(ALLPARTS.map(p=>[p.id,p]));
@@ -1146,8 +1141,7 @@ function partName(p){
 }
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function money(n){return '$'+(Math.round(n*100)/100).toLocaleString('en-US',{minimumFractionDigits:n%1?2:0,maximumFractionDigits:2})}
-function shopLink(p){if(p.photo&&p.photo.page) return p.photo.page; if(p.catalogId&&p.retailers?.[0]) return p.retailers[0].url; const u=SHOPS[p.brand]||SHOPS.Various; return u.includes('google.com/search')&&p.brand==='Various'?u+encodeURIComponent(p.name):u}
-function searchLink(p){return 'https://www.google.com/search?tbm=shop&q='+encodeURIComponent(partName(p))}
+function shopLink(p){return globalThis.SwitchdeckLinks.linksFor(p)[0]?.url||null}
 function specChips(p){
   const ch=[];
   if(p.cat==='case'){ch.push(p.layoutLabel||LAYOUT_NAMES[p.layout],p.mount,p.material); if(p.kit&&!p.assembled) ch.push('Kit'); if(p.assembled) ch.push('Assembled'); if(p.kit?.pcb.hotswap) ch.push('Hot-swap'); if(/Tri|Blue|2\.4/.test(p.conn)) ch.push('Wireless')}
@@ -1317,27 +1311,10 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden) closeSound
 
 
 /* =========================================================
-   WHERE TO BUY: maker page plus store searches
+   WHERE TO BUY: exact product pages, Amazon first
    ========================================================= */
-const STORES={
-  amazon:['Amazon',q=>'https://www.amazon.com/s?k='+q],
-  divinikey:['Divinikey',q=>'https://divinikey.com/search?q='+q],
-  kbdfans:['KBDfans',q=>'https://kbdfans.com/search?q='+q],
-  novelkeys:['NovelKeys',q=>'https://novelkeys.com/search?q='+q],
-  cannonkeys:['CannonKeys',q=>'https://cannonkeys.com/search?q='+q],
-  kfa:['KeebsForAll',q=>'https://keebsforall.com/search?q='+q],
-};
-const STORES_FOR={case:['amazon','divinikey','kbdfans'],pcb:['kbdfans','divinikey','cannonkeys'],plate:['kbdfans','divinikey','cannonkeys'],
-  switches:['divinikey','kfa','novelkeys','amazon'],keycaps:['divinikey','kbdfans','novelkeys','amazon'],stabs:['divinikey','cannonkeys','kbdfans','amazon'],extras:['amazon','divinikey','kfa']};
 const ARROW='<svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M3 2h5v5M8 2L2.5 7.5"/></svg>';
-function buyLinks(p){
-  if(p.retailers?.length)return p.retailers.map(r=>({n:r.name,u:r.url,maker:true}));
-  const term=partName(p)+(p.cat==='switches'?' switches':p.cat==='keycaps'&&!/keycap/i.test(p.name)?' keycaps':'');
-  const q=encodeURIComponent(term.trim()), out=[], maker=shopLink(p);
-  if(!/google\.com/.test(maker)) out.push({n:p.brand,u:maker,maker:true});
-  for(const k of STORES_FOR[p.cat]||['amazon']){const [n,u]=STORES[k]; if(n.toLowerCase()!==p.brand.toLowerCase()&&!(p.brand==='PBTfans'&&k==='kbdfans')) out.push({n,u:u(q)})}
-  return out.slice(0,4).concat({n:'Compare prices',u:searchLink(p),cmp:true});
-}
+function buyLinks(p){return globalThis.SwitchdeckLinks.linksFor(p).map(r=>({n:r.name,u:r.url,maker:true,available:r.available}))}
 // Each store's own favicon (https://<store domain>/favicon.ico), drawn as an SVG <image> so the page has no raw image tag.
 // If it fails to load, the capturing error listener below flips .fav to .bad and a letter badge shows instead.
 function storeFav(l){
@@ -1346,7 +1323,7 @@ function storeFav(l){
   return `<span class="fav" data-l="${esc((l.n||'?').trim().charAt(0).toUpperCase())}" aria-hidden="true"><svg viewBox="0 0 16 16" focusable="false"><image href="https://${esc(host)}/favicon.ico" width="16" height="16" loading="lazy" preserveAspectRatio="xMidYMid meet"/></svg></span>`;
 }
 document.addEventListener('error',e=>{const f=e.target.closest&&e.target.closest('.fav'); if(f) f.classList.add('bad')},true);
-const storeChips=p=>buyLinks(p).map(l=>`<a class="store ${l.maker?'maker':''} ${l.cmp?'cmp':''}" href="${esc(l.u)}" target="_blank" rel="noopener">${storeFav(l)}${esc(l.n)}${ARROW}</a>`).join('');
+const storeChips=p=>buyLinks(p).length?buyLinks(p).map(l=>`<a class="store ${l.maker?'maker':''} ${l.cmp?'cmp':''}" href="${esc(l.u)}" target="_blank" rel="noopener">${storeFav(l)}${esc(l.n)}${l.available===false?' · sold out':''}${ARROW}</a>`).join(''):'<span class="note">Exact product link not confirmed yet</span>';
 
 /* =========================================================
    ROUTING
@@ -2180,7 +2157,7 @@ function renderRail(){
 function partsText(b){
   const lines=[`${b.name||'My keyboard'} (Switchyard)`,''];
   const c=caseOf(b);
-  for(const i of lineItems(b)) lines.push(`${SLOTS.find(s=>s.key===i.slot).label}: ${partName(i.part)}${i.qty?` x${i.qty}`:''} - ${money(i.price)}`,`  ${buyLinks(i.part)[0].u}`);
+  for(const i of lineItems(b)) lines.push(`${SLOTS.find(s=>s.key===i.slot).label}: ${partName(i.part)}${i.qty?` x${i.qty}`:''} - ${money(i.price)}`,`  ${buyLinks(i.part)[0]?.u||'Exact product link not confirmed yet'}`);
   if(c&&c.kit) lines.push(`Included with kit: PCB, ${c.kit.plate} plate${c.kit.stabs?', stabilizers':''}`);
   if(BYID[b.switches]) lines.push('', 'Switch sound tests: '+soundSearchUrl(BYID[b.switches]));
   lines.push('',`Total: ${money(total(b))} (approx.)`,`Build code: ${encodeBuild(b)}`);
@@ -2295,7 +2272,7 @@ function renderPickList(){
       return `<article style="--i:${i}" class="card pick ${pr.bad.length?'bad':''} ${on?'selected':''}"><span class="thumb">${thumbFor(p)}</span>
       <div class="meta"><span class="by note">${esc(p.brand)}</span><b>${esc(p.name)}</b><span class="specs">${specChips(p)}</span><p>${esc(p.blurb||'')}</p>
         ${pr.bad.map(m=>`<span class="why">✕ ${esc(m)}</span>`).join('')}${pr.warn.map(m=>`<span class="why" style="color:var(--warn)">! ${esc(m)}</span>`).join('')}
-        <span class="links">${slot==='switches'?listenBtn('part:'+p.id)+soundSearchLink(p):''}<a href="${esc(shopLink(p))}" target="_blank" rel="noopener">${p.catalogId?'View at '+esc(storeOf(p)):'Seller site'}</a><a href="${searchLink(p)}" target="_blank" rel="noopener">Compare prices</a></span></div>
+        <span class="links">${slot==='switches'?listenBtn('part:'+p.id)+soundSearchLink(p):''}${storeChips(p)}</span></div>
       <div class="side"><span class="p">${money(price)}</span>${sub?`<small>${esc(sub)}</small>`:''}
         ${slot==='extras'&&on?`<button class="btn small" data-unadd="${p.id}">Remove</button>`:`<button class="btn small ${on?'':'primary'}" data-add="${p.id}" ${on?'disabled':''}>${on?'Selected':'Add'}</button>`}</div></article>`}).join('')}
     ${total>rows.length?`<button class="btn block" id="pkmore">Show more (${(total-rows.length).toLocaleString('en-US')} left)</button>`:''}`;
@@ -2355,4 +2332,5 @@ window.SwitchdeckBuilder={has:id=>BY_LISTING.has(id),add:id=>{const p=BY_LISTING
 go(['finder','build','saved','directory'].includes(start)?start:'finder',false);
 renderPill();
 </script>
+
 
