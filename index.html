@@ -560,23 +560,6 @@ a.listen.watch:hover{background:rgba(59,130,246,.2)}
   .qcard{max-height:calc(100dvh - 150px);overflow:auto}
 }
 
-
-/* A stable quiz stage: question content changes inside a viewport-sized shell. */
-.qcard{height:clamp(260px,43dvh,330px);display:flex;flex-direction:column;transition:none;overflow:hidden}
-.qhead{flex:none}
-.qbody{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;scrollbar-gutter:stable;display:flex;flex-direction:column;justify-content:safe center;padding:2px}
-.qbody>*{flex-shrink:0}
-.qbody{scrollbar-width:thin}
-@media(min-width:761px){
-  .qbody .opt{padding-block:clamp(8px,1.3dvh,12px)}
-  .qbody .opt .art{height:clamp(32px,5.8dvh,52px);margin-bottom:4px}
-  .qbody .qhint{font-size:12px;line-height:1.35;margin:0 0 8px}
-  .qbody .qcredit{font-size:10.5px;margin:6px 0 0}
-}
-@media(max-width:760px){
-  .qcard{height:clamp(320px,57dvh,480px);overflow:hidden}
-}
-
 </style>
 <link rel="stylesheet" href="assets/directory.css">
 
@@ -1925,7 +1908,7 @@ if(window.ResizeObserver){
 if(document.fonts) document.fonts.ready.then(scheduleField);
 
 /* question card */
-let qDir=1;
+let qDir=1, hT;
 function renderFinder(){ initField(); renderQuiz(); }
 function icon(name){return {
   back:'<svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 9H3M8 4L3 9l5 5"/></svg>',
@@ -1935,6 +1918,7 @@ function icon(name){return {
 function renderQuiz(){
   stopClip();
   const card=document.getElementById('qcard'), wrapEl=document.getElementById('qwrap');
+  const oldH=card.offsetHeight;
   const done=quizStep>=QUESTIONS.length, Q=done?null:QUESTIONS[quizStep];
   const n=evalAns(quizAns).list.length, combos=comboCount(quizAns);
   let title, body;
@@ -1961,7 +1945,8 @@ function renderQuiz(){
   card.innerHTML=`<div class="qhead"><div class="l"><button class="iconbtn" id="qback" aria-label="Previous question" ${quizStep===0?'disabled':''}>${icon('back')}</button><button class="iconbtn" id="qreset" aria-label="Start over" ${answered()?'':'disabled'}>${icon('reset')}</button></div>
     <h1>${esc(title)}${Q&&Q.info?`<button type="button" class="qinfo" aria-label="What does this mean?" aria-expanded="false" aria-controls="qinfotext">i</button>`:''}</h1><div class="r" id="qcount"><b>${fmtCombos(shownCombos==null?combos:shownCombos)}</b><span class="w">combinations</span></div></div>
     <div class="qbody ${qDir<0?'back':''}">${body}</div>`;
-  // The quiz shell keeps its height; only its contents transition between questions.
+  // smooth height change
+  if(oldH){const newH=card.offsetHeight; card.style.height=oldH+'px'; void card.offsetHeight; card.style.height=newH+'px'; clearTimeout(hT); hT=setTimeout(()=>{card.style.height=''; layoutField()},470)}
   card.querySelector('#qback').onclick=()=>{if(quizStep>0){quizStep--;qDir=-1;renderQuiz()}};
   card.querySelector('#qreset').onclick=()=>{quizAns={};store.set('sy.quiz',quizAns);quizStep=0;qDir=-1;renderQuiz()};
   const r2=card.querySelector('#qreset2'); if(r2) r2.onclick=()=>{quizAns={};store.set('sy.quiz',quizAns);quizStep=0;qDir=-1;renderQuiz()};
