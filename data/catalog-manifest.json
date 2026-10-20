@@ -1,11 +1,11 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-20T03:56:04.213Z",
-  "listingCount": 8895,
-  "inStockCount": 4818,
-  "builderSwitchCount": 356,
+  "generatedAt": "2026-10-20T07:28:32.217Z",
+  "listingCount": 8896,
+  "inStockCount": 4822,
+  "builderSwitchCount": 357,
   "builderExtraCount": 154,
-  "builderCaseCount": 465,
+  "builderCaseCount": 466,
   "builderKeycapCount": 642,
   "builderStabCount": 88,
   "categories": {
@@ -27,7 +27,7 @@
     },
     "switches": {
       "label": "Switches",
-      "count": 1321
+      "count": 1322
     },
     "keycaps": {
       "label": "Keycaps",
@@ -53,7 +53,7 @@
       "url": "https://novelkeys.com",
       "currency": "USD",
       "status": "fresh",
-      "checkedAt": "2026-10-20T03:55:30.313Z",
+      "checkedAt": "2026-10-20T07:24:57.573Z",
       "rawProducts": 410,
       "listings": 347
     },
@@ -63,7 +63,7 @@
       "url": "https://kbdfans.com",
       "currency": "USD",
       "status": "fresh",
-      "checkedAt": "2026-10-20T03:55:34.009Z",
+      "checkedAt": "2026-10-20T07:25:01.260Z",
       "rawProducts": 466,
       "listings": 382
     },
@@ -73,19 +73,9 @@
       "url": "https://cannonkeys.com",
       "currency": "USD",
       "status": "fresh",
-      "checkedAt": "2026-10-20T03:55:35.482Z",
+      "checkedAt": "2026-10-20T07:25:03.098Z",
       "rawProducts": 1185,
       "listings": 917
-    },
-    {
-      "id": "keebsforall",
-      "name": "KeebsForAll",
-      "url": "https://keebsforall.com",
-      "currency": "USD",
-      "status": "fresh",
-      "checkedAt": "2026-10-20T03:55:37.119Z",
-      "rawProducts": 452,
-      "listings": 412
     },
     {
       "id": "divinikey",
@@ -93,19 +83,9 @@
       "url": "https://divinikey.com",
       "currency": "USD",
       "status": "fresh",
-      "checkedAt": "2026-10-20T03:55:37.406Z",
+      "checkedAt": "2026-10-20T07:25:06.008Z",
       "rawProducts": 1479,
       "listings": 1350
-    },
-    {
-      "id": "mode",
-      "name": "Mode Designs",
-      "url": "https://modedesigns.com",
-      "currency": "USD",
-      "status": "fresh",
-      "checkedAt": "2026-10-20T03:55:37.682Z",
-      "rawProducts": 73,
-      "listings": 46
     },
     {
       "id": "keychron",
@@ -113,9 +93,29 @@
       "url": "https://www.keychron.com",
       "currency": "USD",
       "status": "fresh",
-      "checkedAt": "2026-10-20T03:55:38.461Z",
+      "checkedAt": "2026-10-20T07:25:06.470Z",
       "rawProducts": 712,
       "listings": 640
+    },
+    {
+      "id": "mode",
+      "name": "Mode Designs",
+      "url": "https://modedesigns.com",
+      "currency": "USD",
+      "status": "fresh",
+      "checkedAt": "2026-10-20T07:25:06.585Z",
+      "rawProducts": 73,
+      "listings": 46
+    },
+    {
+      "id": "keebsforall",
+      "name": "KeebsForAll",
+      "url": "https://keebsforall.com",
+      "currency": "USD",
+      "status": "fresh",
+      "checkedAt": "2026-10-20T07:25:07.239Z",
+      "rawProducts": 452,
+      "listings": 412
     },
     {
       "id": "meletrix",
@@ -124,7 +124,7 @@
       "currency": "USD",
       "optional": true,
       "status": "fresh",
-      "checkedAt": "2026-10-20T03:55:39.815Z",
+      "checkedAt": "2026-10-20T07:25:07.846Z",
       "rawProducts": 205,
       "listings": 103
     },
@@ -135,7 +135,7 @@
       "currency": "USD",
       "optional": true,
       "status": "fresh",
-      "checkedAt": "2026-10-20T03:55:40.497Z",
+      "checkedAt": "2026-10-20T07:25:08.783Z",
       "rawProducts": 107,
       "listings": 74
     },
@@ -146,7 +146,7 @@
       "currency": "USD",
       "optional": true,
       "status": "fresh",
-      "checkedAt": "2026-10-20T03:55:41.002Z",
+      "checkedAt": "2026-10-20T07:25:09.227Z",
       "rawProducts": 31,
       "listings": 23
     },
@@ -157,9 +157,9 @@
       "currency": "USD",
       "optional": true,
       "status": "fresh",
-      "checkedAt": "2026-10-20T03:55:41.841Z",
-      "rawProducts": 122,
-      "listings": 108
+      "checkedAt": "2026-10-20T07:25:10.139Z",
+      "rawProducts": 123,
+      "listings": 109
     },
     {
       "id": "kineticlabs",
@@ -179,7 +179,7 @@
       "currency": "USD",
       "optional": true,
       "status": "fresh",
-      "checkedAt": "2026-10-20T03:55:42.597Z",
+      "checkedAt": "2026-10-20T07:25:12.183Z",
       "rawProducts": 177,
       "listings": 155
     },
@@ -201,7 +201,7 @@
       "currency": "USD",
       "optional": true,
       "status": "fresh",
-      "checkedAt": "2026-10-20T03:55:46.398Z",
+      "checkedAt": "2026-10-20T07:25:18.971Z",
       "rawProducts": 1380,
       "listings": 1266
     },
@@ -212,7 +212,7 @@
       "currency": "USD",
       "optional": true,
       "status": "fresh",
-      "checkedAt": "2026-10-20T03:56:01.529Z",
+      "checkedAt": "2026-10-20T07:25:33.508Z",
       "rawProducts": 5731,
       "listings": 3072
     }
@@ -331,5 +331,5 @@
     "parts/0110.json",
     "parts/0111.json"
   ],
-  "fingerprint": "8809b94c2f8f6afe732de2a38a1eb5a4ea8b6463b3399d6311c589e26c9951df"
+  "fingerprint": "0abfacc079414859d71e76448177f291ff2769f9005f93ba4e845af1ff10dc32"
 }
