@@ -1344,6 +1344,13 @@ document.addEventListener('visibilitychange',()=>{if(!document.hidden&&view==='f
 const STONE_PAL={alpha:'#E7E5E4',mod:'#A8A29E',accent:'#78716C',leg:null,modleg:null,accleg:null};
 const miniBoard=l=>boardSVG({layout:l,caseColor:'#57534E',pal:STONE_PAL,legends:false,u:12,cls:'',label:LAYOUT_NAMES[l]});
 const QUESTIONS = [
+  {key:'layout',title:'How big should it be?',opts:[
+    {v:'60',b:'60%',s:'No arrows',art:()=>miniBoard('60')},
+    {v:'65',b:'65%',s:'Adds arrows',art:()=>miniBoard('65')},
+    {v:'75',b:'75%',s:'Adds F-keys',art:()=>miniBoard('75')},
+    {v:'tkl',b:'TKL',s:'No numpad',art:()=>miniBoard('tkl')},
+    {v:'full',b:'Full size',s:'Full numpad',art:()=>miniBoard('full')},
+    {v:'any',b:'No preference'}]},
   {key:'feel',title:'How should a key feel to press?',hint:'Feel only: how the key moves under your finger. Sound is the next step.',opts:[
     {v:'Linear',b:'Linear',s:'Smooth and even, top to bottom',art:()=>switchSVG(BYID.milkyyp)},
     {v:'Tactile',b:'Tactile',s:'A bump partway down',art:()=>switchSVG(BYID.u4t)},
@@ -1356,13 +1363,6 @@ const QUESTIONS = [
   {key:'look',title:'Pick a look',opts:[
     {v:'dark',b:'Dark',s:'Black and charcoal',art:()=>capsSVG(BYID.gmkwob)},{v:'light',b:'Light',s:'White and cream',art:()=>capsSVG(BYID.bow)},
     {v:'colorful',b:'Colorful',s:'Bold accents',art:()=>capsSVG(BYID.gmklaser)},{v:'retro',b:'Retro',s:'Vintage beige',art:()=>capsSVG(BYID.devtty)},{v:'surprise',b:'Surprise me',s:'We pick a set for you',art:()=>surpriseSVG()}]},
-  {key:'layout',title:'How big should it be?',opts:[
-    {v:'60',b:'60%',s:'No arrows',art:()=>miniBoard('60')},
-    {v:'65',b:'65%',s:'Adds arrows',art:()=>miniBoard('65')},
-    {v:'75',b:'75%',s:'Adds F-keys',art:()=>miniBoard('75')},
-    {v:'tkl',b:'TKL',s:'No numpad',art:()=>miniBoard('tkl')},
-    {v:'full',b:'Full size',s:'Full numpad',art:()=>miniBoard('full')},
-    {v:'any',b:'No preference'}]},
   {key:'use',title:'What is it for?',opts:[
     {v:'gaming',b:'Gaming',s:'Fast, light presses',art:()=>quizArt('gaming')},{v:'work',b:'Work',s:'Typing and coding',art:()=>quizArt('work')},{v:'any',b:'No preference',s:'A bit of both',art:()=>quizArt('both')}]},
   {key:'wireless',title:'How should it connect?',opts:[
