@@ -27,11 +27,15 @@ const ctx={window:{}};vm.runInNewContext(await readFile(new URL('builder-catalog
 const catalog=ctx.window.SWITCHDECK_CATALOG;
 assert.equal(catalog.switches.length,manifest.builderSwitchCount);assert.equal(catalog.extras.length,manifest.builderExtraCount);
 for(const [k,m] of [['cases','builderCaseCount'],['keycaps','builderKeycapCount'],['stabs','builderStabCount']])assert.equal((catalog[k]||[]).length,manifest[m]??0,k);
-for(const meta of Object.values(catalog.curated||{})){if(meta.photo)assert.equal(new URL(meta.photo.img).protocol,'https:');for(const r of meta.retailers)assert.equal(new URL(r.url).protocol,'https:')}
+// A shown photo must have passed the image check, which records the product's outline in the frame.
+const checkedPhoto=(ph,id)=>{if(ph===null)return;assert.ok(ph&&new URL(ph.img).protocol==='https:','photo url '+id);
+  assert.ok(Array.isArray(ph.box)&&ph.box.length===4&&ph.box.every(v=>Number.isFinite(v)&&v>=0&&v<=100)&&ph.box[2]>0&&ph.box[3]>0&&ph.box[0]+ph.box[2]<=100.01&&ph.box[1]+ph.box[3]<=100.01,'photo frame '+id);
+  assert.ok(Number.isFinite(ph.ar)&&ph.ar>0.2&&ph.ar<8,'photo aspect '+id)};
+for(const [id,meta] of Object.entries(catalog.curated||{})){checkedPhoto(meta.photo??null,id);for(const r of meta.retailers)assert.equal(new URL(r.url).protocol,'https:')}
 const builderIds=new Set();
 for(const b of [...catalog.switches,...catalog.extras,...(catalog.cases||[]),...(catalog.keycaps||[]),...(catalog.stabs||[])]){
   const p=byId.get(b.id.split('~')[0]);assert.ok(p&&p.available,b.id);assert.ok(!builderIds.has(b.id),'duplicate builder id '+b.id);builderIds.add(b.id);
-  assert.ok(b.price>0&&b.photo&&new URL(b.photo.img).protocol==='https:'&&b.retailers.every(r=>new URL(r.url).origin===new URL(p.url).origin),b.id);
+  assert.ok(b.price>0&&b.retailers.every(r=>new URL(r.url).origin===new URL(p.url).origin),b.id);checkedPhoto(b.photo??null,b.id);
 }
 for(const b of catalog.switches){const p=byId.get(b.id.split('~')[0]);assert.ok(!p.specs.system||p.specs.system==='mx-mechanical',b.id);if(!b.id.includes('~'))assert.equal(b.force,p.specs.actuationForceG??null);assert.equal(b.travel,p.specs.totalTravelMm??null);assert.ok(b.packQuantity&&b.packPrice);assert.equal(b.sound,null)}
 for(const b of catalog.cases||[]){const p=byId.get(b.id.split('~')[0]);assert.equal(p.category,'keyboards');assert.ok(['60','65','75','tkl','full'].includes(b.layout));assert.equal(b.kit.pcb.hotswap,p.specs.hotswap??null)}

@@ -2,6 +2,7 @@ import {mkdir,readFile,writeFile,rename} from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
 import path from 'node:path';
 import {SOURCES,CATEGORIES,normalize,builderPart,digest} from './catalog-lib.mjs';
+import {pickPhotos} from './photo-check.mjs';
 
 const root=fileURLToPath(new URL('../',import.meta.url));
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
@@ -30,7 +31,7 @@ async function allowed(source) {
   const matches=rules.filter(r=>new RegExp('^'+r.pattern.split('*').map(s=>s.replace(/[.+?^${}()|[\]\\]/g,'\\$&')).join('.*').replace(/\\\$$/,'$')).test(target)).sort((a,b)=>b.pattern.length-a.pattern.length||Number(b.allow)-Number(a.allow));
   if(matches[0]&&!matches[0].allow)throw Error('Product feed disallowed by robots.txt');
 }
-export async function syncCatalog({offline=false,log=console.log}={}) {
+export async function syncCatalog({offline=false,log=console.log,photos=true}={}) {
   const cache=path.join(root,'.cache');await mkdir(cache,{recursive:true});
   const snapshots=[];let cursor=0;
   // Three stores at once; requests within a store are serial and rate limited.
@@ -70,13 +71,34 @@ export async function syncCatalog({offline=false,log=console.log}={}) {
     files.push({name,body:JSON.stringify(chunk)});
     for(const p of chunk)index.push({id:p.id,name:p.name,brand:p.brand,category:p.category,sourceId:p.sourceId,retailer:p.retailer,image:p.images[0],price:p.priceMin,priceMax:p.priceMax,currency:p.currency,available:p.available,url:p.url,specs:p.specs,missingFields:p.missingFields,shard:name});
   }
-  const builder=products.flatMap(p=>builderPart(p)||[]),pick=c=>builder.filter(p=>p.cat===c);
-  const switches=pick('switches'),extras=pick('extras'),cases=pick('case'),keycaps=pick('keycaps'),stabs=pick('stabs');
+  let builder=products.flatMap(p=>builderPart(p)||[]);
   const matches=JSON.parse(await readFile(path.join(root,'scripts/curated-matches.json'),'utf8'));
+  const byId=new Map(products.map(p=>[p.id,p]));
   const curated=Object.fromEntries(Object.entries(matches).map(([id,ids])=>{
-    const listings=ids.map(id=>products.find(p=>p.id===id)).filter(Boolean).sort((a,b)=>Number(b.available)-Number(a.available));
-    return [id,{photo:listings[0]?{img:listings[0].images[0],page:listings[0].url}:null,retailers:listings.map(p=>({name:p.retailer,url:p.url,available:p.available}))}];
+    const listings=ids.map(id=>byId.get(id)).filter(Boolean).sort((a,b)=>Number(b.available)-Number(a.available));
+    return [id,{photo:listings[0]?{img:listings[0].images[0],page:listings[0].url}:null,retailers:listings.map(p=>({name:p.retailer,url:p.url,available:p.available})),listings}];
   }));
+  // Every photo the site shows must pass the image check: a clear, uncluttered shot of the product,
+  // framed to its outline. A part with no passing photo is drawn as an icon instead.
+  if(photos){
+    const site=await readFile(path.join(root,'index.html'),'utf8');
+    const sitePhoto=id=>site.match(new RegExp(`'${id}':\\{img:'([^']+)'`))?.[1];
+    const siteLayout=id=>site.match(new RegExp(`id:'${id}'[^\\n]*?layout:'(\\w+)'`))?.[1];
+    const kind=c=>c==='keyboards'||c==='cases'?'case':['switches','keycaps','stabs'].includes(c)?c:'extras';
+    const uniq=a=>[...new Set(a.filter(Boolean))].slice(0,10);
+    const jobs=[
+      ...builder.map(b=>({key:'b:'+b.id,cat:b.cat,layout:b.layout,urls:uniq([b.photo?.img,...(byId.get(b.id.split('~')[0])?.images||[])])})),
+      ...Object.entries(curated).map(([id,m])=>({key:'c:'+id,cat:kind(m.listings[0]?.category),layout:siteLayout(id),urls:uniq([sitePhoto(id),...m.listings.flatMap(p=>p.images)])})),
+    ];
+    const chosen=await pickPhotos(jobs,{cacheFile:path.join(cache,'photo-checks.json'),log});
+    builder=builder.map(b=>({...b,photo:chosen.get('b:'+b.id)||null}));
+    for(const [id,m] of Object.entries(curated)){const ph=chosen.get('c:'+id); m.photo=ph?{...ph,page:m.listings[0].url}:null}
+    const shown=new Map(builder.filter(b=>b.photo).map(b=>[b.id.split('~')[0],b.photo.img]));
+    for(const e of index) if(shown.has(e.id)) e.image=shown.get(e.id);
+  }
+  for(const m of Object.values(curated)) delete m.listings;
+  const pick=c=>builder.filter(p=>p.cat===c);
+  const switches=pick('switches'),extras=pick('extras'),cases=pick('case'),keycaps=pick('keycaps'),stabs=pick('stabs');
   const manifest={schemaVersion:1,generatedAt:new Date().toISOString(),listingCount:products.length,inStockCount:products.filter(p=>p.available).length,builderSwitchCount:switches.length,builderExtraCount:extras.length,builderCaseCount:cases.length,builderKeycapCount:keycaps.length,builderStabCount:stabs.length,categories:Object.fromEntries(Object.entries(CATEGORIES).map(([id,label])=>[id,{label,count:products.filter(p=>p.category===id).length}])),sources:snapshots.map(({source,snapshot,status,error})=>({...source,status,checkedAt:snapshot.checkedAt,rawProducts:snapshot.products.length,listings:products.filter(p=>p.sourceId===source.id).length,...(error?{error}:{})})),shards:files.map(f=>f.name),fingerprint:digest(products)};
   // Write dependent data first and publish the manifest last.
   for(const f of files)await writeFile(path.join(dir,f.name),f.body+'\n');

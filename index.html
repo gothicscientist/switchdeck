@@ -133,18 +133,11 @@ h1,h2,h3{text-wrap:balance;margin:0;font-weight:700;letter-spacing:-.02em}
 .bticks span{position:absolute;transform:translateX(-50%)}
 .bticks span:first-child{transform:none}.bticks span:last-child{transform:translateX(-100%)}
 
-/* maker photos */
-.ph{display:block;position:relative;width:100%}
-.ph>svg{display:none}.ph.err>img{display:none}.ph.err>svg{display:block}
-.ph img{display:block;width:100%;height:auto}
-.ph.clean.field,.ph.clean.stage,.ph.clean.detail{background:var(--bg);isolation:isolate}
-.ph.clean img{mix-blend-mode:multiply;filter:none!important}
-.ph.field img,.ph.thumb img{aspect-ratio:2.6/1;object-fit:cover}
-.ph.thumb{flex:initial;width:100%;height:auto;padding:0;border-radius:0;background:none;overflow:visible}
-.ph.thumb img,.ph.thumb svg{height:auto}
-.ph.clean.detail img,.ph.clean.stage img{aspect-ratio:2.3/1;object-fit:cover}
-.ph.scene img{border-radius:14px;aspect-ratio:4/3;object-fit:cover;max-height:440px}
-.fitem .ph img{filter:none}
+/* product photos: drawn in an SVG frame cropped to the product's checked outline, so they can never overflow */
+.pf{display:contents}
+.pf:not(.err)>.pf-alt,.pf.err>.pf-photo{display:none}
+.pf.white>.pf-photo{mix-blend-mode:multiply}
+.pf-photo{overflow:hidden}
 .credit{position:absolute;left:14px;bottom:12px;font-size:11px;color:var(--faint)}
 .boardwrap{position:relative}
 .stagetoggle{position:absolute;top:14px;right:14px;display:flex;background:var(--surface);border-radius:9px;padding:3px;box-shadow:var(--shadow-sm)}
@@ -712,7 +705,7 @@ for(const [id,ph] of Object.entries(PHOTOS)){const p=[...CASES,...SWITCHES,...KE
 const FINDER_CASES=[...CASES];
 const ALLPARTS = [...CASES,...PCBS,...PLATES,...SWITCHES,...KEYCAPS,...STABS,...EXTRAS];
 // Reviewed, version-specific matches enrich existing parts without replacing kit prices or fit rules.
-for(const [id,meta] of Object.entries(window.SWITCHDECK_CATALOG?.curated||{})){const p=ALLPARTS.find(p=>p.id===id);if(p&&meta.photo){p.photo={...p.photo,...meta.photo,clean:false};p.retailers=meta.retailers}}
+for(const [id,meta] of Object.entries(window.SWITCHDECK_CATALOG?.curated||{})){const p=ALLPARTS.find(p=>p.id===id);if(p&&meta.retailers){p.photo=meta.photo?{...meta.photo}:(p.photo&&{page:p.photo.page});p.retailers=meta.retailers}}
 const BYID = Object.fromEntries(ALLPARTS.map(p=>[p.id,p]));
 
 const SLOTS = [
@@ -990,25 +983,28 @@ function extraSVG(e){
 }
 function thumbFor(p,b){
   if(!p) return '';
-  if(p.photo?.img)return `<img class="catalog-thumb" src="${esc(p.photo.img)}" alt="${esc(p.name)}" loading="lazy" decoding="async" onerror="this.hidden=true">`;
   if(p.cat==='case') return caseVisual({case:p.id,color:0,keycaps:null,extras:[]},'thumb');
-  if(p.cat==='switches') return switchSVG(p);
-  if(p.cat==='keycaps') return capsSVG(p);
-  if(p.cat==='plate') return plateSVG(p.material);
-  if(p.cat==='pcb') return pcbSVG(p);
-  if(p.cat==='stabs') return stabSVG(p);
-  if(p.cat==='extras') return extraSVG(p);
-  return '';
+  const icon=p.cat==='switches'?switchSVG(p):p.cat==='keycaps'?capsSVG(p):p.cat==='plate'?plateSVG(p.material):p.cat==='pcb'?pcbSVG(p):p.cat==='stabs'?stabSVG(p):p.cat==='extras'?extraSVG(p):'';
+  return framedPhoto(p.photo,p.name,icon,240);
 }
 let stageMode='photo';
 function caseVisual(b,kind){
   const c=caseOf(b); if(!c) return '';
   const small=kind==='field'||kind==='thumb';
   const svg=buildBoard(b,{legends:!small,u:small?20:40,cls:''});
-  const p=c.photo; if(!p||!p.img||(small&&!p.clean&&!c.catalogId)) return svg;
-  const w={thumb:240,field:520,detail:1100,stage:1400}[kind];
-  const src=new URL(p.img);src.searchParams.set('width',w);
-  return `<span class="ph ${kind} ${p.clean?'clean':'scene'}"><img src="${esc(src.href)}" alt="${esc(c.brand+' '+c.name)}" loading="lazy" decoding="async" style="object-position:${p.pos||'50% 50%'}" onerror="this.parentNode.classList.add('err')">${svg}</span>`;
+  return framedPhoto(c.photo,`${c.brand} ${c.name}`,svg,{thumb:240,field:520,detail:1100,stage:1400}[kind]);
+}
+// The only way a product photo reaches the page. A photo shows only if the catalog's image check
+// passed it and recorded the product's outline (box, as % of the image, and its aspect ratio ar);
+// otherwise, or if it fails to load, the drawn icon shows instead.
+let pfSeq=0;
+function framedPhoto(ph,alt,icon,width=400){
+  if(!ph||!ph.img||!Array.isArray(ph.box)||!(ph.ar>0)) return icon;
+  const [bx,by,bw,bh]=ph.box.map(v=>v/100), ar=ph.ar, pad=0.05, id='pf'+(++pfSeq);
+  let src=ph.img; try{const u=new URL(ph.img); if(u.hostname==='cdn.shopify.com') u.searchParams.set('width',width); src=u.href}catch{return icon}
+  const white=!ph.bg||(([r,g,b_])=>Math.min(r,g,b_)>=228)([1,3,5].map(i=>parseInt(ph.bg.slice(i,i+2),16)));
+  const n=v=>+v.toFixed(4);
+  return `<span class="pf${white?' white':''}"><svg class="pf-photo" viewBox="${n(-pad)} ${n(-pad)} ${n(ar+2*pad)} ${n(1+2*pad)}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="${esc(alt)}"><clipPath id="${id}"><rect width="${n(ar)}" height="1"/></clipPath><image href="${esc(src)}" clip-path="url(#${id})" x="${n(-bx/bw*ar)}" y="${n(-by/bh)}" width="${n(ar/bw)}" height="${n(1/bh)}" preserveAspectRatio="none" onerror="this.closest('.pf').classList.add('err')"/></svg><span class="pf-alt">${icon}</span></span>`;
 }
 function buildBoard(b,opts={}){
   const c=caseOf(b); if(!c) return null;
@@ -1021,7 +1017,7 @@ function buildBoard(b,opts={}){
    ========================================================= */
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function money(n){return '$'+(Math.round(n*100)/100).toLocaleString('en-US',{minimumFractionDigits:n%1?2:0,maximumFractionDigits:2})}
-function shopLink(p){if(p.photo&&p.photo.page) return p.photo.page; const u=SHOPS[p.brand]||SHOPS.Various; return u.includes('google.com/search')&&p.brand==='Various'?u+encodeURIComponent(p.name):u}
+function shopLink(p){if(p.photo&&p.photo.page) return p.photo.page; if(p.catalogId&&p.retailers?.[0]) return p.retailers[0].url; const u=SHOPS[p.brand]||SHOPS.Various; return u.includes('google.com/search')&&p.brand==='Various'?u+encodeURIComponent(p.name):u}
 function searchLink(p){return 'https://www.google.com/search?tbm=shop&q='+encodeURIComponent(`${p.brand==='Various'?'':p.brand+' '}${p.name}`)}
 function specChips(p){
   const ch=[];
@@ -1485,7 +1481,7 @@ function renderRDetail(){
   const items=lineItems(b), SL=k=>SLOTS.find(x=>x.key===k).label;
   const sub=i=>i.slot==='switches'?`${i.qty} × ${money(i.part.price)}`:i.slot==='keycaps'&&i.addon?`incl. ${money(i.addon)} numpad kit`:i.slot==='stabs'?`${layoutOf(b)==='full'?7:5}-stab set`:'';
   const desc=p=>p.cat==='case'?[LAYOUT_NAMES[p.layout],p.material,p.mount&&p.mount+' mount',p.assembled?'sold assembled':p.kit&&'kit'].filter(Boolean).join(' · '):p.cat==='switches'?`${p.type} · ${p.force} g · ${p.pins}-pin`:p.cat==='keycaps'?`${p.profile} profile · ${p.material} · ${p.legends}`:p.cat==='pcb'?`${p.hotswap?'Hot-swap':'Solder'} · ${p.pins}-pin`:p.cat==='plate'?p.material:p.blurb||'';
-  let rows=items.map((i,n)=>`<div class="part" style="--i:${n}"><span class="pt">${i.slot==='case'?buildBoard({case:c.id,color:b.color||0,keycaps:null,extras:[]},{legends:false,u:10,cls:''}):thumbFor(i.part)}</span>
+  let rows=items.map((i,n)=>`<div class="part" style="--i:${n}"><span class="pt">${i.slot==='case'?caseVisual({case:c.id,color:b.color||0,keycaps:null,extras:[]},'thumb'):thumbFor(i.part)}</span>
       <div class="pn"><small>${esc(SL(i.slot))}</small><b>${esc(i.part.brand==='Various'?'':i.part.brand+' ')}${esc(i.part.name)}</b><em>${esc(desc(i.part))}</em></div>
       <div class="pp">${money(i.price)}${sub(i)?`<small>${esc(sub(i))}</small>`:''}</div>
       <div class="stores">${i.slot==='switches'?listenBtn('part:'+i.part.id)+soundSearchLink(i.part):''}${i.slot==='keycaps'&&quizAns.look==='surprise'?'<button type="button" class="listen" id="reroll">↻ Shuffle</button>':''}${storeChips(i.part)}</div></div>`);
@@ -1495,7 +1491,7 @@ function renderRDetail(){
   const el=document.getElementById('rdetail');
   el.innerHTML=`<button class="iconbtn rclose" id="rclose" aria-label="Close">${icon('close')}</button>
     <div class="rsum swapin">
-      <div class="board">${c.catalogId&&c.photo?.img?caseVisual(b,'detail'):buildBoard(b,{legends:true,u:34,cls:''})}</div>
+      <div class="board">${caseVisual(b,'detail')}</div>
       <div><h2>${esc(c.brand)} ${esc(c.name)}</h2></div>
       <div class="total"><b>${money(r.t)}</b><span>approx. for every part</span></div>
       <div class="stats3"><div><span>Match</span><b>${r.pct}%</b></div><div><span>Sound</span><b>${pitchWord(r.e.pitch)}</b></div><div><span>Feel</span><b>${esc(s?s.type:'As shipped')}</b></div></div>
@@ -1524,7 +1520,7 @@ function renderBuilder(){
   document.getElementById('buildname').value=build.name||'My keyboard';
   document.getElementById('buildeyebrow').textContent = build.example?'Example build · edit anything':'Your build';
   const sb=document.getElementById('stageboard');
-  const hasPhoto=!!(c&&c.photo&&c.photo.img);
+  const hasPhoto=!!(c&&c.photo&&c.photo.box);
   sb.innerHTML = c? `<div class="swap">${hasPhoto&&stageMode==='photo'?caseVisual(build,'stage'):buildBoard(build)}</div>${hasPhoto?`<div class="stagetoggle" role="group" aria-label="Preview type"><button aria-pressed="${stageMode==='photo'}" data-stage="photo">Photo</button><button aria-pressed="${stageMode!=='photo'}" data-stage="render">Your build</button></div>${stageMode==='photo'?`<span class="credit">Photo: ${esc(c.brand)}</span>`:''}`:''}` : `<div class="empty"><p style="margin:0 0 10px">Start with a case or kit. It sets the layout for everything else.</p><button class="btn primary" data-pick="case">Choose a case</button></div>`;
   const sw=document.getElementById('swatches');
   sw.innerHTML = c? `<span>Case color</span>${c.colors.map(([n,h],i)=>`<button class="sw" style="background:${h}" title="${esc(n)}" aria-label="${esc(n)}" aria-pressed="${(build.color||0)===i}" data-color="${i}"></button>`).join('')}<span class="mono" style="margin-left:auto">${LAYOUT_NAMES[c.layout]} · ${c.keys} keys${c.knob?' + knob':''}</span>`:'';

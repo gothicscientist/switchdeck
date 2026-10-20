@@ -9,7 +9,7 @@ concurrency:
 jobs:
   refresh:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -20,6 +20,7 @@ jobs:
           path: .cache
           key: catalog-snapshots-${{ github.run_id }}
           restore-keys: catalog-snapshots-
+      - run: npm ci
       - run: npm run catalog:sync
       - run: npm run catalog:check
       - run: npm test
