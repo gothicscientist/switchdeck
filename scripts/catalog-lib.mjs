@@ -178,6 +178,21 @@ export function normalize(p,source,checkedAt) {
 }
 export function requiredFields(cat) {return {switches:['type','system','pins','actuationForceG','totalTravelMm'],keycaps:['profile','material','legends'],keyboards:['layout','material','mount','connection'],cases:['layout','material','mount'],pcb:['layout','hotswap'],plate:['layout','material'],stabs:['mount']}[cat]||[]}
 const titleCase=t=>t.replace(/\b\w/g,c=>c.toUpperCase());
+// Sound character from the published housing and stem materials, following the usual rule of thumb: nylon, POM and
+// polyethylene housings sound deeper and more muted, polycarbonate and POK brighter and clackier, and long-pole stems
+// clack. The bottom housing counts most because it takes the bottom-out. Returns 'deep', 'bright', or null when the
+// materials are mixed or not published.
+export function soundFromMaterials(top,bottom,stem){
+  const tone=m=>{const x=String(m||'').toLowerCase(); if(!x) return 0;
+    if(/\bpc\b|polycarbonate|\bpok\b/.test(x)) return -1;
+    if(/nylon|\bpa\s?\d*\b|pa66|pa12|\bpom\b|\bu?h?m?w?pe\b|upe|uhmwpe|\bhpe\b|milky/.test(x)) return 1;
+    return 0};
+  const st=String(stem||'').toLowerCase();
+  const stemTone=/\bpok\b|extended|long[- ]?pole/.test(st)?-1:/upe|uhmwpe|umpe|\bhpe\b|\bpe\b/.test(st)?1:0;
+  if(!top&&!bottom&&!stem) return null;
+  const score=tone(top)+1.5*tone(bottom)+stemTone;
+  return score>=1.5?'deep':score<=-1.5?'bright':null;
+}
 const switchType=t=>{const x=String(t||'').toLowerCase(); return /silent/.test(x)?(/tactile/.test(x)?'Silent tactile':'Silent linear'):/clicky/.test(x)?'Clicky':/tactile/.test(x)?'Tactile':/linear/.test(x)?'Linear':null};
 const live=p=>p.variants.filter(v=>v.available);
 // Keychron's low-profile and slim lines take low-profile switches; their names don't always say so.
@@ -417,8 +432,8 @@ function switchesRule(p) {
     const pins=s.pins??num((published(p,/pin/i)||'').match(/([35])\s*-?\s*pin/i)?.[1])??num((p.name.match(/\b([35])\s?-?pins?\b/i)||[])[1]);
     const lube=published(p,/lube|lubed/i);
     return {...base(p,v),id:split?p.id+'~'+v.id:p.id,name:shortName(p.name,cleanBrand(p))+(split?' · '+label:''),cat:'switches',type,force,bottom,travel:s.totalTravelMm??num((published(p,/total travel/i)||'').match(/\d+(?:\.\d+)?/)?.[0])??null,pins:pins??null,price:v.unitPrice,packPrice:v.price,packQuantity:v.quantity,
-      factory:s.factoryLubed??(lube&&/^yes|factory|pre/i.test(lube)?true:lube&&/^no|un/i.test(lube)?false:null),sound:null,switchSystem,vol:/Silent/.test(type)?15:type==='Clicky'?85:50,verified,
-      blurb:'Published retailer specs. '+(perSwitch?'Priced per switch.':v.quantity+' per pack.')+(verified?'':' Some specs are not listed by the store.')+' Sound and preview colors are illustrative.'};
+      factory:s.factoryLubed??(lube&&/^yes|factory|pre/i.test(lube)?true:lube&&/^no|un/i.test(lube)?false:null),sound:soundFromMaterials(s.topHousing,s.bottomHousing,s.stemMaterial),switchSystem,vol:/Silent/.test(type)?15:type==='Clicky'?85:50,verified,
+      blurb:'Published retailer specs. '+(perSwitch?'Priced per switch.':v.quantity+' per pack.')+(verified?'':' Some specs are not listed by the store.')+(s.topHousing||s.bottomHousing||s.stemMaterial?' Sound estimated from the housing and stem materials.':'')+' Preview colors are illustrative.'};
   };
   if(groups.size===1) {const r=part([...groups.values()][0],false); return r?{parts:r}:{reason:'no switch type'}}
   const parts=[...groups.values()].map(v=>part(v,true)).filter(Boolean);

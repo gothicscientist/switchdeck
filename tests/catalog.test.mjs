@@ -147,3 +147,13 @@ test('builder case parts use the short board name and a clean brand',()=>{
   const k=builderPart(p);assert.equal(k.cat,'case');assert.equal(k.brand+' '+k.name,'Lemokey X1');
 });
 
+test('switch sound character comes only from published housing and stem materials',async()=>{
+  const {soundFromMaterials:f}=await import('../scripts/catalog-lib.mjs');
+  assert.equal(f('POM','POM','POM'),'deep','full POM');
+  assert.equal(f('Nylon','Nylon PA66','POM'),'deep','full nylon');
+  assert.equal(f('PC','PC','POM, extended'),'bright','PC with a long-pole stem');
+  assert.equal(f('Polycarbonate','Polycarbonate','POK'),'bright');
+  assert.equal(f('PC','Nylon','POM'),null,'classic mixed housing stays balanced');
+  assert.equal(f(null,null,null),null,'nothing published, nothing guessed');
+  assert.equal(f('Proprietary ink','Proprietary ink','P3'),null,'unknown materials stay unknown');
+});
