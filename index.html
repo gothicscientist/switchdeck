@@ -229,6 +229,8 @@ h1,h2,h3{text-wrap:balance;margin:0;font-weight:700;letter-spacing:-.02em}
 .ractions .btn{width:100%;padding:9px 12px;font-size:13px}
 .rclose{position:absolute;top:12px;left:12px;z-index:2;background:color-mix(in srgb,var(--surface) 70%,transparent)}
 .rlist{overflow:auto;padding:0}
+/* Match %: muted green, amber or red by score (95+ strong, 85-94 middling, under 85 weak). */
+.rlist .pct.g{color:#3F7D52}.rlist .pct.y{color:#9A7316}.rlist .pct.r{color:#A8493D}
 .rlist button{width:100%;border:0;background:transparent;display:grid;grid-template-columns:52px minmax(0,1fr) auto;align-items:center;gap:12px;padding:12px 16px;text-align:left;transition:background .2s;animation:fadeUp .4s var(--out) both;animation-delay:calc(var(--i,0) * 30ms)}
 .rlist button:hover{background:var(--tile)}
 .rlist button[aria-current="true"]{background:var(--tile-hover)}
@@ -1948,9 +1950,10 @@ function closeResults(){
 }
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!document.getElementById('results').hidden) closeResults()});
 let rShown=60;
+const pctTone=p=>p>=95?'g':p>=85?'y':'r';
 function renderRList(){
   const el=document.getElementById('rlist'); rShown=Math.max(rShown,resIdx+1);
-  el.innerHTML=resList.slice(0,rShown).map((r,i)=>{const c=caseOf(r.b);return `<button style="--i:${i}" data-ri="${i}" aria-current="${i===resIdx}"><span class="rthumb">${caseVisual(r.b,'thumb')}</span><span style="min-width:0"><b>${esc(partName(c))}</b><small>${money(r.t)}</small></span>${i===0?'<span class="best">Best match</span>':`<small>${r.pct}%</small>`}</button>`}).join('')+(resList.length>rShown?`<button class="rmore" id="rmore" style="grid-template-columns:1fr;text-align:center"><small>Show more (${resList.length-rShown} left)</small></button>`:'');
+  el.innerHTML=resList.slice(0,rShown).map((r,i)=>{const c=caseOf(r.b);return `<button style="--i:${i}" data-ri="${i}" aria-current="${i===resIdx}"><span class="rthumb">${caseVisual(r.b,'thumb')}</span><span style="min-width:0"><b>${esc(partName(c))}</b><small>${money(r.t)}</small></span>${i===0?'<span class="best">Best match</span>':`<small class="pct ${pctTone(r.pct)}">${r.pct}%</small>`}</button>`}).join('')+(resList.length>rShown?`<button class="rmore" id="rmore" style="grid-template-columns:1fr;text-align:center"><small>Show more (${resList.length-rShown} left)</small></button>`:'');
   const more=el.querySelector('#rmore'); if(more) more.onclick=()=>{rShown+=60; const st=el.scrollTop; renderRList(); el.scrollTop=st};
   el.querySelectorAll('[data-ri]').forEach(b=>b.onclick=()=>{resIdx=+b.dataset.ri; el.querySelectorAll('[data-ri]').forEach(x=>x.setAttribute('aria-current',x===b)); renderRDetail()});
 }
