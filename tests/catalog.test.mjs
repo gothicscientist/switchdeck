@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import vm from 'node:vm';
-import {normalize,extractSpecs,category,packQuantity,builderPart,SOURCES} from '../scripts/catalog-lib.mjs';
+import {normalize,extractSpecs,category,packQuantity,builderPart,boardName,SOURCES} from '../scripts/catalog-lib.mjs';
 
 const source=SOURCES[1];
 const raw=(changes={})=>({id:123,title:'Gateron Example Linear Switches',handle:'example-switch',vendor:'Gateron',product_type:'Switches',tags:['MX Switch'],body_html:'<ul><li>Actuation: 45g</li><li>Total Travel: 3.6mm</li><li>5-Pin, PCB Mount</li><li>18 included in each pack</li></ul>',images:[{src:'https://cdn.shopify.com/example.jpg'}],options:[],variants:[{id:456,title:'18 Set',price:'9.00',available:true}],...changes});
@@ -99,4 +99,42 @@ test('lubed switch packs, LEDs, films, badges and hardware packs are never board
     assert.notEqual(cat(t),'keyboards',t);
   for(const t of ['One 2 Mini v2 RGB LED 60% Double Shot PBT Mechanical Keyboard','QK65 V2 Classic by Qwertykeys - Custom Keyboard Kit'])
     assert.equal(cat(t),'keyboards',t);
+});
+test('board names keep only brand and model',()=>{
+  const shown=(title,brand,retailer)=>{const b=boardName(title,brand,retailer);return b.brand+' '+b.name};
+  const cases=[
+    ['Keychron Q1 Pro QMK/VIA Wireless Custom Mechanical Keyboard','Keychron','Keychron Q1 Pro'],
+    ['Keychron Q65 Max QMK/VIA Wireless Custom Mechanical Keyboard','Keychron','Keychron Q65 Max'],
+    ['Keychron V1 Max 75% Hotswap Wireless Keyboard','Keychron','Keychron V1 Max'],
+    ['Keychron Q1 Ultra 8K Aluminum 75% Wireless Keyboard','Keychron','Keychron Q1 Ultra 8K'],
+    ['Lemokey X1 QMK/VIA Wired Mechanical Keyboard','Lemokey X series','Lemokey X1'],
+    ['Lemokey L1 QMK/VIA Wireless Custom Gaming Keyboard','L series','Lemokey L1'],
+    ['Keyboard 81 Pro QMK/VIA Wireless Custom Mechanical Keyboard','Q Pro series','Keychron 81 Pro','Keychron'],
+    ['Meko Blink 60% Hotswap Bluetooth RGB Mechanical Keyboard','Meko','Meko Blink'],
+    ['Meko Push White 65% Hotswap Bluetooth RGB Double Shot ABS Mechanical Keyboard','Meko','Meko Push'],
+    ['Ducky One 3 Mini Aura Clear Black 60% Hotswap RGB LED Double Shot ABS Mechanical Keyboard','Ducky','Ducky One 3 Mini'],
+    ['Odin Gaming Nova 65 Black Aluminum Barebones 65% Hotswap RGB Mechanical Keyboard','Odin Gaming','Odin Gaming Nova 65'],
+    ['Qwertykeys Neo60 Core Keyboard Kit','Qwertykeys','Qwertykeys Neo60 Core'],
+    ['Meletrix Zoom65 V3 - Barebones Keyboard Kit [Batch 2]','Meletrix','Meletrix Zoom65 V3'],
+    ['QK65 V2 Classic by Qwertykeys - Custom Keyboard Kit','Dangkeebs','Qwertykeys QK65 V2'],
+    ['KBDfans Athena 75 with PBTfans Klein Blue R3','KBDfans','KBDfans Athena 75'],
+    ['Epomaker Bridge75 R3 Hotswap Wireless RGB Mechanical Keyboard','Epomaker','Epomaker Bridge75 R3'],
+    ['Keychron K8 QMK Wireless Mechanical Keyboard (Version 2)','Keychron','Keychron K8 Version 2'],
+    ['Hexgears Nova Aluminum TKL RGB Laser Etched ABS Mechanical Keyboard','Hexgears','Hexgears Nova TKL'],
+  ];
+  for(const [title,brand,want,retailer] of cases) assert.equal(shown(title,brand,retailer),want,title);
+  // Different models stay different; same model in another colour collapses to the same name.
+  assert.notEqual(shown('Keychron Q1 Pro QMK/VIA Wireless Custom Mechanical Keyboard','Keychron'),shown('Keychron Q1 Max QMK/VIA Wireless Custom Mechanical Keyboard','Keychron'));
+  assert.notEqual(shown('Keychron K8 QMK Wireless Mechanical Keyboard','Keychron'),shown('Keychron K8 QMK Wireless Mechanical Keyboard (Version 2)','Keychron'));
+  assert.equal(shown('Meko Blink White 60% Hotswap Bluetooth RGB Mechanical Keyboard','Meko'),shown('Meko Blink 60% Hotswap Bluetooth RGB Mechanical Keyboard','Meko'));
+});
+test('board name never ends up empty and never splits a model code',()=>{
+  for(const title of ['Custom Mechanical Keyboard','Keychron Mechanical Keyboard','Wireless Keyboard Kit','X']) {
+    const b=boardName(title,'Keychron');assert.ok(b.name.trim().length>0,title);
+  }
+  assert.equal(boardName('Keychron Bridge75 R3 Wireless Keyboard','Keychron').name,'Bridge75 R3');
+});
+test('builder case parts use the short board name and a clean brand',()=>{
+  const p=normalize(raw({title:'Lemokey X1 QMK/VIA Wired Mechanical Keyboard',product_type:'Keyboard Kit',vendor:'Lemokey X series',body_html:'<li>Layout: 75%</li><li>Hot-swap PCB</li><li>Mount: Gasket</li>',options:[{name:'Color',values:['Black']}],variants:[{id:1,title:'Barebone / Black',price:'149',available:true},{id:2,title:'Assembled / Black',price:'169',available:true}]}),source,'2026-10-19T00:00:00Z');
+  const k=builderPart(p);assert.equal(k.cat,'case');assert.equal(k.brand+' '+k.name,'Lemokey X1');
 });

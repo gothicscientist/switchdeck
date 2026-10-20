@@ -151,6 +151,48 @@ const LOCALE=/\bISO\b|\bJIS\b|\bDE\b|\bFR\b|\bUK\b|nordic|spanish|german|french|
 const tidy=v=>v?String(v).replace(/[.;,\s]+$/,'').slice(0,40):null;
 const cleanBrand=(p)=>{const b=String(p.brand).replace(/,?\s*(?:LLC|Inc\.?|Ltd\.?)$/i,'').trim(); return /^(?:Z-|third party|default|vendor)/i.test(b)?p.retailer:b};
 const shortName=(name,brand)=>{const n=String(name).replace(new RegExp('^'+brand.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'\\s+','i'),'');return n.length>2?n:name};
+// Builder boards read "<brand> <model>" in the UI, so a case name keeps only the model: the listing's
+// marketing detail (switch/wireless/RGB/kit wording, layout, colours, finishes, "by <Maker>") is dropped.
+// Words that end the model name; anything after the first one is detail.
+const BOARD_CUT=/^(?:mechanical|keyboards?|keybaord|kits?|custom|bare-?bones?|diy|hot-?swap(?:pable|ped)?|wireless|wired|bluetooth|rgb|led|backlit|backlight(?:ed)?|qmk(?:\/via)?|via|vial|double|double-?shot|triple|pbt|abs|dye|dye-sub|quick|aluminum|aluminium|cnc|prebuilt|pre-?built|pre|assembled|fully|with|w\/|tri-?mode|dual-?mode|2\.4g(?:hz)?|2\.4|win|mac|bundle|ultra-slim|foldable|vintage|inductive|laser|polycarbonate|multi|none)$/;
+// Words removed wherever they appear after the first model word: layout, edition, colour and finish words.
+const BOARD_DROP=/^(?:\d{2,3}%|\d+-?keys?|tkl|tenkeyless|full|full-?size|size|compact|gaming|edition|limited|special|classic|mx|version|black|white|silver|gr[ae]y|navy|blue|pink|purple|lavender|green|olive|red|beige|cream|yellow|orange|gold|brown|teal|mint|clear|transparent|dark|light|carbon|shell|frosted|crystal|ice|border|matte|anodized|polished|brushed|sandblasted|ash|pine|jet|deep|ocean|coral|latte|pd|matcha|aura|daybreak|cosmic|pure|pudding)$/;
+export function boardName(title,brand,retailer='') {
+  let t=String(title).replace(/\[[^\]]*\]/g,' ');
+  const ver=t.match(/\(?\bVersion\s*(\d+)\)?/i); if(ver) t=t.replace(ver[0],' ');
+  t=t.replace(/\([^)]*\)/g,' ').replace(/\b(?:round|batch)\s+\d+\b/gi,' ').replace(/\b(?:side|front)[- ]print(?:ed)?\b/gi,' ').replace(/\bhot[- ]swap(?:pable)?\b/gi,'hotswap').replace(/\bpre[- ]built\b/gi,'prebuilt').replace(/\b(?:x\s+MK|MK\s+x)\b/g,' ')
+    .replace(/^\s*(?:warehouse find|in[- ]stock|pre-?order|group buy)\s*:?\s*/i,'');
+  const by=t.match(/\s+by\s+([A-Z][\w.'&]*)/); if(by){t=t.replace(by[0],' '); brand=by[1]}
+  const parts=t.split(/\s[-–—|]\s/); t=parts[0].trim()||parts.join(' ');
+  let tokens=t.split(/\s+/).filter(Boolean), b=String(brand||'').replace(/\s+(?:pre-?order)$/i,'').trim();
+  // "Lemokey X series" / "L series" / "Q Pro series" are product lines, not makers.
+  if(/\sseries$/i.test(b)||/^(?:collaboration|mechanical keyboards?)$/i.test(b)){
+    const w=b.split(/\s+/)[0];
+    b=tokens[0]&&tokens[0].toLowerCase()===w.toLowerCase()?w:/^lemokey$/i.test(tokens[0]||'')?tokens[0]:(retailer||b);
+  }
+  const bt=b.split(/\s+/).filter(Boolean);
+  if(bt.length&&bt.length<tokens.length&&bt.every((w,i)=>w.toLowerCase()===tokens[i].toLowerCase())) tokens=tokens.slice(bt.length);
+  const afterBrand=tokens.join(' ');
+  if(tokens.length>1&&/^(?:inc\.?|llc|ltd\.?)$/i.test(tokens[0])) tokens.shift();
+  const tkl=tokens.slice(1).some(w=>/^(?:tkl|tenkeyless)$/i.test(w));
+  while(tokens.length>1&&BOARD_CUT.test(tokens[0].toLowerCase())) tokens.shift();
+  const keep=[];
+  for(let i=0;i<tokens.length;i++){
+    const w=tokens[i].toLowerCase().replace(/[,.;:]+$/,'');
+    if(i>0&&BOARD_CUT.test(w)) break;
+    if(i>0&&(BOARD_DROP.test(w)||w.includes('/')&&w.split('/').every(x=>BOARD_DROP.test(x)))){ keep.push(null); continue }
+    keep.push(tokens[i]);
+  }
+  // A "/" or "+" between dropped words ("Navy / Blue", "Win + Mac") goes with them.
+  const out=keep.filter((x,i)=>x!==null&&!(/^(?:[\/+&-]|and)$/i.test(x)&&(keep[i-1]===null||keep[i+1]===null)));
+  while(out.length&&/^[-–—:,.;\/+&]+$/.test(out[out.length-1])) out.pop();
+  // A lone plain word ("Tofu TKL", "Freebird TKL") needs its size to stay identifiable.
+  if(tkl&&out.some(w=>/^[A-Za-z]{3,}$/.test(w))&&!out.some(w=>/\d/.test(w.replace(/^R\d$/i,'')))&&out.length<=2&&!/\bTKL\b/i.test(out.join(' '))) out.push('TKL');
+  let model=out.join(' ').replace(/[\s,.;:\-–—]+$/,'');
+  if(ver&&model) model+=' Version '+ver[1];
+  if(!model) model=afterBrand.replace(/[\s,.;:\-–—]+$/,'')||String(title).trim()||String(brand||'');
+  return {brand:b||String(brand||''),name:model};
+}
 const cheapest=vs=>vs.slice().sort((a,b)=>a.price-b.price)[0];
 // Kept compact: the site fills catalogId, photo.page and checkedAt back in when it loads the file.
 const base=(p,v,extra)=>({id:p.id,brand:cleanBrand(p),name:shortName(p.name,cleanBrand(p)),price:v.price,photo:{img:v.image||p.images[0]},retailers:[{name:p.retailer,url:v.url,available:true}],...extra});
@@ -236,7 +278,8 @@ export function builderPart(p) {
     const opt=p.options.find(o=>/colou?r|finish/i.test(o.name));
     let colors=opt?[...new Set(opt.values)].map(n=>[n,colorHex(n)]).filter(c=>c[1]).slice(0,6):[];
     if(!colors.length){const h=colorHex(p.name+' '+v.name);colors=[[h?'As pictured':'As pictured',h||'#57534E']]}
-    return {...base(p,v),cat:'case',name:shortName(p.name,cleanBrand(p))+(bare&&vs.length>1?' · '+v.name:''),layout:L.layout,layoutLabel:L.label,keys:null,knob:/\bknob\b/i.test(p.name),mount:tidy(s.mount),material:tidy(s.material),conn:s.connection||'Not listed',colors,assembled,
+    const board=boardName(p.name,cleanBrand(p),p.retailer);
+    return {...base(p,v),cat:'case',brand:board.brand,name:board.name,layout:L.layout,layoutLabel:L.label,keys:null,knob:/\bknob\b/i.test(p.name),mount:tidy(s.mount),material:tidy(s.material),conn:s.connection||'Not listed',colors,assembled,
       kit:{pcb:{hotswap:s.hotswap??null,pins:null,led:null,rgb:null,stabs:[]},plate:null,stabs:null},
       blurb:assembled?'Sold assembled. Switches and keycaps you pick here are swaps or upgrades.':'Kit listing. Check the store for exactly what is included.'};
   }

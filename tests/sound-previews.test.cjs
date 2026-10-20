@@ -130,8 +130,7 @@ test('Escape and backgrounding stop the preview without closing underlying resul
 });
 
 test('results, builder, picker and copied parts list include exact-model search links', () => {
-  assert.match(script, /soundSearchLink\(s\)/);
-  assert.match(script, /soundSearchLink\(i.part\)/);
+  assert.match(script, /soundSearchLink\(i.part,/);
   assert.match(script, /soundSearchLink\(BYID\[build.switches\]\)/);
   assert.match(script, /soundSearchLink\(p\)/);
   assert.match(script, /Switch sound tests:.*soundSearchUrl\(BYID\[b.switches\]\)/);

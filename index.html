@@ -90,14 +90,19 @@ h1,h2,h3{text-wrap:balance;margin:0;font-weight:700;letter-spacing:-.02em}
   transition:left .9s var(--out),top .9s var(--out),width .9s var(--out),opacity .6s var(--ease),filter .6s var(--ease)}
 .fitem svg,.fitem img{width:100%;height:auto;display:block;transition:transform .4s var(--out),filter .4s var(--ease)}
 .fitem:hover svg,.fitem:hover img{transform:translateY(-3px)}
-.fitem .cap{font-size:11px;line-height:1.3;color:var(--ink-2);text-align:center;white-space:nowrap;max-width:min(240px,42vw);overflow:hidden;text-overflow:ellipsis;opacity:0;transition:opacity .4s var(--ease)}
-.fitem .cap small{display:block;color:var(--faint);font-size:10px}
-.fitem.feat .cap{opacity:1}
-.fitem.dim{opacity:.4;filter:grayscale(1)}
+.fitem .art{display:block;width:100%;transform:rotate(var(--tilt,0deg));animation:ffloat 7s ease-in-out infinite;animation-delay:var(--fd,0s)}
+@keyframes ffloat{0%,100%{transform:translateY(0) rotate(var(--tilt,0deg))}50%{transform:translateY(-6px) rotate(var(--tilt,0deg))}}
+.fitem .cap{font-size:12px;line-height:1.3;font-weight:500;color:var(--ink-2);text-align:center;white-space:nowrap;max-width:calc(100% + 72px);min-width:0;overflow:hidden;text-overflow:ellipsis;opacity:0;transition:opacity .4s var(--ease)}
+.fitem.feat .cap,.fitem.sub .cap,.fitem.mid .cap{opacity:1}
+.fitem.feat .cap{font-size:14px;color:var(--ink)}
 .fitem.out{opacity:.14;filter:grayscale(1);pointer-events:none}
 .fitem.hidden-slot{opacity:0;pointer-events:none}
-.fitem svg{filter:drop-shadow(0 10px 14px rgba(41,37,36,.14))}
-.fitem.dim svg,.fitem.out svg{filter:none}
+.fitem svg{filter:drop-shadow(0 12px 16px rgba(41,37,36,.16)) drop-shadow(0 2px 3px rgba(41,37,36,.1))}
+.fitem.feat svg{filter:drop-shadow(0 22px 26px rgba(41,37,36,.2)) drop-shadow(0 3px 5px rgba(41,37,36,.12))}
+.fitem.out svg{filter:none}
+.fitem.out .art{animation:none}
+@media (prefers-reduced-motion:reduce){.fitem .art{animation:none}}
+@media (max-width:759px){.fitem .cap{max-width:calc(100% + 20px);font-size:11px}.fitem.feat .cap{font-size:13px}}
 
 /* FINDER: question card */
 .qwrap{position:absolute;left:50%;bottom:max(32px,env(safe-area-inset-bottom,0px));transform:translateX(-50%);width:min(760px,calc(100% - 32px));z-index:5;transition:width .5s var(--out)}
@@ -140,6 +145,9 @@ h1,h2,h3{text-wrap:balance;margin:0;font-weight:700;letter-spacing:-.02em}
 .qa-float{animation:qaFloat 3.2s}
 .qa-plug{animation:qaPlug 2.6s}
 .qa-cable{transform-box:view-box;offset-rotate:0deg;animation:qaCable 2.6s linear infinite}
+.qa-turn{transform-box:fill-box;transform-origin:center;animation:qaTurn 3.4s ease-in-out infinite}
+@keyframes qaTurn{0%,100%{transform:rotate(-40deg)}50%{transform:rotate(40deg)}}
+@media (prefers-reduced-motion:reduce){.qa-turn{animation:none!important}}
 .opt:hover .qa-press{animation-duration:.9s}.opt:hover .qa-ripple{animation-duration:1s}.opt:hover .qa-arc{animation-duration:1.4s}.opt:hover .qa-flow{animation-duration:1.3s}.opt:hover .qa-swap{animation-duration:1.8s}.opt:hover .qa-glow{animation-duration:1.2s}
 @keyframes qaPress{0%,100%{transform:translateY(0)}20%{transform:translateY(3px)}40%{transform:translateY(0)}}
 @keyframes qaRipple{0%{transform:scale(.7);opacity:.7}100%{transform:scale(1.7);opacity:0}}
@@ -408,8 +416,22 @@ h1,h2,h3{text-wrap:balance;margin:0;font-weight:700;letter-spacing:-.02em}
 .stats3 div{background:var(--tile);border-radius:8px;padding:8px 10px;display:grid;gap:1px;min-width:0}
 .stats3 span{font-size:10.5px;color:var(--muted)}
 .stats3 b{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.rsum .ractions{grid-template-columns:auto 1fr}
-.rsum .ractions .listen{padding:9px 14px 9px 12px;font-size:13px;border-radius:var(--r-tile)}
+.rsum .ractions{grid-template-columns:1fr auto}
+.rsum .ractions .btn.primary{grid-column:auto}
+.rsum .rcap{margin:-8px 0 0;font-size:12.5px;color:var(--muted);line-height:1.3}
+.rsum .rcap svg{width:12px;height:12px;margin-right:6px;vertical-align:-1px;color:var(--faint)}
+.rcap-n{display:none}
+.stores .watchrow{flex:0 0 100%;display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:2px}
+a.listen{text-decoration:none}
+a.listen.watch{background:var(--accent-soft);color:var(--info)}
+a.listen.watch:hover{background:rgba(59,130,246,.2)}
+.textlink{font-size:12px;font-weight:500;color:var(--muted);text-decoration:underline;text-underline-offset:2px}
+.textlink:hover{color:var(--ink)}
+.fav{position:relative;flex:none;width:14px;height:14px;border-radius:4px;background:#fff;overflow:hidden;display:inline-block;box-shadow:inset 0 0 0 1px rgba(41,37,36,.08)}
+.store .fav svg{position:absolute;inset:1px;width:12px;height:12px;opacity:1}
+.fav.bad svg{display:none}
+.fav.bad{background:var(--tile)}
+.fav.bad::after{content:attr(data-l);position:absolute;inset:0;display:grid;place-items:center;font-size:9px;font-weight:700;line-height:1;color:var(--ink-2)}
 .rparts{display:flex;flex-direction:column;min-width:0;overflow:auto}
 .rparts .phead{position:sticky;top:0;z-index:1;background:color-mix(in srgb,var(--surface) 88%,transparent);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);padding:20px 22px 12px;display:flex;justify-content:space-between;align-items:baseline;gap:12px;border-bottom:1px solid var(--line)}
 .rparts .phead h3{font-size:15px;letter-spacing:-.01em}
@@ -447,6 +469,7 @@ h1,h2,h3{text-wrap:balance;margin:0;font-weight:700;letter-spacing:-.02em}
   .rdetail{grid-template-columns:minmax(0,1fr)}
   .rimg{min-height:220px}
   .rsum{border-right:0;border-bottom:1px solid var(--line);overflow:visible}
+  .rcap-w,.rsum .rcap svg{display:none}.rcap-n{display:inline}
   .rparts{overflow:visible}
   .rlist{max-height:none}
 }
@@ -1166,9 +1189,15 @@ function soundPart(key){
   if(/^res:\d+$/.test(key)) return BYID[resList[Number(key.slice(4))]?.b?.switches];
   return null;
 }
-function soundSearchLink(p,label){
-  return p?`<a class="store sound-search" href="${esc(soundSearchUrl(p))}" target="_blank" rel="noopener noreferrer">${esc(label||'YouTube: '+switchName(p)+' sound tests')} ↗</a>`:'';
+function soundSearchLink(p,label,plain){
+  return p?`<a class="${plain?'textlink':'store sound-search'}" href="${esc(soundSearchUrl(p))}" target="_blank" rel="noopener noreferrer">${esc(label||'YouTube: '+switchName(p)+' sound tests')}${plain?'':' ↗'}</a>`:'';
 }
+// One-click "Watch test": the curated recording when we have one, otherwise a YouTube search.
+function soundWatchUrl(p){
+  const t=SOUND_TESTS[p.id];
+  return t?'https://www.youtube.com/watch?v='+t.video+(t.start?'&t='+t.start+'s':''):soundSearchUrl(p);
+}
+const soundWatchLink=p=>p?`<a class="listen watch" href="${esc(soundWatchUrl(p))}" target="_blank" rel="noopener noreferrer" aria-label="Watch a sound test of ${esc(switchName(p))} on YouTube (opens in a new tab)">${SPK}Watch test</a>`:'';
 const EQ='<span class="eq" aria-hidden="true"><i></i><i></i><i></i></span>';
 const SPK='<svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M4 2.5v11L13 8z"/></svg>';
 function soundButton(key,label,compact=false){
@@ -1261,7 +1290,15 @@ function buyLinks(p){
   for(const k of STORES_FOR[p.cat]||['amazon']){const [n,u]=STORES[k]; if(n.toLowerCase()!==p.brand.toLowerCase()&&!(p.brand==='PBTfans'&&k==='kbdfans')) out.push({n,u:u(q)})}
   return out.slice(0,4).concat({n:'Compare prices',u:searchLink(p),cmp:true});
 }
-const storeChips=p=>buyLinks(p).map(l=>`<a class="store ${l.maker?'maker':''} ${l.cmp?'cmp':''}" href="${esc(l.u)}" target="_blank" rel="noopener">${esc(l.n)}${ARROW}</a>`).join('');
+// Each store's own favicon (https://<store domain>/favicon.ico), drawn as an SVG <image> so the page has no raw image tag.
+// If it fails to load, the capturing error listener below flips .fav to .bad and a letter badge shows instead.
+function storeFav(l){
+  let host=''; try{host=new URL(l.u).hostname}catch{}
+  if(!host||l.cmp) return '';
+  return `<span class="fav" data-l="${esc((l.n||'?').trim().charAt(0).toUpperCase())}" aria-hidden="true"><svg viewBox="0 0 16 16" focusable="false"><image href="https://${esc(host)}/favicon.ico" width="16" height="16" loading="lazy" preserveAspectRatio="xMidYMid meet"/></svg></span>`;
+}
+document.addEventListener('error',e=>{const f=e.target.closest&&e.target.closest('.fav'); if(f) f.classList.add('bad')},true);
+const storeChips=p=>buyLinks(p).map(l=>`<a class="store ${l.maker?'maker':''} ${l.cmp?'cmp':''}" href="${esc(l.u)}" target="_blank" rel="noopener">${storeFav(l)}${esc(l.n)}${ARROW}</a>`).join('');
 
 /* =========================================================
    ROUTING
@@ -1369,6 +1406,11 @@ const QUESTIONS = [
     {v:'wired',b:'Wired only',s:'Nothing to charge',art:()=>quizArt('wired')},{v:'yes',b:'Wireless',s:'Bluetooth or 2.4 GHz',art:()=>quizArt('wireless')},{v:'any',b:'No preference',s:'Nothing ruled out',art:()=>quizArt('either-conn')}]},
   {key:'solder',title:'Will you solder?',info:'Soldering means melting metal to fix each switch permanently to the circuit board. Hot-swap boards have sockets instead, so switches press in and pull out by hand with no tools.',opts:[
     {v:'hotswap',b:'No, hot-swap',s:'Switches press in by hand',art:()=>quizArt('hotswap')},{v:'either',b:'Happy to solder',s:'Opens up more PCBs',art:()=>quizArt('solder')}]},
+  // Rapid trigger and low profile are hidden until the catalog records those switch systems; their rules stay in boardHasMust.
+  {key:'must',title:'Any must-haves?',hint:'Only boards whose listing confirms it are kept. If a store does not say, the board is left out.',opts:[
+    {v:'hotswap',b:'Swappable switches',s:'Hot-swap',art:()=>quizArt('hotswap')},
+    {v:'knob',b:'Volume knob',s:'Media control',art:()=>quizArt('knob')},
+    {v:'none',b:'No must-haves',s:'Skip this',art:()=>quizArt('nomust')}]},
   {key:'budget',title:"What's your budget?",budget:true},
 ];
 function waveSVG(pitch,amp=1){
@@ -1407,6 +1449,20 @@ function quizArt(kind){
   }else if(kind==='either-conn'){
     defs=pdefs+grad('ea','violet');
     body=plug('translate(0 8) scale(.5)')+arcs(88,46,[10,19,28],'ea',3.4)+`<circle cx="88" cy="46" r="4.5" fill="#8B7CF6"/>`;
+  }else if(kind==='rapid'){
+    defs=grad('rp','blue',1)+grad('rm','violet');
+    const mag=[8,14,20].map((r,i)=>`<path class="qa-arc" style="animation-delay:${i*.22}s" d="M${60-r} 38 A${r} ${r} 0 0 0 ${60+r} 38" fill="none" stroke="url(#qa-rm)" stroke-width="3.2" stroke-linecap="round"/>`).join('');
+    body=`<g class="qa-press"><rect x="42" y="5" width="36" height="26" rx="8" fill="url(#qa-rp)"/><rect x="48" y="9" width="24" height="7" rx="3.5" fill="#fff" opacity=".3"/></g>${mag}`;
+  }else if(kind==='knob'){
+    defs=grad('kb','teal',1);
+    const ticks=Array.from({length:7},(_,i)=>{const a=(-120+i*40)*Math.PI/180;return `<circle class="qa-btn" style="animation-delay:${i*.2}s" cx="${(60+Math.sin(a)*24).toFixed(1)}" cy="${(31-Math.cos(a)*24).toFixed(1)}" r="2" fill="#2BB3A3"/>`}).join('');
+    body=`${ticks}<g class="qa-turn"><circle cx="60" cy="31" r="16" fill="url(#qa-kb)"/><ellipse cx="60" cy="24" rx="9" ry="4.5" fill="#fff" opacity=".22"/><rect x="58.2" y="17" width="3.6" height="9" rx="1.8" fill="#fff" opacity=".95"/></g>`;
+  }else if(kind==='lowprofile'){
+    defs=grad('lp','amber',1)+`<linearGradient id="qa-lb" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#E7E5E4"/><stop offset="1" stop-color="#D6D3D1"/></linearGradient>`;
+    body=`<rect class="qa-led" x="34" y="9" width="52" height="33" rx="9" fill="none" stroke="#A8A29E" stroke-width="1.4" stroke-dasharray="3 3"/><rect x="22" y="44" width="76" height="8" rx="4" fill="url(#qa-lb)"/><g class="qa-press"><rect x="34" y="30" width="52" height="14" rx="6" fill="url(#qa-lp)"/><rect x="42" y="33" width="36" height="4" rx="2" fill="#fff" opacity=".32"/></g>`;
+  }else if(kind==='nomust'){
+    defs=neutral;
+    body=`<circle class="qa-ripple" cx="60" cy="30" r="18" fill="none" stroke="#D6D3D1" stroke-width="1.4"/><circle cx="60" cy="30" r="18" fill="url(#qa-n-nomust)" stroke="#D6D3D1" stroke-width="1.4"/><path d="M51 30 H69" stroke="#A8A29E" stroke-width="3.6" stroke-linecap="round"/>`;
   }else if(kind==='hotswap'){
     defs=grad('hs','amber',1)+`<linearGradient id="qa-hb" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#E7E5E4"/><stop offset="1" stop-color="#D6D3D1"/></linearGradient>`;
     body=`<rect x="26" y="38" width="68" height="14" rx="6" fill="url(#qa-hb)"/><rect x="42" y="42" width="6" height="6" rx="2" fill="#A8A29E"/><rect x="72" y="42" width="6" height="6" rx="2" fill="#A8A29E"/><g class="qa-swap"><rect x="44" y="30" width="3" height="9" rx="1.5" fill="#A8A29E"/><rect x="73" y="30" width="3" height="9" rx="1.5" fill="#A8A29E"/><rect x="38" y="6" width="44" height="28" rx="8" fill="url(#qa-hs)"/><rect x="48" y="11" width="24" height="8" rx="4" fill="#fff" opacity=".3"/></g>`;
@@ -1425,7 +1481,7 @@ const SOUND_T={thock:{p:25,v:50},creamy:{p:40,v:38},clack:{p:74,v:62},quiet:{p:4
 function configsFor(c,ans){
   if(c.kit) return [{pcb:null,plate:null}];
   const out=[];
-  for(const p of PCBS) if(p.fit===c.fit && !(ans.solder==='hotswap'&&!p.hotswap)) for(const pl of PLATES) if(pl.fit===c.fit) out.push({pcb:p.id,plate:pl.id});
+  for(const p of PCBS) if(p.fit===c.fit && !((ans.solder==='hotswap'||ans.must==='hotswap')&&!p.hotswap)) for(const pl of PLATES) if(pl.fit===c.fit) out.push({pcb:p.id,plate:pl.id});
   return out;
 }
 const evalCache=new Map();
@@ -1436,7 +1492,8 @@ function evalAns(ans){
   const budget=typeof ans.budget==='number'&&ans.budget<B_MAX?ans.budget:null;
   const feel=ans.feel&&ans.feel!=='any'?ans.feel:null;
   // Sound-ranked recommendations use curated sound profiles; imported parts have no measured sound data.
-  const sws=SWITCHES.filter(s=>!s.catalogId&&(!feel||(feel==='Silent'?/Silent/.test(s.type):s.type===feel)));
+  const must=mustOf(ans), mustSys=mustSystem(must);
+  const sws=SWITCHES.filter(s=>!s.catalogId&&(!feel||(feel==='Silent'?/Silent/.test(s.type):s.type===feel))&&(!mustSys||swSystem(s)===mustSys));
   const surprise=ans.look==='surprise';
   const kcs=KEYCAPS.filter(k=>!k.catalogId).filter(k=>!ans.look||ans.look==='any'||surprise||k.mood.includes(ans.look));
   const T=SOUND_T[ans.sound]||{p:45,v:50};
@@ -1447,6 +1504,7 @@ function evalAns(ans){
     if(ans.wireless==='yes'&&!wl) continue;
     if(ans.wireless==='wired'&&wl) continue;
     if(ans.solder==='hotswap'&&c.kit&&c.kit.pcb.hotswap===false) continue;
+    if(must&&!boardHasMust(c,must)) continue;
     if(c.assembled){
       // Ships with its own switches and keycaps, which stores rarely spec, so feel and look can't be checked.
       const b={case:c.id,color:0,pcb:null,plate:null,switches:null,keycaps:null,stabs:null,extras:[]};
@@ -1490,6 +1548,22 @@ function evalAns(ans){
   evalCache.set(key,res); return res;
 }
 /*COMBOS-START*/
+/* Must-haves. A board passes only when the catalog positively says so; a null or missing fact never matches.
+   hotswap: the kit's PCB is flagged hot-swap, or (bare case) a hot-swap PCB made for it exists.
+   knob: the listing sets case.knob === true.
+   rapid / lowprofile: the board's switchSystem is 'hall-effect' / 'low-profile' (or it is flagged rapidTrigger).
+   Boards that need switches (not assembled) must also be paired with switches carrying that same system. */
+function mustOf(ans){const m=ans&&ans.must; return m&&m!=='none'&&m!=='any'?m:null}
+function mustSystem(must){return must==='rapid'?'hall-effect':must==='lowprofile'?'low-profile':null}
+function swSystem(s){return (s&&(s.switchSystem||s.system))||null}
+function boardHasMust(c,must){
+  if(!must) return true; if(!c) return false;
+  if(must==='hotswap') return c.kit?c.kit.pcb&&c.kit.pcb.hotswap===true:PCBS.some(p=>p.fit===c.fit&&p.hotswap===true);
+  if(must==='knob') return c.knob===true;
+  if(must==='rapid') return c.switchSystem==='hall-effect'||c.rapidTrigger===true;
+  if(must==='lowprofile') return c.switchSystem==='low-profile';
+  return true;
+}
 /* Possible build combinations for the quiz counter. A combination is one board + one switch + one keycap set the
    finder could make. Kits/cases: every eligible switch x every keycap set that fits the board's layout (covers it, or
    has an addon for it; imported sets with covers:null are unknown and left out). Assembled boards ship with their own
@@ -1502,12 +1576,14 @@ function comboCount(ans){
   const budget=typeof ans.budget==='number'&&ans.budget<B_MAX?ans.budget:null;
   const feel=ans.feel&&ans.feel!=='any'?ans.feel:null;
   const look=ans.look&&ans.look!=='any'&&ans.look!=='surprise'?ans.look:null;
+  const must=mustOf(ans), mustSys=mustSystem(must);
   const sws=SWITCHES.filter(s=>{
     if(feel&&!(feel==='Silent'?/Silent/.test(s.type):s.type===feel)) return false;
     if(ans.sound==='quiet'&&!/Silent/.test(s.type)) return false;
     if((ans.sound==='thock'||ans.sound==='creamy')&&s.type==='Clicky') return false;
     if(ans.sound==='clack'&&/Silent/.test(s.type)) return false;
     if(ans.use==='gaming'&&(s.type==='Clicky'||(s.force!=null&&s.force>55))) return false;
+    if(mustSys&&swSystem(s)!==mustSys) return false;
     return true;
   });
   const kcs=KEYCAPS.filter(k=>k.covers&&(!look||(k.mood||[]).includes(look)));
@@ -1522,6 +1598,7 @@ function comboCount(ans){
     if(ans.wireless==='yes'&&!wl) continue;
     if(ans.wireless==='wired'&&wl) continue;
     if(ans.solder==='hotswap'&&c.kit&&c.kit.pcb.hotswap===false) continue;
+    if(must&&!boardHasMust(c,must)) continue;
     if(c.assembled){ if(!budget||c.price<=budget) n++; continue; }
     if(!c.kit&&!configsFor(c,ans).length) continue;
     const kp=kcFor(c.layout), sc=swFor(switchQty({case:c.id})||70);
@@ -1559,13 +1636,36 @@ function paintCombos(n,animate){
 const answered=()=>Object.keys(quizAns).length>0;
 
 /* field of keyboards */
-const FIELD_SLOTS=[[8,14],[22,8],[37,6],[63,6],[78,8],[92,14],[5,37],[18,31],[82,31],[95,37],[6,60],[17,57],[83,57],[94,60],[8,84],[21,90],[79,90],[92,84]];
-const MSLOTS_N=4;
-const LW={'60':.64,'65':.72,'75':.78,'tkl':.9,'full':1};
+// Slots by size tier: [tier, x as % of width, y, y basis]. 'a' = fraction of the free height above the
+// question card, 'h' = fraction of the window height. One hero, two large, a ring of medium boards, small ones at the edges.
+const FIELD_SLOTS=[
+  ['feat',50,.26,'a'],['sub',32,.72,'a'],['sub',68,.72,'a'],
+  ['mid',13,.25,'h'],['mid',87,.25,'h'],['mid',11,.53,'h'],['mid',89,.53,'h'],
+  ['sm',24,.12,'h'],['sm',37,.10,'h'],['sm',63,.10,'h'],['sm',76,.12,'h'],['sm',30,.31,'h'],['sm',70,.31,'h'],['sm',4,.40,'h'],['sm',96,.40,'h']];
+const FIELD_SLOTS_M=[
+  ['feat',50,.25,'a'],['sub',26,.72,'a'],['sub',74,.72,'a'],
+  ['sm',12,.56,'a'],['sm',88,.56,'a'],['sm',13,.93,'a'],['sm',87,.93,'a']];
+// Boards are drawn a little narrower for short layouts so a 60% hero still reads as a hero.
+const FW={'60':.86,'65':.89,'75':.91,'tkl':.96,'full':1};
 const fieldEls={};
 function fieldBoard(b){return caseVisual(b,'field')}
 function initField(){
 }
+// How vivid a hex colour is: chroma, eased down for near-white and near-black.
+function vividHex(h){
+  if(!/^#[0-9a-f]{6}$/i.test(h||'')) return 0;
+  const [r,g,b]=[1,3,5].map(i=>parseInt(h.slice(i,i+2),16)), mx=Math.max(r,g,b), mn=Math.min(r,g,b);
+  return (mx-mn)/255*(1-Math.abs((mx+mn)/255-1)*.4);
+}
+// Boards with a checked photo come first, then the most colourful: first colour swatch, any other swatch, a tinted photo backdrop.
+const fieldScoreMemo=new Map();
+function fieldScore(c){
+  let v=fieldScoreMemo.get(c.id); if(v!==undefined) return v;
+  const ph=c.photo, shot=!!(ph&&ph.img&&Array.isArray(ph.box)&&ph.ar>0), sw=(c.colors||[]).map(x=>vividHex(x[1]));
+  v=(shot?10:0)+(sw[0]||0)*3+Math.max(0,...sw.slice(1))+(shot?vividHex(ph.bg)*2:0);
+  fieldScoreMemo.set(c.id,v); return v;
+}
+let fieldGhosts=null;
 function fieldEl(id){
   if(fieldEls[id]) return fieldEls[id];
   const field=document.getElementById('field'), c=BYID[id];
@@ -1573,6 +1673,8 @@ function fieldEl(id){
     const el=document.createElement('button'); el.className='fitem'; el.type='button';
     const r=evalAns({}).byCase.get(c.id); const b=r?r.b:{case:c.id,color:0,keycaps:null,extras:[]};
     el.innerHTML=`<span class="art">${fieldBoard(b)}</span><span class="cap"></span>`; el.dataset.k=b.keycaps||'';
+    let hs=0; for(const ch of c.id) hs=(hs*31+ch.charCodeAt(0))>>>0;
+    el.style.setProperty('--tilt',((hs%5)-2)*.7+'deg'); el.style.setProperty('--fd',-(hs%70)/10+'s');
     el.setAttribute('aria-label',`${c.brand} ${c.name}`);
     el.addEventListener('click',()=>{const res=evalAns(quizAns); if(res.byCase.has(c.id)) openResults(c.id); else toast(`${c.name} doesn't match your answers`)});
     field.appendChild(el); fieldEls[c.id]=el; return el;
@@ -1584,28 +1686,32 @@ function layoutField(){
   const res=evalAns(quizAns), W=innerWidth, H=innerHeight, mobile=W<760;
   const card=document.getElementById('qwrap'), cardTop=card.getBoundingClientRect().top;
   const topBar=mobile?60:72, avail=Math.max(120,cardTop-topBar);
-  const featW=mobile?Math.min(150,W*0.36):Math.max(160,Math.min(250,W*0.17)), othW=mobile?W*0.2:Math.max(90,Math.min(150,W*0.1));
-  const featPos=mobile?[[50,.3],[25,.72],[75,.72]]:[[50,.28],[33,.68],[67,.68]];
-  const top=res.list.slice(0,3).map(r=>r.b.case);
-  // Only as many boards as there are slots get drawn; matches fill them first, best first.
-  const nSlots=mobile?MSLOTS_N:FIELD_SLOTS.length;
-  const rest=[...res.list.slice(3).map(r=>r.b.case),...FINDER_CASES.filter(c=>!c.catalogId&&!res.byCase.has(c.id)).map(c=>c.id)].slice(0,nSlots);
-  for(const id in fieldEls) if(!top.includes(id)&&!rest.includes(id)) fieldEls[id].className='fitem hidden-slot';
-  top.forEach((id,i)=>place(id,{x:featPos[i][0]/100*W,y:topBar+featPos[i][1]*avail,w:featW,cls:'feat',r:res.byCase.get(id)}));
-  const MSLOTS=[[13,.06],[87,.06],[9,.5],[91,.5]];
-  rest.forEach((id,i)=>{
-    const slot=mobile?MSLOTS[i]:FIELD_SLOTS[i]; const hide=!slot;
-    const x=slot?slot[0]/100*W:W/2, y=slot?(mobile?topBar+slot[1]*avail:slot[1]/100*H):H/2;
-    place(id,{x,y,w:othW,cls:hide?'hidden-slot':res.byCase.has(id)?'dim':'out',r:res.byCase.get(id)});
+  const B=mobile?W:Math.min(W,H*1.55), cl=(lo,v,hi)=>Math.max(lo,Math.min(hi,v));
+  const TW=mobile?{feat:cl(200,W*.62,300),sub:W*.4,sm:W*.2}:{feat:cl(260,B*.32,520),sub:cl(210,B*.235,340),mid:cl(120,B*.15,200),sm:cl(84,B*.095,130)};
+  const slots=mobile?FIELD_SLOTS_M:FIELD_SLOTS;
+  // Matches fill the slots first, the most colourful (photographed) boards leading; only boards that get a slot are drawn.
+  // If there are fewer matches than slots, faint non-matching boards, again the most colourful first, fill the rest.
+  const hit=res.list.map(r=>r.b.case).sort((a,b)=>fieldScore(BYID[b])-fieldScore(BYID[a]));
+  fieldGhosts??=FINDER_CASES.map(c=>c.id).sort((a,b)=>fieldScore(BYID[b])-fieldScore(BYID[a]));
+  const ids=hit.slice(0,slots.length);
+  for(let i=0;ids.length<slots.length&&i<fieldGhosts.length;i++) if(!res.byCase.has(fieldGhosts[i])) ids.push(fieldGhosts[i]);
+  for(const id in fieldEls) if(!ids.includes(id)) fieldEls[id].className='fitem hidden-slot';
+  ids.forEach((id,i)=>{
+    const [tier,xp,yp,basis]=slots[i], r=res.byCase.get(id);
+    place(id,{x:xp/100*W,y:basis==='a'?topBar+yp*avail:yp*H,w:TW[tier],cls:r?tier:'out',r,W,H});
   });
 }
-function place(id,{x,y,w,cls,r}){
-  const el=fieldEl(id), c=BYID[id];
-  el.style.left=x+'px'; el.style.top=y+'px'; el.style.width=(w*LW[c.layout])+'px';
-  el.className='fitem '+cls;
+function place(id,{x,y,w,cls,r,W,H}){
+  const el=fieldEl(id), c=BYID[id], fw=w*FW[c.layout], hasCap=!!r&&cls!=='sm';
   if(r&&el.dataset.k!==r.b.keycaps){el.dataset.k=r.b.keycaps; el.querySelector('.art').innerHTML=fieldBoard(r.b)}
-  el.querySelector('.cap').innerHTML=cls==='feat'&&r?`${esc(c.brand)} ${esc(c.name)}<small>${money(r.t)} build</small>`:'';
-  el.tabIndex=cls==='feat'?0:-1;
+  const vb=el.querySelector('svg')?.viewBox?.baseVal, ratio=vb&&vb.width?vb.height/vb.width:.4;
+  // Keep the whole board, its label and its float and tilt inside the window.
+  const hx=fw/2+(hasCap?36:0)+16, hy=(fw*ratio+(hasCap?28:0))/2+16;
+  x=Math.max(hx,Math.min(W-hx,x)); y=Math.max(hy,Math.min(H-hy,y));
+  el.style.left=x+'px'; el.style.top=y+'px'; el.style.width=fw+'px';
+  el.className='fitem '+cls;
+  el.querySelector('.cap').textContent=hasCap?c.name:'';
+  el.tabIndex=cls==='feat'||cls==='sub'?0:-1;
 }
 addEventListener('resize',()=>{clearTimeout(window.__rz); window.__rz=setTimeout(layoutField,80)});
 
@@ -1627,7 +1733,7 @@ function renderQuiz(){
   if(done){
     title='Your matches';
     body=n?`<button class="btn primary block" id="viewmatches">View ${n} ${n===1?'match':'matches'}</button>`
-          :`<div style="display:grid;gap:12px;text-align:center"><p style="margin:0;color:var(--muted)">Nothing fits every answer. Go back and loosen one, or start over.</p><button class="btn primary block" id="qreset2">Start over</button></div>`;
+          :`<div style="display:grid;gap:12px;text-align:center"><p style="margin:0;color:var(--muted)">${mustBlocked()?mustEmptyMsg():'Nothing fits every answer. Go back and loosen one, or start over.'}</p><button class="btn primary block" id="qreset2">Start over</button></div>`;
   } else if(Q.budget){
     title=Q.title;
     const v=quizAns.budget, any=v==='any', val=typeof v==='number'?v:300;
@@ -1641,7 +1747,7 @@ function renderQuiz(){
   } else {
     title=Q.title;
     const optB=(o,i)=>`<button class="opt" style="--i:${i}" aria-pressed="${quizAns[Q.key]===o.v}" data-v="${o.v}">${o.art?`<span class="art">${o.art()}</span>`:''}<b>${esc(o.b)}</b>${o.s?`<span>${esc(o.s)}</span>`:''}<i class="tick">${icon('tick')}</i></button>`;
-    body=`${Q.info?`<p class="qinfotext" id="qinfotext" hidden>${esc(Q.info)}</p>`:''}${Q.hint?`<p class="qhint">${esc(Q.hint)}</p>`:''}<div class="opts">${Q.opts.map((o,i)=>o.clip?`<div class="optw" style="--i:${i}">${optB(o,i)}${clipBtn(o.clip,o.b)}</div>`:optB(o,i)).join('')}</div>${Q.key==='sound'?`<p class="qcredit" id="qcredit" aria-live="polite">Recordings from <a href="assets/sounds/CREDITS.md" target="_blank" rel="noopener">Freesound, CC0</a></p>`:''}`;
+    body=`${Q.info?`<p class="qinfotext" id="qinfotext" hidden>${esc(Q.info)}</p>`:''}${Q.hint?`<p class="qhint">${esc(Q.hint)}</p>`:''}<div class="opts">${Q.opts.map((o,i)=>o.clip?`<div class="optw" style="--i:${i}">${optB(o,i)}${clipBtn(o.clip,o.b)}</div>`:optB(o,i)).join('')}</div>${Q.key==='must'&&mustBlocked()?`<p class="qempty" role="status" style="margin:14px 0 0;text-align:center;color:var(--muted);font-size:13px">${mustEmptyMsg()}</p>`:''}${Q.key==='sound'?`<p class="qcredit" id="qcredit" aria-live="polite">Recordings from <a href="assets/sounds/CREDITS.md" target="_blank" rel="noopener">Freesound, CC0</a></p>`:''}`;
   }
   wrapEl.classList.toggle('wide',!!(Q&&Q.opts&&Q.opts.length>5));
   card.innerHTML=`<div class="qhead"><div class="l"><button class="iconbtn" id="qback" aria-label="Previous question" ${quizStep===0?'disabled':''}>${icon('back')}</button><button class="iconbtn" id="qreset" aria-label="Start over" ${answered()?'':'disabled'}>${icon('reset')}</button></div>
@@ -1666,12 +1772,20 @@ function choose_(Q,btn){
   quizAns[Q.key]=btn.dataset.v; if(btn.dataset.v==='surprise') quizAns.seed=Math.floor(Math.random()*1e6); store.set('sy.quiz',quizAns);
   btn.closest('.opts').querySelectorAll('.opt').forEach(o=>o.setAttribute('aria-pressed',o===btn));
   setCount(); layoutField();
+  // A must-have that leaves no boards stays on this step so the message can say why.
+  if(Q.key==='must'&&mustBlocked()){clearTimeout(window.__adv); window.__adv=setTimeout(renderQuiz,200); return}
   clearTimeout(window.__adv); window.__adv=setTimeout(()=>{quizStep++;qDir=1;renderQuiz()},320);
 }
+/* Must-have that, on its own, empties the results (other answers alone would still match). */
+function mustBlocked(){const m=mustOf(quizAns); return m&&!evalAns(quizAns).list.length&&evalAns({...quizAns,must:'none'}).list.length>0?m:null}
+function mustEmptyMsg(){const m=mustBlocked(); return `No boards match ${esc(MUST_NAMES[m]||'this must-have')} with your other answers. Go back and pick another must-have, or start over.`}
+const MUST_NAMES={hotswap:'swappable switches',rapid:'rapid trigger',knob:'a volume knob',lowprofile:'low profile'};
 function markDisabled(Q,card){
+  if(Q.key==='must') return; // every must-have stays selectable so an empty result can be explained
+  const base=mustBlocked()?{...quizAns,must:'none'}:quizAns;
   for(const b of card.querySelectorAll('.opt')){
     const v=b.dataset.v; if(v==='any'||v==='surprise') continue;
-    const n=evalAns({...quizAns,[Q.key]:v}).list.length;
+    const n=evalAns({...base,[Q.key]:v}).list.length;
     if(!n&&quizAns[Q.key]!==v){b.disabled=true; b.title='No keyboards match this with your other answers'}
   }
 }
@@ -1759,25 +1873,26 @@ function renderRDetail(){
   let rows=items.map((i,n)=>`<div class="part" style="--i:${n}"><span class="pt">${i.slot==='case'?caseVisual({case:c.id,color:b.color||0,keycaps:null,extras:[]},'thumb'):thumbFor(i.part)}</span>
       <div class="pn"><small>${esc(SL(i.slot))}</small><b>${esc(i.part.brand==='Various'?'':i.part.brand+' ')}${esc(i.part.name)}</b><em>${esc(desc(i.part))}</em></div>
       <div class="pp">${money(i.price)}${sub(i)?`<small>${esc(sub(i))}</small>`:''}</div>
-      <div class="stores">${i.slot==='switches'?listenBtn('part:'+i.part.id)+soundSearchLink(i.part):''}${i.slot==='keycaps'&&quizAns.look==='surprise'?'<button type="button" class="listen" id="reroll">↻ Shuffle</button>':''}${storeChips(i.part)}</div></div>`);
+      <div class="stores">${i.slot==='switches'?`<span class="watchrow">${soundWatchLink(i.part)}${soundSearchLink(i.part,'More tests',true)}</span>`:''}${i.slot==='keycaps'&&quizAns.look==='surprise'?'<button type="button" class="listen" id="reroll">↻ Shuffle</button>':''}${storeChips(i.part)}</div></div>`);
   if(c.assembled) rows.splice(1,0,`<div class="part inc" style="--i:1"><span class="pt">${pcbSVG(c.kit.pcb)}</span><div class="pn"><small>Included</small><b>Switches and keycaps, per the listing</b><em>Listed as a complete keyboard. Check ${esc(storeOf(c))} for which switches and keycaps it ships with.</em></div><div class="pp"><span class="chip ok">Included</span></div></div>`);
   else if(c.kit&&c.catalogId) rows.splice(1,0,`<div class="part inc" style="--i:1"><span class="pt">${pcbSVG(c.kit.pcb)}</span><div class="pn"><small>Kit</small><b>PCB and plate, per the listing</b><em>Check ${esc(storeOf(c))} for exactly what the ${esc(c.name)} kit includes.</em></div><div class="pp"><span class="chip ok">Kit</span></div></div>`);
   else if(c.kit) rows.splice(1,0,`<div class="part inc" style="--i:1"><span class="pt">${pcbSVG(c.kit.pcb)}</span><div class="pn"><small>Included</small><b>PCB, ${esc(c.kit.plate)} plate${c.kit.stabs?' and stabilizers':''}</b><em>Comes with the ${esc(c.name)}</em></div><div class="pp"><span class="chip ok">Included</span></div></div>`);
+  const nParts=items.length+(c.kit?1:0);
   const el=document.getElementById('rdetail');
   el.innerHTML=`<button class="iconbtn rclose" id="rclose" aria-label="Close">${icon('close')}</button>
     <div class="rsum swapin">
       <div class="board">${caseVisual(b,'detail')}</div>
       <div><h2>${esc(c.brand)} ${esc(c.name)}</h2></div>
-      <div class="total"><b>${money(r.t)}</b><span>approx. for every part</span></div>
+      <div class="total"><b>${money(r.t)}</b><span>approx. total</span></div>
+      <p class="rcap"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 8h11M9 4l4 4-4 4"/></svg>Made of the ${nParts} parts listed <span class="rcap-w">on the right</span><span class="rcap-n">below</span></p>
       <div class="stats3"><div><span>Match</span><b>${r.pct}%</b></div><div><span>Sound</span><b>${pitchWord(r.e.pitch)}</b></div><div><span>Feel</span><b>${esc(s?s.type:'As shipped')}</b></div></div>
-      <div class="ractions">${s?listenBtn('res:'+resIdx,'Hear the switches'):''}<button class="btn primary" id="rbuild">Customize this build</button><button class="btn" id="rcopy">Copy parts list</button></div>
-      ${s?`<div class="soundlinks">${soundSearchLink(s)}</div>
-      <p class="note" style="margin:0">Sound tests feature these switches in another keyboard. Your case, plate, keycaps and mods will change the result.</p>`:`<p class="note" style="margin:0">This board is sold assembled, so its switches and keycaps come with it. Swap them in the builder if you want a different feel or look.</p>`}
+      <div class="ractions"><button class="btn primary" id="rbuild">Customize this build</button><button class="btn" id="rcopy">Copy parts list</button></div>
+      ${s?'':`<p class="note" style="margin:0">Sold assembled: its switches and keycaps come with it. Swap them in the builder to change the feel or look.</p>`}
       <textarea id="rcopyfb" hidden aria-label="Parts list" style="width:100%;min-height:80px;font-size:12px;background:var(--tile);border:0;border-radius:8px;padding:8px"></textarea>
     </div>
-    <div class="rparts swapin"><div class="phead"><h3>Parts and where to buy</h3><span>${items.length+(c.kit?1:0)} items</span></div>
+    <div class="rparts swapin"><div class="phead"><h3>Parts in this build</h3><span>${nParts} parts · ${money(r.t)}</span></div>
       ${rows.join('')}
-      <p class="pfoot">Prices are approximate list prices before shipping and tax. The filled button opens the maker's own page; the others search that store for the part, so check stock and price there.</p></div>`;
+      <p class="pfoot">Approximate list prices before shipping and tax. The dark button opens the maker's page; the others search that store.</p></div>`;
   el.querySelector('#rclose').onclick=closeResults;
   el.querySelector('#rbuild').onclick=()=>{build={...b,extras:[...b.extras],name:`My ${c.name} build`}; persist(); closeResults(); go('build'); toast('Loaded into the builder')};
   el.querySelector('#rcopy').onclick=()=>copyText(partsText({...b,name:`${c.brand} ${c.name} build`}),el.querySelector('#rcopyfb'));
