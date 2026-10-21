@@ -35,7 +35,7 @@ test('questions run size, feel, sound, look, use, wireless, solder, budget',()=>
 async function load(){
   const inline=[...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g)].map(m=>m[1]).filter(Boolean).join('\n');
   const ctx={URL,window:{},localStorage:{getItem:()=>null},innerWidth:1300};vm.createContext(ctx);
-  for(const file of ['assets/build-engine.js','assets/product-links.js','data/product-links.js'])vm.runInContext(await readFile(new URL('../'+file,import.meta.url),'utf8'),ctx);
+  for(const file of ['assets/product-links.js','data/product-links.js'])vm.runInContext(await readFile(new URL('../'+file,import.meta.url),'utf8'),ctx);
   vm.runInContext(await readFile(new URL('../assets/part-names.js',import.meta.url),'utf8'),ctx);
   vm.runInContext(await readFile(new URL('../data/builder-catalog.js',import.meta.url),'utf8'),ctx);
   vm.runInContext(inline.slice(0,inline.indexOf('const LAYOUTS =')),ctx);
@@ -65,8 +65,7 @@ test('must-have rules only match boards the data positively confirms',async()=>{
   assert.equal(has({},'rapid'),false);
   assert.equal(has({switchSystem:null},'rapid'),false);
   assert.equal(has({switchSystem:'mx-mechanical'},'rapid'),false);
-  assert.equal(has({switchSystem:'hall-effect'},'rapid'),false);
-  assert.equal(has({switchSystem:'hall-effect',rapidTrigger:true},'rapid'),true);
+  assert.equal(has({switchSystem:'hall-effect'},'rapid'),true);
   assert.equal(has({},'lowprofile'),false);
   assert.equal(has({switchSystem:'low-profile'},'lowprofile'),true);
   assert.equal(has({switchSystem:'hall-effect'},'lowprofile'),false);

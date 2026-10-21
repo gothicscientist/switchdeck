@@ -1,9 +1,6 @@
 import '../assets/part-names.js';
 import {createHash} from 'node:crypto';
 import '../assets/product-links.js';
-import {variantKind,enrichPart,selectedSwitchType} from './catalog-evidence.mjs';
-import {readFile} from 'node:fs/promises';
-const supplemental=JSON.parse(await readFile(new URL('./supplemental-evidence.json',import.meta.url),'utf8'));
 
 export const SOURCES = [
   {id:'cannonkeys',name:'CannonKeys',url:'https://cannonkeys.com',currency:'USD'},
@@ -23,7 +20,6 @@ export const SOURCES = [
   {id:'kineticlabs',name:'Kinetic Labs',url:'https://kineticlabs.com',currency:'USD',optional:true},
   {id:'dangkeebs',name:'Dangkeebs',url:'https://dangkeebs.com',currency:'USD',optional:true},
   {id:'milktooth',name:'Milktooth',url:'https://milktooth.com',currency:'USD',optional:true},
-  {id:'glorious',name:'Glorious',url:'https://www.gloriousgaming.com',currency:'USD',optional:true,handles:['gmmk2-barebone','gmmk-3-barebones-keyboard','gmmk-3-pro-he-barebones-keyboard','glorious-gmmk-pro-75-barebone-black','gmmk-prebuilt-keyboard','fox-he-switches','lynx-he-switches','panda-he-switches']},
 ];
 export const CATEGORIES = {keyboards:'Keyboards & kits',cases:'Cases',pcb:'PCBs',plate:'Plates',switches:'Switches',keycaps:'Keycaps',stabs:'Stabilizers',extras:'Mods, tools & cables',deskmats:'Deskmats'};
 export function plain(value='') {
@@ -119,15 +115,12 @@ export function countInSegment(seg,optName) {
 export function variantPack(variant,optNames=[]) {
   const segs=String(variant).split(/\s*\/\s*/), qtyNames=optNames.filter(n=>QTY_OPTION.test(n));
   const bare=segs.filter(x=>/^\d{1,3}$/.test(x.trim())).length;
-  const candidates=[];
   for(let i=0;i<segs.length;i++) {
     const optName=segs.length===optNames.length?optNames[i]:(qtyNames.length===1&&bare===1?qtyNames[0]:undefined);
     const r=countInSegment(segs[i],optName);
-    if(r)candidates.push({n:r.n,label:[...segs.slice(0,i),r.rest,...segs.slice(i+1)].filter(Boolean).join(' / '),score:optName&&QTY_OPTION.test(optName)?100:/[x*]\s*\d|pack of|pcs|pieces|count/i.test(segs[i])?50:10});
+    if(r) return {n:r.n,label:[...segs.slice(0,i),r.rest,...segs.slice(i+1)].filter(Boolean).join(' / ')};
   }
-  candidates.sort((a,b)=>b.score-a.score);const best=candidates[0];if(!best)return null;
-  if(candidates.some(x=>x.score===best.score&&x.n!==best.n))return null;
-  return {n:best.n,label:best.label};
+  return null;
 }
 // A count in the listing title ("(35Pcs)", "(36 Pack)", "Switches x 70", "Pack of 100") or an option called "Switch*70".
 export function listingPack(title,optNames=[]) {
@@ -180,8 +173,8 @@ export function normalize(p,source,checkedAt) {
   const maker=first(plain(p.body_html),/^Manufacturer\s*:\s*([^\n]{2,40})/im);
   const titleBrand=first(plain(p.title),/^(Keychron|Gateron|Everfree|Cherry|Kailh|Akko|Monsgeek|KBDfans|PBTfans|GMK|HMX|Huano|Haimu|Durock|JWK|TTC|Tecsee|TX|Geon|Wuque|WS|Owlab|Glorious|SP-Star|Mode|NovelKeys|NK|CannonKeys|CannonCaps|NicePBT|EnjoyPBT|ePBT|Domikey|Gazzew|KFA|Meletrix|QwertyKeys)\b/i);
   const vendor=plain(p.vendor);
-  const brand=source.id==='glorious'?'Glorious':titleBrand||maker||(!/^(?:Stocked|Group Buy|Hidden|Accessories|Keycaps|Keyboard|Switches?|Various|Invis Addon)$/i.test(vendor)&&vendor)||source.name;
-  return {id:source.id+'-'+p.id,name:plain(p.title),displayName:SwitchdeckNames.name(plain(p.title),cat,brand),brand,category:cat,sourceId:source.id,retailer:source.name,url,images,priceMin,priceMax,currency:source.currency,available,options,variants,specs,sourceText:plain(p.body_html),publishedSpecs:publishedSpecs(p),checkedAt,sourceUpdatedAt:p.updated_at||null,provenance:{url,method:'public-shopify-product-feed',specs:'retailer-published; not independently measured'},missingFields:requiredFields(cat).filter(k=>specs[k]===undefined)};
+  const brand=titleBrand||maker||(!/^(?:Stocked|Group Buy|Hidden|Accessories|Keycaps|Keyboard|Switches?|Various|Invis Addon)$/i.test(vendor)&&vendor)||source.name;
+  return {id:source.id+'-'+p.id,name:plain(p.title),displayName:SwitchdeckNames.name(plain(p.title),cat,brand),brand,category:cat,sourceId:source.id,retailer:source.name,url,images,priceMin,priceMax,currency:source.currency,available,options,variants,specs,publishedSpecs:publishedSpecs(p),checkedAt,sourceUpdatedAt:p.updated_at||null,provenance:{url,method:'public-shopify-product-feed',specs:'retailer-published; not independently measured'},missingFields:requiredFields(cat).filter(k=>specs[k]===undefined)};
 }
 export function requiredFields(cat) {return {switches:['type','system','pins','actuationForceG','totalTravelMm'],keycaps:['profile','material','legends'],keyboards:['layout','material','mount','connection'],cases:['layout','material','mount'],pcb:['layout','hotswap'],plate:['layout','material'],stabs:['mount']}[cat]||[]}
 const titleCase=t=>t.replace(/\b\w/g,c=>c.toUpperCase());
@@ -408,7 +401,6 @@ const quantityOf=(p,v)=>{
   const optNames=(p.options||[]).map(o=>o.name), vp=variantPack(v.name,optNames);
   if(vp) return vp.n;
   if(v.quantity) return v.quantity;
-  if(p.reviewedFacts?.packQuantity)return p.reviewedFacts.packQuantity;
   const body=Object.entries(p.publishedSpecs||{}).map(([k,x])=>`<p>${k}: ${x}</p>`).join('');
   return packQuantity({title:p.name,options:p.options,body_html:body,tags:[]},{title:v.name},'switches');
 };
@@ -433,7 +425,7 @@ function switchesRule(p) {
   if(groups.size>24) return {reason:'too many variants (more than 24 switches in one listing)'};
   const type0=typesListed(p.name)?null:switchType(s.type??published(p,/switch type|typing style|^type$|tactility/i)??p.name);
   const part=(v,split)=>{
-    const label=sizeLabel(v,optNames,v.quantity), type=switchType(selectedSwitchType(p,v))||switchType(split?label:'')||type0; if(!type) return null;
+    const label=sizeLabel(v,optNames,v.quantity), type=switchType(split?label:'')||type0; if(!type) return null;
     const w=split&&label.match(/(\d{2,3}(?:\.\d+)?)\s?gf?\b/i);
     const force0=s.actuationForceG??num(published(p,/^(?:actuation|operating|operation)(?: force)?$/i));
     let force=force0??null, bottom=s.bottomOutForceG??num(published(p,/bottom[ -]?out/i))??null;
@@ -441,9 +433,7 @@ function switchesRule(p) {
     const verified=!split&&s.system==='mx-mechanical'&&!p.missingFields.length;
     const pins=s.pins??num((published(p,/pin/i)||'').match(/([35])\s*-?\s*pin/i)?.[1])??num((p.name.match(/\b([35])\s?-?pins?\b/i)||[])[1]);
     const lube=published(p,/lube|lubed/i);
-    const packs=vs.filter(x=>sizeLabel(x,optNames,x.quantity).toLowerCase()===label.toLowerCase()&&x.quantity).map(x=>({variantId:x.id,quantity:x.quantity,price:x.price,url:x.url,available:x.available}));
-    const flat=packs.length>=3&&Math.max(...packs.map(x=>x.quantity))>=Math.min(...packs.map(x=>x.quantity))*5&&Math.max(...packs.map(x=>x.price))<=Math.min(...packs.map(x=>x.price))*1.02;
-    return {...base(p,v),id:split?p.id+'~'+v.id:p.id,name:shortName(p.name,cleanBrand(p))+(split?' · '+label:''),cat:'switches',type,typeStatus:split&&!selectedSwitchType(p,v)&&!switchType(p.name)?'unverified':'confirmed',purchasePacks:packs,...(flat?{packPricingReason:'Different pack quantities share an unchanged base price; actual quantity price requires retailer verification'}:{}),force,bottom,travel:s.totalTravelMm??num((published(p,/total travel/i)||'').match(/\d+(?:\.\d+)?/)?.[0])??null,pins:pins??null,price:v.unitPrice,packPrice:v.price,packQuantity:v.quantity,
+    return {...base(p,v),id:split?p.id+'~'+v.id:p.id,name:shortName(p.name,cleanBrand(p))+(split?' · '+label:''),cat:'switches',type,force,bottom,travel:s.totalTravelMm??num((published(p,/total travel/i)||'').match(/\d+(?:\.\d+)?/)?.[0])??null,pins:pins??null,price:v.unitPrice,packPrice:v.price,packQuantity:v.quantity,
       factory:s.factoryLubed??(lube&&/^yes|factory|pre/i.test(lube)?true:lube&&/^no|un/i.test(lube)?false:null),sound:soundFromMaterials(s.topHousing,s.bottomHousing,s.stemMaterial),switchSystem,vol:/Silent/.test(type)?15:type==='Clicky'?85:50,verified,
       blurb:'Published retailer specs. '+(perSwitch?'Priced per switch.':v.quantity+' per pack.')+(verified?'':' Some specs are not listed by the store.')+(s.topHousing||s.bottomHousing||s.stemMaterial?' Sound estimated from the housing and stem materials.':'')+' Preview colors are illustrative.'};
   };
@@ -561,14 +551,13 @@ function keyboardsRule(p) {
   if(UNSUPPORTED_SYSTEM.test(n)) return {reason:'unsupported switch system (Topre/EC/Alps)'};
   if(NO_DRAW.test(n)) return {reason:"layout the builder can't draw"};
   if(LOCALE.test(n)) return {reason:'non-ANSI layout'};
-  const variantLayouts=[...new Set(p.variants.map(v=>layoutFromName(v.name)?.layout).filter(Boolean))];
-  const L=(variantLayouts.length===1?layoutFromName(p.variants.find(v=>layoutFromName(v.name))?.name):null)||drawable(s.layout,n)||layoutFromName(published(p,/layout|^size$/i)||'');
+  const L=drawable(s.layout,n)||layoutFromName(published(p,/layout|^size$/i)||'');
   if(!L) return {reason:[40,85,90,95].includes(+s.layout)?"layout the builder can't draw":'no layout'};
   const vs0=pool(p); if(!vs0.length) return {reason:'no board variant'};
   const vs=vs0.filter(v=>!LOCALE.test(v.name)).length?vs0.filter(v=>!LOCALE.test(v.name)):vs0;
   const bare=cheapest(vs.filter(v=>boardVariant(v)&&/bare ?bones?|barebone|\bkit\b|no switch|without switch|\bdiy\b/i.test(v.name)));
   const assembled=!bare&&!/bare ?bones?|barebone|\bkit\b|diy/i.test(n);
-  const boards=vs.filter(v=>boardVariant(v)&&!variantKind(v.name)); if(!boards.length) return {reason:'no board variant'};
+  const boards=vs.filter(boardVariant); if(!boards.length) return {reason:'no board variant'};
   const v=bare||cheapest(boards);
   const board=boardName(n,cleanBrand(p),p.retailer), switchSystem=switchSystemOf(n)||s.switchSystem||(LOW_PROFILE_MODELS.test(n)?'low-profile':null);
   return {parts:{...base(p,v),cat:'case',brand:board.brand,name:board.name,layout:L.layout,layoutLabel:L.label,keys:null,knob:/\bknob\b/i.test(n),mount:tidy(s.mount??published(p,/mount/i)),material:tidy(s.material??published(p,/case material|^material$/i)),conn:s.connection||connOf(n)||connOf(v.name)||'Not listed',colors:colorsOf(p,v),assembled,...(switchSystem?{switchSystem}:{}),
@@ -643,35 +632,12 @@ function plateRule(p) {
 const RULES={switches:switchesRule,keycaps:keycapsRule,stabs:stabsRule,extras:extrasRule,deskmats:extrasRule,keyboards:keyboardsRule,cases:casesRule,pcb:pcbRule,plate:plateRule};
 // admit(p) → {parts:[...]} (with soldOut marked) or {reason}. Parts are plain records; nothing is invented.
 function admitOnce(p) {
-  // Mixed product pages sell complete kits and standalone parts side by side.
-  // Split explicitly named components before title-based routing; a live plate cannot stand in for a sold-out kit.
-  if(!p.variantSplit&&['keyboards','cases','pcb','plate','extras'].includes(p.category)&&p.variants.some(v=>['pcb','plate','case'].includes(variantKind(v.name)))){
-    const components=[];
-    for(const v of p.variants){const k=variantKind(v.name);if(!['pcb','plate','case'].includes(k))continue;
-      const cat=k==='case'?'cases':k;
-      const model=p.name.replace(/\b(?:custom|mechanical|keyboard|kit|accessories)\b[\s\S]*$/i,'').trim();
-      const q={...p,name:model+' '+(k==='case'?'Case':k.toUpperCase()),category:cat,available:v.available,variants:[v],variantSplit:true};
-      const r=RULES[cat](q);for(const b of [].concat(r.parts||[])){b.id=p.id+'~'+v.id;Object.assign(b,enrichPart(b,p,v));b.classification=k;if(k==='case'){b.assembled=false;b.kit=null;b.pricing={status:'complete',url:v.url,variantId:v.id};b.required=['pcb','plate','stabs','switches','keycaps'];}if(!v.available){b.soldOut=true;b.retailers=b.retailers.map(r=>({...r,available:false}))}components.push(b)}
-    }
-    const remaining=p.variants.filter(v=>!variantKind(v.name));
-    if(remaining.length){const r=admitOnce({...p,variants:remaining,available:remaining.some(v=>v.available),variantSplit:true});components.push(...(r.parts||[]));}
-    if(components.length)return {parts:components,many:true,cat:p.category};
-  }
-  const routed=route(p);
-  if(routed==='keyboards'&&!p.functionalSplit&&!p.variantSplit){
-    const groups=new Map();
-    for(const v of p.variants){if(variantKind(v.name))continue;const kind=/bare\s?bones?|without switches|no switches/i.test(v.name)?'barebones':/fully assembled|assembled|prebuilt/i.test(v.name)?'assembled':'default';
-      const key=[kind,selectedSwitchType(p,v)||'',layoutFromName(v.name)?.layout||'',/solder/i.test(v.name)?'solder':/hotswap|hot-swap/i.test(v.name)?'hotswap':'',/tri-mode|bluetooth|wireless/i.test(v.name)?'wireless':'',/\bISO\b|\bJIS\b/i.test(v.name)?'non-ansi':'ansi'].join(':');
-      const old=groups.get(key);if(!old||Number(v.available)>Number(old.available)||v.available===old.available&&v.price<old.price)groups.set(key,v);
-    }
-    if(groups.size>1&&groups.size<=16){const parts=[];for(const v of groups.values()){const q=admitOnce({...p,variants:[v],available:v.available,functionalSplit:true});for(const b of q.parts||[]){b.id=p.id+'~'+v.id;parts.push(b)}}if(parts.length)return {parts,many:true,cat:routed};}
-  }
-  let cat=routed, r=RULES[cat]?RULES[cat](p):{reason:'no builder slot'};
+  let cat=route(p), r=RULES[cat]?RULES[cat](p):{reason:'no builder slot'};
   if(r.reroute) {cat=r.reroute; r=RULES[cat](p)}
   if(r.accessory) r=extrasRule(p);
   if(!r.parts) return {reason:r.reason||'not a keyboard part',cat};
   const many=Array.isArray(r.parts);
-  const parts=[].concat(r.parts).map(x=>{const id=x.retailers?.[0]?.url?.match(/[?&]variant=(\d+)/)?.[1];const v=p.variants.find(v=>v.id===id)||p.variants[0];enrichPart(x,p,v);return p.available&&!r.soldOut&&v.available?x:{...x,soldOut:true,retailers:x.retailers.map(y=>({...y,available:false}))}});
+  const parts=[].concat(r.parts).map(x=>p.available&&!r.soldOut?x:{...x,soldOut:true,retailers:x.retailers.map(y=>({...y,available:false}))});
   return {parts,many,cat};
 }
 export function admit(p) {
@@ -706,16 +672,9 @@ export function familyOf(p) {
 // fit is `${sourceId}:${token}`; a revision word (V2, Redux) is appended only when two full families at one store share the token.
 export function catalogParts(products) {
   const out=[], fam=new Map();
-  const makerEvidence=new Map();
-  for(const p of products)if(p.sourceId==='keychron'&&supplemental[p.url]){
-    const model=boardName(p.name,cleanBrand(p),p.retailer);makerEvidence.set((model.brand+' '+model.name).toLowerCase(),supplemental[p.url]);
-  }
-  for(const original of products) {
-    const model=boardName(original.name,cleanBrand(original),original.retailer);
-    const e=supplemental[original.url]||(['keyboards','cases'].includes(original.category)?makerEvidence.get((model.brand+' '+model.name).toLowerCase()):null);
-    const p=e?{...original,sourceText:(original.sourceText||'')+'\n'+e.snippets.join('\n'),reviewedFacts:e.facts||null,reviewedVariantIds:e.variantIds||null}:original;
+  for(const p of products) {
     const r=admit(p); if(!r.parts) continue;
-    const f=r.parts.some(x=>['case','pcb','plate'].includes(x.cat))?familyOf(p):null;
+    const f=['cases','pcb','plate'].includes(r.cat)?familyOf(p):null;
     for(const part of r.parts) {
       Object.assign(part,SwitchdeckNames.part(part));
       // Sound effects must always match the authoritative mod type after every catalog transform.
@@ -724,8 +683,6 @@ export function catalogParts(products) {
         else {delete part.mod;part.fx={}}
       }
       out.push(part);
-      if(e)part.supplementalEvidence={url:e.url,checkedAt:e.checkedAt};
-      part.relationshipText=(p.sourceText||'').split('\n').filter(l=>/compatib|designed for|mount|revision|fits/i.test(l)).slice(0,12);
       if(f&&((part.cat==='case'&&!part.kit)||part.cat==='pcb'||part.cat==='plate')) {
         const k=`${p.sourceId}:${f.token}${f.rev.length?'-'+f.rev.join('-'):''}`; if(!fam.has(k)) fam.set(k,{base:`${p.sourceId}:${f.token}`,case:[],pcb:[],plate:[]});
         fam.get(k)[part.cat==='case'?'case':part.cat].push(part);
@@ -734,39 +691,7 @@ export function catalogParts(products) {
   }
   const full=[...fam].filter(([,g])=>g.case.length&&g.pcb.length&&g.plate.length);
   const clash=new Map(); for(const [,g] of full) clash.set(g.base,(clash.get(g.base)||0)+1);
-  for(const [k,g] of full)for(const part of [...g.case,...g.pcb,...g.plate]){
-    part.fit=k; // Revision is always part of identity, even if a sibling revision is currently absent.
-    part.fitEvidence={status:'provisional',reason:'Matching model names identify candidates; mounting and revision evidence still required',candidate:k};
-  }
-  // Primary retailer declarations can confirm a named-model relationship; shared layout never does.
-  const productBy=new Map(products.map(p=>[p.id,p]));
-  for(const [,g] of full)for(const c of g.case){
-    const source=productBy.get(c.id.split('~')[0]);const family=familyOf(source);
-    const body=source.sourceText||'';
-    const exactModel=source.name.replace(/\b(?:keyboard|case|kit|accessories)\b.*$/i,'').trim().toLowerCase();
-    const confirmed=/compatible with\s*:/i.test(body)&&body.toLowerCase().includes(exactModel)&&/pcb/i.test(body)&&/plate/i.test(body);
-    if(!confirmed)continue;
-    const members=[c,...g.pcb,...g.plate].filter(p=>{const src=productBy.get(p.id.split('~')[0]);return src.name.toLowerCase().includes(exactModel)&&JSON.stringify(familyOf(src)?.rev)===JSON.stringify(family.rev)});
-    if(!members.some(p=>p.cat==='pcb')||!members.some(p=>p.cat==='plate'))continue;
-    // Use the entire named model, including Core/Plus/Pro/revision, never the first token alone.
-    const fit=source.sourceId+':'+exactModel.replace(/[^a-z0-9]+/g,'-');
-    for(const part of members){part.fit=fit;part.fitEvidence={status:'confirmed',url:source.url,model:exactModel,method:'explicit retailer compatible-with declaration; exact model and revision'};}
-    if(c.mandatorySelections?.join(',')==='pcb,plate')c.pricing={...c.pricing,status:'complete',reason:'Case/weight selection only; mandatory PCB and plate are separate line items'};
-  }
-  // Explicit declarations may intentionally connect differently named models (e.g. Launcher60 to Venom60).
-  // Match the full named product, not a layout or a fuzzy family token.
-  const canonical=s=>String(s).toLowerCase().replace(/\b(plates|pcbs)\b/g,m=>m.slice(0,-1)).replace(/[^a-z0-9]+/g,'');
-  for(const c of out.filter(p=>p.cat==='case'&&!p.kit)){
-    const source=productBy.get(c.id.split('~')[0]);const section=(source.sourceText||'').match(/compatible with\s*:\s*\n([\s\S]*?)(?:\nIncludes?:|$)/i)?.[1];
-    if(!section)continue;
-    const named=section.split('\n').map(canonical);const candidates=out.filter(p=>['pcb','plate'].includes(p.cat)&&p.id.startsWith(source.sourceId+'-')&&named.includes(canonical(productBy.get(p.id.split('~')[0])?.name)));
-    const ps=candidates.filter(p=>p.cat==='pcb'),pls=candidates.filter(p=>p.cat==='plate');
-    if(!ps.length||!pls.length)continue;
-    c.confirmedFits=[];
-    for(const p of ps)for(const pl of pls)if((!p.layout||p.layout===c.layout)&&(!pl.layout||pl.layout===c.layout)){
-      c.confirmedFits.push({pcb:p.id,plate:pl.id,url:source.url,method:'retailer explicitly names both compatible products'});
-    }
-  }
+  for(const [k,g] of full) for(const part of [...g.case,...g.pcb,...g.plate]) part.fit=clash.get(g.base)>1?k:g.base;
   return out;
 }
 // Per directory category: how many listings, how many are admitted in stock / sold out, and why the rest are not.

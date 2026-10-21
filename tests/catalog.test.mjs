@@ -59,7 +59,7 @@ test('site scripts compile and builder rounds switch purchases to whole packs',a
   const html=await readFile(new URL('../index.html',import.meta.url),'utf8');
   const inline=[...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g)].map(m=>m[1]).filter(Boolean).join('\n');new vm.Script(inline);
   const ctx={URL,window:{},localStorage:{getItem:()=>null}};vm.createContext(ctx);
-  for(const file of ['assets/build-engine.js','assets/product-links.js','data/product-links.js'])vm.runInContext(await readFile(new URL('../'+file,import.meta.url),'utf8'),ctx);
+  for(const file of ['assets/product-links.js','data/product-links.js'])vm.runInContext(await readFile(new URL('../'+file,import.meta.url),'utf8'),ctx);
   vm.runInContext(await readFile(new URL('../assets/part-names.js',import.meta.url),'utf8'),ctx);
   vm.runInContext(await readFile(new URL('../data/builder-catalog.js',import.meta.url),'utf8'),ctx);
   const beforeRendering=inline.slice(0,inline.indexOf('const LAYOUTS ='));
@@ -71,7 +71,7 @@ test('site scripts compile and builder rounds switch purchases to whole packs',a
 });
 test('builder admits kits, keycap sets and stabilizers only with the facts it needs',()=>{
   const kb=(changes={})=>normalize(raw({title:'Example65 Barebones Keyboard Kit',product_type:'Keyboard Kit',vendor:'Example',body_html:'<li>Layout: 65%</li><li>Hot-swap PCB</li><li>Mount: Gasket</li>',options:[{name:'Color',values:['Black','White']}],variants:[{id:1,title:'Black',price:'129',available:true},{id:2,title:'White',price:'129',available:true}],...changes}),source,'2026-10-19T00:00:00Z');
-  const k=builderPart(kb());assert.equal(k.cat,'case');assert.equal(k.layout,'65');assert.equal(k.kit,null);assert.equal(k.pricing.status,'incomplete');assert.deepEqual(k.colors.map(c=>c[0]),['Black','White']);
+  const k=builderPart(kb());assert.equal(k.cat,'case');assert.equal(k.layout,'65');assert.equal(k.kit.pcb.hotswap,true);assert.equal(k.kit.plate,null);assert.equal(k.kit.stabs,null);assert.deepEqual(k.colors.map(c=>c[0]),['Black','White']);
   assert.equal(builderPart(kb({title:'Example40 Keyboard Kit',body_html:'40% layout'})),null);
   // Behavior change: HE boards are admitted with switchSystem set (they were excluded before).
   assert.equal(builderPart(kb({title:'Example65 Magnetic HE Keyboard'})).switchSystem,'hall-effect');
@@ -79,7 +79,7 @@ test('builder admits kits, keycap sets and stabilizers only with the facts it ne
   // Behavior change: a sold-out board is admitted through the same rules and marked soldOut.
   const gone=builderPart(kb({variants:[{id:1,title:'Black',price:'129',available:false}]}));assert.equal(gone.soldOut,true);assert.equal(gone.retailers[0].available,false);assert.ok(!('soldOut' in k));
   const caps=(changes={})=>normalize(raw({title:'Example Keycap Set',product_type:'Keycaps',body_html:'Cherry profile, PBT, dye-sub, 129 keys',variants:[{id:1,title:'Base',price:'60',available:true},{id:2,title:'Numpad',price:'20',available:true}],...changes}),source,'2026-10-19T00:00:00Z');
-  const c=builderPart(caps());assert.equal(c.profile,'Cherry');assert.equal(c.price,60);assert.equal(c.covers,null,'count alone does not establish physical fit');
+  const c=builderPart(caps());assert.equal(c.profile,'Cherry');assert.equal(c.price,60);assert.ok(c.covers.includes('full'));
   // Behavior change: with no variant named as a base kit, the cheapest non-add-on variant is the set; and a set with no stated profile has profile null.
   assert.equal(builderPart(caps({variants:[{id:1,title:'Kit A',price:'60',available:true},{id:2,title:'Kit B',price:'20',available:true}]})).price,20,'cheapest non-add-on kit');
   assert.equal(builderPart(caps({body_html:'PBT, dye-sub'})).profile,null,'no profile stated');
@@ -144,7 +144,7 @@ test('board name never ends up empty and never splits a model code',()=>{
 });
 test('builder case parts use the short board name and a clean brand',()=>{
   const p=normalize(raw({title:'Lemokey X1 QMK/VIA Wired Mechanical Keyboard',product_type:'Keyboard Kit',vendor:'Lemokey X series',body_html:'<li>Layout: 75%</li><li>Hot-swap PCB</li><li>Mount: Gasket</li>',options:[{name:'Color',values:['Black']}],variants:[{id:1,title:'Barebone / Black',price:'149',available:true},{id:2,title:'Assembled / Black',price:'169',available:true}]}),source,'2026-10-19T00:00:00Z');
-  const parts=[].concat(builderPart(p));assert.equal(parts.length,2,'assembly is a functional variant');for(const k of parts){assert.equal(k.cat,'case');assert.equal(k.brand+' '+k.name,'Lemokey X1');}
+  const k=builderPart(p);assert.equal(k.cat,'case');assert.equal(k.brand+' '+k.name,'Lemokey X1');
 });
 
 test('switch sound character comes only from published housing and stem materials',async()=>{

@@ -40,14 +40,6 @@ for(const b of [...catalog.switches,...catalog.extras,...(catalog.cases||[]),...
   if(b.soldOut){assert.equal(b.soldOut,true);assert.ok(b.retailers.every(r=>r.available===false),'sold-out retailer '+b.id)}
   else{assert.ok(p.available,b.id);assert.ok(!('soldOut' in b),'in-stock part with soldOut '+b.id);assert.ok(b.retailers.every(r=>r.available===true),'retailer '+b.id)}assert.ok(!builderIds.has(b.id),'duplicate builder id '+b.id);builderIds.add(b.id);
   assert.ok(b.price>0&&b.retailers.every(r=>new URL(r.url).origin===new URL(p.url).origin),b.id);checkedPhoto(b.photo??null,b.id);
-  const selected=p.variants.find(v=>v.id===b.variantId);assert.ok(selected,'exact selected variant '+b.id);
-  assert.ok(['complete','incomplete'].includes(b.pricing?.status),'price interpretation '+b.id);
-  assert.ok(['in-stock','sold-out','preorder','made-to-order'].includes(b.availability),'availability interpretation '+b.id);
-  assert.equal(b.pricing.url,selected.url,'selected variant price URL '+b.id);
-  if(b.cat!=='switches')assert.equal(b.price,selected.price,'price belongs to selected variant '+b.id);
-  else assert.ok(Math.abs(b.packPrice/b.packQuantity-b.price)<.00001,'rounded pack price '+b.id);
-  if(b.cat==='case'&&b.assembled)assert.ok(b.includes?.switches&&b.includes?.keycaps,'assembled contents '+b.id);
-  if(b.cat==='keycaps'&&b.keycapFit?.status==='confirmed')assert.ok(b.keycapFit.stem&&(b.covers?.length||b.addon),'confirmed cap evidence '+b.id);
 }
 for(const b of catalog.switches){const p=byId.get(b.id.split('~')[0]);assert.ok(b.switchSystem===undefined||b.switchSystem===null||SWITCH_SYSTEMS.includes(b.switchSystem),b.id);if(!b.switchSystem)assert.ok(!p.specs.system||p.specs.system==='mx-mechanical',b.id);// A spec is either extracted from the retailer's text or read from its published spec table; it is never invented.
   const stated=(v,x)=>x===null||x===v||Object.values(p.publishedSpecs||{}).some(t=>String(t).includes(String(x)));

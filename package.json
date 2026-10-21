@@ -8,8 +8,6 @@
     "catalog:check": "node scripts/validate-catalog.mjs && npm run catalog:links:check",
     "catalog:links": "node scripts/build-product-links.mjs",
     "catalog:links:check": "node scripts/validate-product-links.mjs",
-    "catalog:replay": "node scripts/sync-catalog.mjs --replay --preserve-photos",
-    "catalog:audit": "node scripts/audit-builds.mjs docs/catalog-after.json",
     "test": "node --test tests/*.test.*"
   },
   "engines": {
