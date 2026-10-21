@@ -1841,8 +1841,8 @@ const LW={'60':.64,'65':.72,'75':.78,'tkl':.9,'full':1};
 // The three centre boards are fixed, calm designs so the field always opens on the same look.
 const FEATURED_IDS=['epomaker-9144581390644','mechanicalkeyboards-8930667331884','mechanicalkeyboards-8941009928492'];
 const FEAT_SCALE=1, MFEAT_SCALE=2.2;
-// The 65% board is drawn narrower than the 75% and TKL ones at the same scale, so it gets a small boost to fill its share of the centre.
-const FEAT_BOOST={'epomaker-9144581390644':1.2}; // a desktop 75% board is FEAT_SCALE x 18% of the width (a touch bigger than the reference's 14.7%); the phone has its own scale
+// Boost compact boards to balance their visible size with the featured TKL; the Endgame photo is wider and shallower.
+const FEAT_BOOST={'epomaker-9144581390644':1.2,'mechanicalkeyboards-8941009928492':1.35}; // a desktop 75% board is FEAT_SCALE x 18% of the width (a touch bigger than the reference's 14.7%); the phone has its own scale
 let cutIds=null; const cutoutIds=()=>cutIds??=new Set(cutoutBoards().map(c=>c.id));
 const fieldEls={};
 function fieldBoard(b){return caseVisual(b,'field')}
