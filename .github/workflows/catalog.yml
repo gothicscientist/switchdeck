@@ -1,6 +1,14 @@
 name: Refresh keyboard catalog
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/**'
+      - 'assets/part-names.js'
+      - 'assets/product-links.js'
+      - 'package*.json'
+      - '.github/workflows/catalog.yml'
   # Daily at 09:17 UTC. A failed refresh leaves the site on the last good catalog.
   schedule:
     - cron: '17 9 * * *'
@@ -15,6 +23,9 @@ jobs:
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
@@ -37,8 +48,15 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/
+          # Rebase a generated-data commit if a site edit landed during the crawl.
+          # Conflicting catalog edits fail safely instead of overwriting main.
+          git add -A data/
           if ! git diff --cached --quiet; then
             git commit -m "Refresh sourced keyboard parts catalog"
+            git pull --rebase origin main
             git push
           fi
+      - name: Refresh summary
+        if: always()
+        run: |
+          node -e 'const fs=require("fs");const m=JSON.parse(fs.readFileSync("data/catalog-manifest.json"));fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,`## Thock catalog\n\nGenerated: ${m.generatedAt}\n\n${m.listingCount} listings\n\n`+m.sources.map(s=>`- ${s.name}: ${s.status}${s.error?" — "+s.error.replace(/\n/g," "):""}`).join("\n"))'

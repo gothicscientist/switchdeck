@@ -3,6 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "site:stage": "node scripts/stage-site.mjs",
     "catalog:sync": "node scripts/sync-catalog.mjs",
     "catalog:check": "node scripts/validate-catalog.mjs && npm run catalog:links:check",
     "catalog:links": "node scripts/build-product-links.mjs",
@@ -13,7 +14,6 @@
     "node": ">=22"
   },
   "devDependencies": {
-    "sharp": "^0.34.4"
+    "sharp": "^0.35.5"
   }
 }
-

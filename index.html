@@ -1,7 +1,14 @@
+<!doctype html>
+<html lang="en">
 <meta charset="utf-8">
 <title>Thock: build a custom mechanical keyboard</title>
 <meta name="description" content="Find and build a custom mechanical keyboard. Answer a few questions about size, feel and sound, then buy every part from real stores.">
 <link rel="canonical" href="https://thock.cc/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Thock: build a custom mechanical keyboard">
+<meta property="og:description" content="Find your keyboard, choose compatible parts, and build around your budget.">
+<meta property="og:url" content="https://thock.cc/">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <meta name="claude:viewport-fit-sides" content="cover">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <script src="assets/theme.js"></script>
@@ -866,11 +873,21 @@ const store = {
 const EXAMPLE = {name:'Example: Wireless 75% thock',case:'rainy75',color:1,pcb:null,plate:null,switches:'oilking',stabs:null,keycaps:'gmkolivia',extras:['puller'],example:true};
 let build = store.get('sy.build', null) || {...EXAMPLE};
 let saved = store.get('sy.saved', []);
+if(!Array.isArray(saved)) saved=[];
 let quizAns = store.get('sy.quiz', {});
+if(!quizAns||typeof quizAns!=='object'||Array.isArray(quizAns)) quizAns={};
 let quizStep = 0;
 let quizDone = false;
 // Removed retailer listings must not break saved builds on the next catalog refresh.
-function cleanBuild(b){const out={...b};for(const key of ['case','pcb','plate','switches','stabs','keycaps'])if(out[key]&&!BYID[out[key]])out[key]=null;out.extras=(out.extras||[]).filter(id=>BYID[id]);return out}
+function cleanBuild(b){
+  const out=b&&typeof b==='object'&&!Array.isArray(b)?{...b}:{};
+  out.name=typeof out.name==='string'?out.name.slice(0,120):'Untitled build';
+  for(const key of ['case','pcb','plate','switches','stabs','keycaps'])if(typeof out[key]!=='string'||BYID[out[key]]?.cat!==key)out[key]=null;
+  out.extras=[...new Set((Array.isArray(out.extras)?out.extras:[]).filter(id=>typeof id==='string'&&BYID[id]?.cat==='extras'))];
+  const colors=BYID[out.case]?.colors?.length||1;
+  out.color=Number.isInteger(out.color)&&out.color>=0&&out.color<colors?out.color:0;
+  return out;
+}
 build=cleanBuild(build);saved=saved.map(cleanBuild);
 
 function persist(){store.set('sy.build',build)}
@@ -884,7 +901,7 @@ const SYSTEM_NAMES={mx:'MX-style','hall-effect':'magnetic (hall-effect)','low-pr
 const sysKey=v=>!v||v==='mx-mechanical'?'mx':v;
 const boardSystem=c=>sysKey(c&&c.switchSystem);
 const swSystemOf=s=>sysKey(s&&(s.switchSystem||s.system));
-function effPcb(b){const c=caseOf(b); if(c&&c.kit) return {...c.kit.pcb,name:'Included hot-swap PCB',kit:true,conn:c.conn}; return BYID[b.pcb]||null}
+function effPcb(b){const c=caseOf(b); if(c&&c.kit) return {...c.kit.pcb,name:c.kit.pcb.hotswap===true?'Included hot-swap PCB':'Included PCB',kit:true,conn:c.conn}; return BYID[b.pcb]||null}
 function effPlate(b){const c=caseOf(b); if(c&&c.kit) return {material:c.kit.plate,kit:true,plateStabs:true}; return BYID[b.plate]||null}
 function stabsIncluded(b){const c=caseOf(b); return !!(c&&c.kit&&c.kit.stabs)}
 const layoutOf = b=>{const c=caseOf(b); return c?c.layout:null};
@@ -927,7 +944,9 @@ function compat(b){
       else add('fail','keycaps',`${kc.name} doesn't include the keys for a ${LAYOUT_NAMES[L]} board`);
     } else add('ok','keycaps',`${kc.name} covers the ${LAYOUT_NAMES[L]} layout`);
   }
-  if(sw && !c.assembled && boardSystem(c)!==swSystemOf(sw)) add('fail','switches',`${partName(sw)} won't fit this board`,`It's a ${SYSTEM_NAMES[swSystemOf(sw)]} switch and the ${partName(c)} takes ${SYSTEM_NAMES[boardSystem(c)]} switches.`);
+  if(sw && boardSystem(c)!==swSystemOf(sw)) add('fail','switches',`${partName(sw)} won't fit this board`,`It's a ${SYSTEM_NAMES[swSystemOf(sw)]} switch and the ${partName(c)} takes ${SYSTEM_NAMES[boardSystem(c)]} switches.`);
+  if(sw && c.assembled && pcb?.hotswap===false) add('warn','switches','Replacing these switches needs desoldering','This assembled keyboard has soldered switches.');
+  if(kc && boardSystem(c)==='low-profile') add('info','keycaps','Check the keycap stem and stabilizer fit','Low-profile keyboards need keycaps made for their switch and stabilizer system.');
   for(const [slot,id] of [['case',b.case],['pcb',b.pcb],['plate',b.plate],['switches',b.switches],['keycaps',b.keycaps],['stabs',b.stabs]]){const q=BYID[id]; if(q&&q.soldOut) add('info',slot,`${partName(q)} is sold out`,`${storeOf(q)} lists it as out of stock right now.`)}
   if(sw && pcb){
     if(sw.pins===5 && pcb.pins===3) add('warn','switches','5-pin switches on a 3-pin PCB','Clip the two plastic side legs off each switch.');
@@ -968,6 +987,7 @@ function verdict(issues){
   if(issues.some(i=>i.level==='fail')) return {level:'fail',text:'Parts conflict'};
   if(issues.some(i=>i.level==='warn')) return {level:'warn',text:'Works, with notes'};
   if(issues.some(i=>i.level==='info'&&i.slot==='build')||issues.some(i=>i.slot==='case'&&i.level==='info')) return {level:'info',text:'In progress'};
+  if(issues.some(i=>i.level==='info'&&['pcb','plate','switches','keycaps','stabs'].includes(i.slot))) return {level:'info',text:'Check part compatibility'};
   return {level:'ok',text:'All parts compatible'};
 }
 
@@ -1196,7 +1216,7 @@ function specChips(p){
 let toastT;
 function toast(msg){const t=document.getElementById('toast'); t.textContent=msg; t.hidden=false; clearTimeout(toastT); toastT=setTimeout(()=>t.hidden=true,2600)}
 function encodeBuild(b){const o={n:b.name,c:b.case,k:b.color||0,p:b.pcb,l:b.plate,s:b.switches,t:b.stabs,y:b.keycaps,e:b.extras||[]};return 'SY1:'+btoa(unescape(encodeURIComponent(JSON.stringify(o))))}
-function decodeBuild(code){const raw=code.trim().replace(/^SY1:/,''); const o=JSON.parse(decodeURIComponent(escape(atob(raw)))); const b={name:o.n||'Imported build',case:o.c,color:o.k||0,pcb:o.p||null,plate:o.l||null,switches:o.s||null,stabs:o.t||null,keycaps:o.y||null,extras:(o.e||[]).filter(id=>BYID[id])}; for(const k of ['case','pcb','plate','switches','stabs','keycaps']) if(b[k]&&!BYID[b[k]]) b[k]=null; return b}
+function decodeBuild(code){const raw=code.trim().replace(/^SY1:/,''); if(raw.length>50000)throw Error('Build code too long'); const o=JSON.parse(decodeURIComponent(escape(atob(raw)))); if(!o||typeof o!=='object'||Array.isArray(o))throw Error('Invalid build code'); return cleanBuild({name:o.n||'Imported build',case:o.c,color:o.k,pcb:o.p,plate:o.l,switches:o.s,stabs:o.t,keycaps:o.y,extras:o.e})}
 async function copyText(txt,fallbackEl){
   try{await navigator.clipboard.writeText(txt); toast('Copied to clipboard')}
   catch(e){ if(fallbackEl){fallbackEl.hidden=false; fallbackEl.value=txt; fallbackEl.select()} toast('Select the text and copy it') }
@@ -1372,7 +1392,10 @@ const storeChips=p=>buyLinks(p).length?buyLinks(p).map(l=>`<a class="store ${l.m
    ========================================================= */
 let view='finder';
 function go(v,push=true){
+  if(!['finder','build','saved','directory'].includes(v))v='finder';
   closeSoundPreview();
+  stopClip();
+  clearTimeout(window.__adv);
   view=v;
   renderPill();
   for(const id of ['finder','build','saved','directory']){
@@ -1383,9 +1406,10 @@ function go(v,push=true){
   }
   if(v==='build') renderBuilder(); if(v==='saved') renderSaved(); if(v==='finder') renderFinder();
   if(v==='directory') window.SwitchdeckDirectory.open();
-  if(push){try{history.replaceState(null,'','#'+v)}catch(e){}}
+  if(push&&location.hash!=='#'+v){try{history.pushState(null,'','#'+v)}catch(e){}}
   window.scrollTo({top:0}); onScroll();
 }
+window.addEventListener('hashchange',()=>{const v=location.hash.slice(1);if(v!==view)go(v,false)});
 function onScroll(){document.body.classList.toggle('has-scroll',view!=='finder'&&window.scrollY>8)}
 window.addEventListener('scroll',onScroll,{passive:true});
 document.addEventListener('click',e=>{const g=e.target.closest('[data-go]'); if(g){e.preventDefault(); go(g.dataset.go)}});
@@ -1544,7 +1568,7 @@ function configsFor(c,ans){
   if(c.kit) return [{pcb:null,plate:null}];
   if(!c.fit) return []; // no PCB or plate is known to fit this case
   const out=[];
-  for(const p of PCBS) if(p.fit===c.fit && !((ans.solder==='hotswap'||ans.must==='hotswap')&&!p.hotswap)) for(const pl of PLATES) if(pl.fit===c.fit) out.push({pcb:p.id,plate:pl.id});
+  for(const p of PCBS) if(!p.soldOut&&p.fit===c.fit && !((ans.solder==='hotswap'||ans.must==='hotswap')&&p.hotswap!==true)) for(const pl of PLATES) if(!pl.soldOut&&pl.fit===c.fit) out.push({pcb:p.id,plate:pl.id});
   return out;
 }
 const evalCache=new Map();
@@ -1587,22 +1611,24 @@ function evalAns(ans){
   const must=mustOf(ans), mustSys=mustSystem(must);
   const surprise=ans.look==='surprise', look=ans.look&&ans.look!=='any'&&!surprise?ans.look:null;
   const T=SOUND_T[ans.sound]||{p:45,v:50};
-  const extras=['puller',...(ans.sound==='thock'||ans.sound==='creamy'?['casefoam']:[])], xs=extrasSound(extras);
+  const extras=[], xs=extrasSound(extras);
   // Shortlists: the parts that suit the answers best on their own. The exact build score is worked out per board.
   // One shortlist per switch family (MX-style, magnetic, low-profile, optical): a board only takes its own family.
   const swBy={};
-  for(const s of SWITCHES) if(s.vol!=null&&feelOk(s,feel)&&(!mustSys||swSystem(s)===mustSys)){const q=swQuality(s,ans), sp=swPitch(s); (swBy[swSystemOf(s)]??=[]).push({s,q,sp,key:sameKey(s),proxy:q-Math.abs(sp-(T.p-50))*.35-Math.abs(20+.6*s.vol-T.v)*.45})}
-  for(const k in swBy) swBy[k]=swBy[k].sort((a,b)=>b.proxy-a.proxy).slice(0,SW_SHORT);
-  const kcPool=KEYCAPS.filter(k=>surprise?(k.photo||k.pal):!look||(k.mood||[]).includes(look))
+  for(const s of SWITCHES) if(!s.soldOut&&s.vol!=null&&feelOk(s,feel)&&(!mustSys||swSystem(s)===mustSys)){const q=swQuality(s,ans), sp=swPitch(s); (swBy[swSystemOf(s)]??=[]).push({s,q,sp,key:sameKey(s),proxy:q-Math.abs(sp-(T.p-50))*.35-Math.abs(20+.6*s.vol-T.v)*.45})}
+  // Reserve room for affordable choices so a high sound score cannot price every build out of budget.
+  const shortlist=(pool,n,price)=>{const ranked=[...pool].sort((a,b)=>b.proxy-a.proxy);return [...new Set([...ranked.slice(0,n-8),...[...pool].sort((a,b)=>price(a)-price(b)).slice(0,8)])]};
+  for(const k in swBy) swBy[k]=shortlist(swBy[k],SW_SHORT,x=>switchCost(x.s,110));
+  const kcPool=KEYCAPS.filter(k=>!k.soldOut&&(surprise?(k.photo||k.pal):!look||(k.mood||[]).includes(look)))
     .map(k=>{const s=capSound(k), q=kcQuality(k,look); return {k,q,kp:s.p,kv:s.v,key:sameKey(k),proxy:q-Math.abs(s.p-(T.p-50)/2)*.35}});
-  const kcs=surprise?kcPool:kcPool.sort((a,b)=>b.proxy-a.proxy).slice(0,KC_SHORT);
+  const kcs=surprise?kcPool:shortlist(kcPool,KC_SHORT,x=>x.k.price);
   const list=[], boards=[];
   for(const c of FINDER_CASES){
+    if(c.soldOut) continue;
     if(L&&c.layout!==L) continue;
-    const wl=/Tri|Blue|2\.4/.test(c.conn);
+    const wl=/tri|blue|2\.4|wireless/i.test(c.conn);
     if(ans.wireless==='yes'&&!wl) continue;
-    if(ans.wireless==='wired'&&wl) continue;
-    if(ans.solder==='hotswap'&&c.kit&&c.kit.pcb.hotswap===false) continue;
+    if(ans.solder==='hotswap'&&c.kit&&c.kit.pcb.hotswap!==true) continue;
     if(must&&!boardHasMust(c,must)) continue;
     if(c.assembled){
       // Ships with its own switches and keycaps, which stores rarely spec, so feel and look can't be checked.
@@ -1624,7 +1650,7 @@ function evalAns(ans){
     if(!ks.length||!sws.length) continue;
     const cfgs=configsFor(c,ans).map(cf=>{
       const b0={case:c.id,color:0,pcb:cf.pcb,plate:cf.plate,switches:null,keycaps:null,stabs:null,extras};
-      if(!stabsIncluded(b0)){const pcb=effPcb(b0); b0.stabs=pcb.stabs?.includes('screw')?'durockv2':pcb.stabs?.includes('clip')||c.kit?'cherryclip':null}
+      if(!stabsIncluded(b0)){const pcb=effPcb(b0); b0.stabs=pcb?.stabs?.includes('screw')?'durockv2':pcb?.stabs?.includes('clip')?'cherryclip':null}
       const cs=caseSound(c,effPlate(b0)), pcbE=effPcb(b0);
       let adj=0;
       if(ans.use==='gaming'&&(c.layout==='60'||c.layout==='65')) adj+=3;
@@ -1714,6 +1740,7 @@ function comboCount(ans){
   const look=ans.look&&ans.look!=='any'&&ans.look!=='surprise'?ans.look:null;
   const must=mustOf(ans), mustSys=mustSystem(must);
   const sws=SWITCHES.filter(s=>{
+    if(s.soldOut) return false;
     if(feel&&!(feel==='Silent'?/Silent/.test(s.type):s.type===feel)) return false;
     if(ans.sound==='quiet'&&!/Silent/.test(s.type)) return false;
     if((ans.sound==='thock'||ans.sound==='creamy')&&s.type==='Clicky') return false;
@@ -1722,25 +1749,31 @@ function comboCount(ans){
     if(mustSys&&swSystem(s)!==mustSys) return false;
     return true;
   });
-  const kcs=KEYCAPS.filter(k=>k.covers&&(!look||(k.mood||[]).includes(look)));
+  const kcs=KEYCAPS.filter(k=>!k.soldOut&&k.covers&&(!look||(k.mood||[]).includes(look)));
   const kcByLayout={}; // layout -> keycap prices (addon included), sorted ascending
   const kcFor=lay=>kcByLayout[lay]||(kcByLayout[lay]=kcs.filter(k=>k.covers.includes(lay)||(k.addon&&k.addon[lay])).map(k=>k.price+(!k.covers.includes(lay)&&k.addon&&k.addon[lay]||0)).sort((a,b)=>a-b));
   const swByQty=new Map(); // switch family + pack-rounded purchase size -> switch costs, sorted ascending
   const swFor=(sys,q)=>{const k=sys+':'+q; let a=swByQty.get(k); if(!a){a=sws.filter(s=>swSystemOf(s)===sys).map(s=>switchCost(s,q)).sort((x,y)=>x-y); swByQty.set(k,a)} return a};
   let n=0;
   for(const c of FINDER_CASES){
+    if(c.soldOut) continue;
     if(L&&c.layout!==L) continue;
-    const wl=/Tri|Blue|2\.4/.test(c.conn);
+    const wl=/tri|blue|2\.4|wireless/i.test(c.conn);
     if(ans.wireless==='yes'&&!wl) continue;
-    if(ans.wireless==='wired'&&wl) continue;
-    if(ans.solder==='hotswap'&&c.kit&&c.kit.pcb.hotswap===false) continue;
+    if(ans.solder==='hotswap'&&c.kit&&c.kit.pcb.hotswap!==true) continue;
     if(must&&!boardHasMust(c,must)) continue;
     if(c.assembled){ if(!budget||c.price<=budget) n++; continue; }
-    if(!c.kit&&!configsFor(c,ans).length) continue;
+    const configs=configsFor(c,ans); if(!configs.length) continue;
     const kp=kcFor(c.layout), sc=swFor(boardSystem(c),switchQty({case:c.id})||70);
     if(!kp.length||!sc.length) continue;
     if(!budget){ n+=kp.length*sc.length; continue; }
-    const rem=budget-c.price+1e-9; if(rem<0) continue;
+    // Count each switch/keycap pair once using its cheapest complete case/PCB/plate configuration.
+    const base=Math.min(...configs.map(cf=>{
+      const b={case:c.id,pcb:cf.pcb,plate:cf.plate,extras:[]},p=effPcb(b);
+      if(!stabsIncluded(b))b.stabs=p?.stabs?.includes('screw')?'durockv2':p?.stabs?.includes('clip')?'cherryclip':null;
+      return total(b);
+    }));
+    const rem=budget-base+1e-9; if(rem<0) continue;
     let j=kp.length; // two pointers: as the switch cost rises, fewer keycap sets fit
     for(let i=0;i<sc.length;i++){ while(j>0&&kp[j-1]+sc[i]>rem) j--; if(!j) break; n+=j }
   }
@@ -2292,6 +2325,7 @@ function openPicker(slot){
 function closePicker(){const el=document.getElementById('picker'); el.hidden=true; el.innerHTML=''; document.body.style.overflow=''}
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!document.getElementById('picker').hidden) closePicker()});
 function renderPickList(){
+  if(!pk.slot||!document.getElementById('pklist'))return;
   const slot=pk.slot, pool=POOLS[slot], facets=FACETS[slot]||[];
   let rows=pool.map(p=>({p,price:partPrice(slot,p),pr:partProblems(slot,p)}));
   rows=rows.filter(({p,price})=>{
@@ -2372,11 +2406,21 @@ document.getElementById('importbtn').onclick=()=>{
    ========================================================= */
 const start=(location.hash||'').replace('#','');
 // The directory lists retailer listings; one listing can hold several builder parts (one per spring weight or type).
-const BY_LISTING=new Map(); for(const p of ALLPARTS) if(p.catalogId&&!BY_LISTING.has(p.catalogId)) BY_LISTING.set(p.catalogId,p);
-window.SwitchdeckBuilder={has:id=>BY_LISTING.has(id),add:id=>{const p=BY_LISTING.get(id);if(!p)return;go('build');choose(p.cat,p)}};
+window.SwitchdeckBuilder={
+  parts:(id,url)=>ALLPARTS.filter(p=>p.catalogId===id&&(!url||p.retailers?.some(r=>r.url===url))),
+  has:(id,url)=>!!window.SwitchdeckBuilder.parts(id,url).length,
+  add:(id,url)=>{const parts=window.SwitchdeckBuilder.parts(id,url);if(!parts.length){toast('This variant is not available in the builder');return}const p=parts.find(p=>!p.soldOut)||parts[0];go('build');choose(p.cat,p)}
+};
+// Discard obsolete or malformed quiz answers while retaining valid choices across refreshes.
+for(const key of Object.keys(quizAns)){
+  const q=QUESTIONS.find(q=>q.key===key);
+  if(key==='seed'){if(!Number.isFinite(quizAns[key]))delete quizAns[key];continue}
+  if(!q||(q.budget?!((Number.isFinite(quizAns[key])&&quizAns[key]>=B_MIN&&quizAns[key]<=B_MAX)||quizAns[key]==='any'):!q.opts.some(o=>o.v===quizAns[key])))delete quizAns[key];
+}
 {const n=document.getElementById('affnote'); if(globalThis.SwitchdeckLinks.hasAffiliates()){n.textContent=AFF_NOTE; n.hidden=false}}
 go(['finder','build','saved','directory'].includes(start)?start:'finder',false);
 renderPill();
 </script>
+</html>
 
 

@@ -1,6 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {readFile} from 'node:fs/promises';
+import {readFile,mkdtemp,rm,mkdir} from 'node:fs/promises';
+import {fileURLToPath} from 'node:url';
+import path from 'node:path';
+import {pickPhotos} from '../scripts/photo-check.mjs';
 import vm from 'node:vm';
 import {analyze,judge,photoRecord} from '../scripts/image-check.mjs';
 
@@ -12,6 +15,19 @@ function canvas(W,H,rects,bg=[255,255,255]){
   return {data,width:W,height:H,channels:4};
 }
 const dark=[40,40,44];
+
+test('photo refresh stops at a passing image and reuses its checkpoint',async()=>{
+  const parent=fileURLToPath(new URL('../test-results/',import.meta.url));await mkdir(parent,{recursive:true});
+  const dir=await mkdtemp(path.join(parent,'photos-'));
+  try{
+    let calls=[];
+    const features=analyze(canvas(160,100,[[15,35,130,48,dark]]));
+    const jobs=[{key:'one',cat:'case',layout:'65',urls:['https://example.com/a.jpg','https://example.com/b.jpg']}];
+    const opts={cacheFile:path.join(dir,'checks.json'),log:()=>{},inspect:async u=>{calls.push(u);return features}};
+    assert.ok((await pickPhotos(jobs,opts)).get('one'));assert.deepEqual(calls,['https://example.com/a.jpg']);
+    calls=[];assert.ok((await pickPhotos(jobs,opts)).get('one'));assert.deepEqual(calls,[]);
+  }finally{await rm(dir,{recursive:true,force:true})}
+});
 
 test('a clean top-down keyboard photo passes and is framed to the board',()=>{
   const f=analyze(canvas(160,100,[[15,35,130,48,dark]]));

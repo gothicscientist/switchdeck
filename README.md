@@ -1,18 +1,23 @@
-# Thock: keyboard builder and parts directory
+# Thock
 
-A static keyboard builder with a sourced, searchable retailer directory. Open the [site](https://thock.cc/) and choose **Parts directory**, or **Browse all parts** from the builder.
+A static mechanical-keyboard finder, builder, saved-build library, and sourced parts directory at https://thock.cc/.
 
-## Catalog
+## Develop and check
 
-The initial import contains 4,076 retailer listings and 25,591 product variants from CannonKeys, Divinikey, NovelKeys, KBDfans, Keychron, KeebsForAll, and Mode Designs. It covers keyboards/kits, cases, PCBs, plates, switches, keycaps, stabilizers, mods/tools/cables, and deskmats. Counts are listing counts, not claims of unique models or market-wide completeness. Separate listings are retained because revisions, kit contents, and pack sizes can differ across stores.
+Requires Node 22 or newer.
 
-Every published record has real retailer image URLs, a direct product URL, variant URLs, USD prices, stock snapshots, option values, source timestamps, and provenance. Technical specs are extracted only when published; missing fields remain explicit. A listing's starting price can refer to an add-on rather than a complete kit. Exact variants and their prices are visible in the detail dialog. Prices exclude shipping and tax; store stock and prices can change after import.
+```sh
+npm ci
+npm test
+npm run catalog:check
+npm run site:stage
+```
 
-The directory loads only when opened. Its lightweight index is separate from detail shards of 80 listings, so the finder does not download the full catalog. Product images are lazy loaded from retailer CDNs and link back to their stores; image ownership remains with the source owners. No copied marketing descriptions or generated product photos are used.
+Serve the repository or `dist/` with a static HTTP server. Use HTTP rather than a file URL: the directory loads its index and detail shards on demand. The theme follows the device preference; the header toggle overrides it for the current visit. Builds are stored in the browser on the current origin. Build codes retain the SY1 format for compatibility and can move builds between devices or domains.
 
-## Refresh efficiently
+## Daily catalog finder
 
-Requires Node 22 or newer; no dependencies, paid API, or API key is required.
+**Refresh keyboard catalog** runs daily at **09:17 UTC** and can also be run manually from GitHub Actions. It checks robots.txt, reads public retailer product feeds, retries temporary network failures, verifies USD for optional stores, checks photos, builds purchase links, validates the resulting catalog, and runs all tests before committing. A failed refresh leaves the deployed catalog intact. Its successful `workflow_run` triggers **Deploy to GitHub Pages**, including bot commits that do not trigger ordinary push workflows.
 
 ```sh
 npm run catalog:sync
@@ -20,22 +25,16 @@ npm run catalog:check
 npm test
 ```
 
-The importer checks robots.txt, paginates public Shopify product feeds, retries rate limits, limits concurrency to three stores, and requests each store's pages serially. Raw last-good snapshots stay in ignored `.cache/`. A source failure, repeated pagination, an unexpectedly small result, or a catalog shrink greater than 20% fails the refresh before changing published data. A cache-only rebuild is available with `npm run catalog:sync -- --offline`. Review source changes and run checks before committing generated `data/` files. Add stores to `SOURCES` in `scripts/catalog-lib.mjs`.
+Last-good raw snapshots and photo measurements are cached in ignored `.cache/`. `npm run catalog:sync -- --offline` rebuilds from cached feeds. Required source failures, incomplete pagination, empty feeds, and a catalog shrink greater than 20% abort publication. Optional unavailable sources are reported in the manifest and workflow summary; they are not claimed as fresh. See `data/catalog-manifest.json` for current source status, timestamps, counts, admission reasons, and fingerprint. Counts represent retailer listings, not unique products.
 
-The **Refresh keyboard catalog** GitHub Actions workflow is manual. It imports, validates, tests, commits changed catalog files, and triggers the existing Pages deployment through `workflow_run`. There is no scheduled crawl.
+## Catalog and compatibility
 
-## Builder compatibility
+Source records retain retailer titles, published specifications, stock, exact variant URLs, pack quantities, and provenance. Display names use `assets/part-names.js`. Missing specifications stay unknown. Individual component variants on a keyboard listing are not complete kits. A sold-out base kit is kept sold out even when add-ons remain available. Sold-out parts remain browsable and recoverable in saved builds but are excluded from finder recommendations.
 
-The original curated components keep their IDs, so existing saved builds still work. Imported standard-MX switches enter the builder only when the retailer explicitly publishes their switch system, pin count, actuation force, total travel, and an unambiguous pack quantity, and there is exactly one available variant. Hall effect, optical, low-profile, ambiguous and incomplete switch listings remain browsable but are never treated as ordinary MX switches. Switch purchases round up to whole retailer packs. Tools, lubricants and cables can also be added as exact named retailer variants; fit-dependent foam and components are not automatically admitted.
+The finder prices whole switch packs and the selected case, PCB, plate, stabilizers, and keycaps. PCB and plate pairings require a shared catalog family; unknown fit is shown as a check in the builder. Switch systems must match, including upgrades to assembled keyboards. Imported keycap coverage inferred from key counts still requires checking the exact kitting. Sound estimates are illustrative; recordings and exact-model sound-test links have separate source information in `docs/sound-sources.md`.
 
-Imported parts do not invent sound measurements, physical fit, keycap kitting, or preview colors. Sound-ranked finder recommendations continue to use the curated catalog. Imported switch preview colors and the existing builder sound estimator are illustrative. Case/PCB/plate mounting patterns and keycap coverage need a reviewed adapter before those imported categories can safely enter compatibility recommendations. All categories can already be searched, inspected, and purchased through the directory.
+Directory additions respect the selected exact variant. Unsupported variants can still be inspected and purchased but cannot be silently replaced with another builder variant. Purchase links resolve to product pages, prioritize confirmed Amazon listings, and support optional affiliate configuration in `assets/affiliates.js`; see `docs/product-links.md`.
 
-`data/catalog-manifest.json` contains per-source freshness, category counts, shard paths and a content fingerprint. The validator checks every listing and variant, HTTPS/source links, unique IDs, prices, images, spec ranges, builder admission and counts. Unit tests cover tolerance parsing, force terminology, switch systems, pack pricing, unknown specs, unrelated products, script compilation and saved-build recovery.
+## Deployment
 
-## Local preview
-
-Serve this folder with any static HTTP server (for example `python -m http.server 4173`) rather than opening `index.html` as a `file:` URL. The directory uses same-origin JSON requests. GitHub Pages publishes the repository root.
-
-## Part display names
-
-`assets/part-names.js` is the shared naming policy for every category in the builder, finder, and directory. Display names keep the model/colourway and selected variant, removing retailer SEO, stock badges, compatibility lists, pack counts, and specifications already shown separately. Brand is displayed separately. Original retailer titles remain in `name` on source listings and `sourceName` on builder parts for searching and technical extraction; never parse compatibility from the shortened display name. The importer writes `displayName` for new listings and normalizes generated builder names automatically. The browser applies the same rule to existing data and curated parts, so refreshing the catalog cannot reintroduce long titles. Model revisions and variant choices must remain identifiable. Run `npm test` when changing these rules.
+GitHub Pages deploys `dist/`, assembled by `npm run site:stage` from browser assets, catalog data, CNAME, robots.txt, and sitemap.xml. Source scripts, tests, dependencies, and importer caches are excluded. `CNAME` preserves thock.cc. Tests and catalog validation gate every deploy.

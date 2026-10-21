@@ -201,6 +201,8 @@ const NOT_A_BOARD=/\bbadges?\b|\bfilm\b|\bbulbs?\b|hardware pack|grip sheet|expa
 // Variants sold alongside a board on the same listing, such as a foam kit. Option combos
 // like "Black / Logo Badge / PC Plate" are the board itself.
 const ADD_ON=/^[^/]*(?:\bfoam\b|\bfilm\b|\bbadges?\b|hardware pack|add-?ons?\b)[^/]*$/i;
+// Components may share a product page with full kits. Slash-separated model names do not make a plate a kit.
+export const boardVariant=v=>!ADD_ON.test(v.name)&&!/(?:\b(?:pcb|plate|case|weight|foam|badge|knob|cable|battery)\s+only\b|\bonly\s+(?:pcb|plate|case)\b|\b(?:replacement|spare)\b)/i.test(v.name);
 const LOCALE=/\bISO\b|\bJIS\b|\bDE\b|\bFR\b|\bUK\b|nordic|spanish|german|french|japanese|korean|arabic|hebrew|russian|swiss|belgian|italian|turkish|portug/i;
 const tidy=v=>v?String(v).replace(/[.;,\s]+$/,'').slice(0,40):null;
 const cleanBrand=(p)=>{const b=String(p.brand).replace(/,?\s*(?:LLC|Inc\.?|Ltd\.?)$/i,'').trim(); return /^(?:Z-|third party|default|vendor)/i.test(b)?p.retailer:b};
@@ -324,7 +326,7 @@ const typesListed=n=>/\b(?:linear|tactile|clicky)\b[\s,/&+-]+(?:and\s+)?(?:linea
 // ---- what a listing really is ----
 const BOARDISH=/\bkeyboards?\s*(?:kit|with|\(|-|$)|\bbarebone|\d{2,3}\s?%|\bmacro ?pad|\bnumpad|\bkeypad|\bpad\b|\bboard\b/i;
 const SWITCHLIKE_NOT=/\bkits?\b|\bcase\b|keycaps?|cable|opener|puller|\blube\b|lubricant|film|spring|stabili|\bstems?\b(?!\s+switch)|housing|tray|storage|tester|\bstand\b|badge|knob|\b(?:display|collection)\s+box|switch(?:es)?\s+box(?:es)?\s*$|container|tool|brush|tripod|baggie|socket|holder|\bpcb\b|\bplate\b/i;
-const KEYCAP_NOT=/puller|remover|tray|storage|\bstand\b|clean|display|holder|retainer|lube|tool|\bbag\b|case\b/i;
+const KEYCAP_NOT=/puller|remover|tray|storage|\bstand\b|clean|display|holder|retainer|lube|tool|\bbag\b|\bbox\b|case\b/i;
 // The category a listing's rules should follow. Store categories are rough: switches sit under keyboards or PCBs ("PCB Mount Switch"),
 // keycap sets under extras, and so on.
 function route(p) {
@@ -456,7 +458,7 @@ export function keycapBase(variants) {
   const tier1=cand.filter(v=>KC_BASE.test(v.name)), tier2=cand.filter(v=>KC_BASE_LOOSE.test(v.name)&&!/\balt(?:ernate)?\b/i.test(v.name));
   return {v:cheapest(tier1.length?tier1:tier2.length?tier2:cand),tier:tier1.length?1:tier2.length?2:3};
 }
-const KEYCAP_ACCESSORY=/display frame|\bframe\b|puller|remover|\btray\b|storage|clean|\bstand\b|holder|retainer|cable clip|\bcharm\b/i;
+const KEYCAP_ACCESSORY=/display frame|\bframe\b|puller|remover|\btray\b|storage|\bonly box\b|\bbox only\b|clean|\bstand\b|holder|retainer|cable clip|\bcharm\b/i;
 const PROFILES=/\b(Cherry|OEM|XDA|DSA|SA|MT3|KAT|KAM|DSS|DCS|DCX|ASA|OSA|MDA|MOA)\b/;
 function keycapsRule(p) {
   const s=p.specs, n=p.name;
@@ -511,9 +513,9 @@ function keyboardsRule(p) {
   if(!L) return {reason:[40,85,90,95].includes(+s.layout)?"layout the builder can't draw":'no layout'};
   const vs0=pool(p); if(!vs0.length) return {reason:'no board variant'};
   const vs=vs0.filter(v=>!LOCALE.test(v.name)).length?vs0.filter(v=>!LOCALE.test(v.name)):vs0;
-  const bare=vs.find(v=>!ADD_ON.test(v.name)&&/bare ?bones?|barebone|\bkit\b|no switch|without switch|\bdiy\b/i.test(v.name));
+  const bare=cheapest(vs.filter(v=>boardVariant(v)&&/bare ?bones?|barebone|\bkit\b|no switch|without switch|\bdiy\b/i.test(v.name)));
   const assembled=!bare&&!/bare ?bones?|barebone|\bkit\b|diy/i.test(n);
-  const boards=vs.filter(v=>!ADD_ON.test(v.name)); if(!boards.length) return {reason:'no board variant'};
+  const boards=vs.filter(boardVariant); if(!boards.length) return {reason:'no board variant'};
   const v=bare||cheapest(boards);
   const board=boardName(n,cleanBrand(p),p.retailer), switchSystem=switchSystemOf(n)||s.switchSystem||(LOW_PROFILE_MODELS.test(n)?'low-profile':null);
   return {parts:{...base(p,v),cat:'case',brand:board.brand,name:board.name,layout:L.layout,layoutLabel:L.label,keys:null,knob:/\bknob\b/i.test(n),mount:tidy(s.mount??published(p,/mount/i)),material:tidy(s.material??published(p,/case material|^material$/i)),conn:s.connection||connOf(n)||connOf(v.name)||'Not listed',colors:colorsOf(p,v),assembled,...(switchSystem?{switchSystem}:{}),

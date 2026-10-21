@@ -2,13 +2,13 @@
 (() => {
   const tidy=s=>String(s??'').replace(/<[^>]*>/g,' ').replace(/&amp;/gi,'&').replace(/\s+/g,' ').trim();
   const edge=s=>tidy(s).replace(/^[\s·|,;:–—/&-]+|[\s·|,;:–—/&-]+$/g,'');
-  const status=/\b(?:group buy|pre[- ]?order|in[- ]?stock|extras|sale|restock|warehouse find|limited stock|coming soon|sold out)\b/i;
+  const status=/\b(?:group buy|pre[- ]?order|in[- ]?stock|extras?|gbextras?|cfg|sale|restock|warehouse find|limited stock|coming soon|sold out)\b|^only keycaps?$/i;
   const catOf=c=>({case:'keyboards',cases:'keyboards',plate:'plates',pcb:'pcbs'}[c]||c);
   const cut=(s,re)=>{const m=re.exec(s);return m&&m.index>0?edge(s.slice(0,m.index)):s};
   const compact=(s,max)=>{if(s.length<=max)return s;const words=s.split(' '),out=[];for(const w of words){if(out.length&&[...out,w].join(' ').length>max)break;out.push(w)}return edge(out.join(' '))};
   function core(value,category) {
     let s=tidy(value).replace(/\[([^\]]+)\]|\(([^)]+)\)/g,(all,a,b)=>status.test(a||b)?' ':all);
-    const revisions=['switches','keyboards'].includes(category)?s.match(/\b(?:V\d+(?:\.\d+)?|Rev\.?\s*\d+|Version\s+\d+)\b/gi)||[]:[];
+    const revisions=s.match(/\b(?:V\d+(?:\.\d+)?|Rev\.?\s*\d+|Version\s+\d+)\b/gi)||[];
     s=s.replace(/^(?:(?:group buy|pre[- ]?order|in[- ]?stock|warehouse find|sale)\s*[:–—-]?\s*)+/i,'');
     s=cut(s,/\s+(?:for|compatible with|designed for|suitable for|fits|with light diffuser)\b/i);
     if(category==='keycaps') {

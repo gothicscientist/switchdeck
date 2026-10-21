@@ -25,21 +25,31 @@ export const REJECTED=new Set(Object.keys(JSON.parse(await readFile(new URL('./p
 export const rejected=u=>REJECTED.has(bare(u));
 
 // jobs: [{key, cat, layout, urls}] → Map key → photo record, or null when no photo passes.
-export async function pickPhotos(jobs,{cacheFile,log=console.log,concurrency=16}={}){
-  const {default:sharp}=await import('sharp');
+export async function pickPhotos(jobs,{cacheFile,log=console.log,concurrency=16,inspect}={}){
+  const sharp=inspect?null:(await import('sharp')).default;
+  const load=inspect||(u=>features(u,sharp));
   let cache={};
   try{const c=JSON.parse(await readFile(cacheFile,'utf8')); if(c.version===VERSION) cache=c.urls}catch{}
-  const urls=[...new Set(jobs.flatMap(j=>j.urls))].filter(u=>!cache[u]||cache[u].error);
-  let next=0, done=0;
-  await Promise.all(Array.from({length:concurrency},async()=>{while(next<urls.length){const u=urls[next++]; cache[u]=await features(u,sharp); if(++done%500===0) log(`Checked ${done} of ${urls.length} new photos`)}}));
-  await writeFile(cacheFile+'.tmp',JSON.stringify({version:VERSION,urls:cache})); await rename(cacheFile+'.tmp',cacheFile);
+  // Stop at the first passing product photo. A cold run should not download ten near-identical
+  // gallery shots per part. Check later images only for jobs with no usable photo yet.
+  let done=0; const checked=new Set();
+  const score=(j,u)=>{const f=cache[u];return f&&!f.error&&!f.missing&&!rejected(u)?judge(f,j.cat,j.layout):0};
+  for(let round=0;round<Math.max(0,...jobs.map(j=>j.urls.length));round++){
+    const pending=jobs.filter(j=>!j.urls.some(u=>score(j,u)>0));
+    const urls=[...new Set(pending.map(j=>j.urls[round]).filter(Boolean))].filter(u=>(!cache[u]||cache[u].error)&&!checked.has(u));
+    let next=0;
+    await Promise.all(Array.from({length:concurrency},async()=>{while(next<urls.length){const u=urls[next++];checked.add(u);cache[u]=await load(u);if(++done%500===0)log(`Checked ${done} new photos`)}}));
+    // Checkpoint every gallery round so a cancelled run can resume without starting over.
+    await writeFile(cacheFile+'.tmp',JSON.stringify({version:VERSION,urls:cache}));await rename(cacheFile+'.tmp',cacheFile);
+    if(!pending.length)break;
+  }
   const out=new Map(); let shown=0;
   for(const j of jobs){
     let best=null,bs=0;
     for(const u of j.urls){const f=cache[u]; const s=f&&!f.error&&!f.missing&&!rejected(u)?judge(f,j.cat,j.layout):0; if(s>bs){bs=s;best=photoRecord(u,f,j.cat)}}
     out.set(j.key,best); if(best) shown++;
   }
-  const failed=urls.filter(u=>cache[u]?.error).length;
+  const failed=[...checked].filter(u=>cache[u]?.error).length;
   log(`Photos: ${shown} of ${jobs.length} parts have a clear photo; the rest use a drawn icon. ${failed} downloads failed.`);
   return out;
 }

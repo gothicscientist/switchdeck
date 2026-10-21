@@ -43,10 +43,13 @@ test('two-pointer budget count equals a brute-force nested loop for a board',asy
       const L=c.layout, q=switchQty({case:c.id})||70;
       let brute=0;
       // a board only takes switches of its own family (MX, magnetic, low-profile, optical)
-      for(const s of SWITCHES.filter(s=>swSystemOf(s)===boardSystem(c))) for(const k of KEYCAPS){
-        if(!k.covers||!(k.covers.includes(L)||(k.addon&&k.addon[L]))) continue;
+      const b={case:c.id,extras:[]},p=effPcb(b);
+      if(!stabsIncluded(b))b.stabs=p?.stabs?.includes('screw')?'durockv2':p?.stabs?.includes('clip')?'cherryclip':null;
+      const base=total(b);
+      for(const s of SWITCHES.filter(s=>!s.soldOut&&swSystemOf(s)===boardSystem(c))) for(const k of KEYCAPS){
+        if(k.soldOut||!k.covers||!(k.covers.includes(L)||(k.addon&&k.addon[L]))) continue;
         const add=!k.covers.includes(L)&&k.addon&&k.addon[L]||0;
-        if(c.price+switchCost(s,q)+k.price+add<=budget+1e-9) brute++;
+        if(base+switchCost(s,q)+k.price+add<=budget+1e-9) brute++;
       }
       // isolate the board: count with and without it by temporarily shrinking FINDER_CASES
       const saved=FINDER_CASES.slice(); FINDER_CASES.length=0; FINDER_CASES.push(c);

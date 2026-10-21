@@ -6,6 +6,12 @@ import '../assets/part-names.js';
 import {normalize,builderPart,SOURCES} from '../scripts/catalog-lib.mjs';
 const {name,part}=globalThis.SwitchdeckNames;
 
+test('store control labels never become truncated product names',()=>{
+  assert.equal(name('[Only Keycap] Pudding doubleshot keycap V2 pbt oem backlit for keyboard','keycaps'),'Pudding V2');
+  assert.equal(name('[GBEXTRAS] Domikey Silent Sea Keycaps','keycaps'),'Domikey Silent Sea');
+  assert.equal(name('[Extra] Tofu TKL Keyboard','keyboards'),'Tofu TKL');
+});
+
 test('retailer SEO is removed while the complete colourway remains',()=>{
   const title='Taihao Blue Glacial Lake double shot keycaps for diy gaming mechanical keyboard Cubic OEM Profile for XD64 BM60 BM68 BM80 BM65';
   assert.equal(name(title,'keycaps','KPrepublic'),'Taihao Blue Glacial Lake');
