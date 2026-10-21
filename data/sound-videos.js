@@ -13,10 +13,20 @@ globalThis.SWITCHDECK_SOUND_VIDEOS={
   "title": "Cherry MX Black Hyperglide Sound Test with GMK, MT3 and SA Keycaps",
   "creator": "Click and Thock"
  },
+ "dangkeebsblueberrymilk": {
+  "video": "J3lfzmVnvvw",
+  "title": "Neo65 + CF Plate + DK Blueberry Milk #soundtest #typingtest #asmr #keyboards #typing #dangkeebs",
+  "creator": "Keyboard Dad"
+ },
  "durockdaybreak": {
   "video": "zfX_VqaTSWU",
   "title": "DUROCK Daybreak Silent Typing Sounds [NOT LUBED] | Silent Alpaca analog 67g",
   "creator": "KiryaChainik"
+ },
+ "durocklilac": {
+  "video": "6_uSvokHKKc",
+  "title": "Sound Test - Space65 / Durock Lilac / GMK Serenity",
+  "creator": "Kem Tn"
  },
  "durocklupine": {
   "video": "N6UYk32Bpuk",
@@ -64,6 +74,11 @@ globalThis.SWITCHDECK_SOUND_VIDEOS={
   "video": "WTey0OOUy7Q",
   "title": "Gateron Beer Switch Review: Crisp and Refreshing",
   "creator": "Milktooth"
+ },
+ "gateronbrown": {
+  "video": "yXfysGqNLeE",
+  "title": "Gateron Switches Sound Test: Red, Blue, Brown, Yellow, White, Black, Green",
+  "creator": "Keychron"
  },
  "gateroncapblackcrystalv2gateronblackcrystal": {
   "video": "7hDuqu00pZE",
@@ -158,6 +173,11 @@ globalThis.SWITCHDECK_SOUND_VIDEOS={
   "title": "Gateron Quinn Switch Review: Less is More?",
   "creator": "Milktooth"
  },
+ "gateronred": {
+  "video": "yXfysGqNLeE",
+  "title": "Gateron Switches Sound Test: Red, Blue, Brown, Yellow, White, Black, Green",
+  "creator": "Keychron"
+ },
  "gateronsmoothie": {
   "video": "IlnVDqxA-qw",
   "title": "Gateron Smoothie Sound Test"
@@ -215,6 +235,16 @@ globalThis.SWITCHDECK_SOUND_VIDEOS={
  "kprepubliceverglidebamboogreen": {
   "video": "jiZ_LQJGxZg",
   "title": "Everglide \"Bamboo Green\" Tactile Switches Review - Interesting, But Not For Me"
+ },
+ "kttmint": {
+  "video": "vlCz8nICo98",
+  "title": "KTT Mint + KBD67 Lite Sound Test | Just Typing",
+  "creator": "Andrew Nguyen"
+ },
+ "kttseasaltlemon": {
+  "video": "_IDC-aQQcAs",
+  "title": "PORTICO Keyboard Typing Sounds ASMR | KTT Sea Salt Lemon Switches",
+  "creator": "hi_keebs"
  },
  "shortcutstudiosc": {
   "video": "jgUyTuO9UGU",

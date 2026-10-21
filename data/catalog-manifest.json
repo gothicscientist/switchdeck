@@ -1,16 +1,16 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-21T05:23:05.662Z",
-  "listingCount": 8914,
-  "inStockCount": 4816,
+  "generatedAt": "2026-10-21T05:49:34.798Z",
+  "listingCount": 8906,
+  "inStockCount": 4809,
   "builderSwitchCount": 2000,
   "builderExtraCount": 1298,
-  "builderCaseCount": 1521,
+  "builderCaseCount": 1519,
   "builderKeycapCount": 1802,
   "builderStabCount": 130,
   "builderPcbCount": 234,
   "builderPlateCount": 538,
-  "builderSoldOutCount": 3622,
+  "builderSoldOutCount": 3621,
   "builderAdmission": {
     "keycaps": {
       "total": 2765,
@@ -31,12 +31,12 @@
       }
     },
     "keyboards": {
-      "total": 2345,
-      "admitted": 729,
-      "soldOutAdmitted": 888,
+      "total": 2340,
+      "admitted": 728,
+      "soldOutAdmitted": 887,
       "excluded": {
         "layout the builder can't draw": 149,
-        "no layout": 328,
+        "no layout": 325,
         "not a keyboard part": 9,
         "unsupported switch system (Topre/EC/Alps)": 112,
         "non-ANSI layout": 111,
@@ -45,11 +45,11 @@
       }
     },
     "switches": {
-      "total": 1325,
+      "total": 1322,
       "admitted": 718,
       "soldOutAdmitted": 447,
       "excluded": {
-        "no pack size": 53,
+        "no pack size": 50,
         "unsupported switch system (Topre/EC/Alps)": 3,
         "no switch type": 79,
         "too many variants (more than 24 switches in one listing)": 6,
@@ -113,7 +113,7 @@
   "categories": {
     "keyboards": {
       "label": "Keyboards & kits",
-      "count": 2345
+      "count": 2340
     },
     "cases": {
       "label": "Cases",
@@ -129,7 +129,7 @@
     },
     "switches": {
       "label": "Switches",
-      "count": 1325
+      "count": 1322
     },
     "keycaps": {
       "label": "Keycaps",
@@ -155,7 +155,7 @@
       "url": "https://cannonkeys.com",
       "currency": "USD",
       "status": "fresh",
-      "checkedAt": "2026-10-21T05:22:32.027Z",
+      "checkedAt": "2026-10-21T05:48:46.881Z",
       "rawProducts": 1185,
       "listings": 917
     },
@@ -165,7 +165,7 @@
       "url": "https://divinikey.com",
       "currency": "USD",
       "status": "fresh",
-      "checkedAt": "2026-10-21T05:22:32.495Z",
+      "checkedAt": "2026-10-21T05:48:49.272Z",
       "rawProducts": 1482,
       "listings": 1353
     },
@@ -175,7 +175,7 @@
       "url": "https://novelkeys.com",
       "currency": "USD",
       "status": "fresh",
-      "checkedAt": "2026-10-21T05:22:26.221Z",
+      "checkedAt": "2026-10-21T05:48:46.264Z",
       "rawProducts": 410,
       "listings": 347
     },
@@ -185,7 +185,7 @@
       "url": "https://kbdfans.com",
       "currency": "USD",
       "status": "fresh",
-      "checkedAt": "2026-10-21T05:22:29.210Z",
+      "checkedAt": "2026-10-21T05:48:49.420Z",
       "rawProducts": 467,
       "listings": 382
     },
@@ -195,7 +195,7 @@
       "url": "https://www.keychron.com",
       "currency": "USD",
       "status": "fresh",
-      "checkedAt": "2026-10-21T05:22:33.245Z",
+      "checkedAt": "2026-10-21T05:48:50.963Z",
       "rawProducts": 712,
       "listings": 640
     },
@@ -205,7 +205,7 @@
       "url": "https://keebsforall.com",
       "currency": "USD",
       "status": "fresh",
-      "checkedAt": "2026-10-21T05:22:35.829Z",
+      "checkedAt": "2026-10-21T05:48:52.181Z",
       "rawProducts": 452,
       "listings": 412
     },
@@ -215,7 +215,7 @@
       "url": "https://modedesigns.com",
       "currency": "USD",
       "status": "fresh",
-      "checkedAt": "2026-10-21T05:22:33.009Z",
+      "checkedAt": "2026-10-21T05:48:50.195Z",
       "rawProducts": 73,
       "listings": 46
     },
@@ -226,7 +226,7 @@
       "currency": "USD",
       "optional": true,
       "status": "fresh",
-      "checkedAt": "2026-10-21T05:22:55.818Z",
+      "checkedAt": "2026-10-21T05:49:28.151Z",
       "rawProducts": 5738,
       "listings": 3076
     },
@@ -237,7 +237,7 @@
       "currency": "USD",
       "optional": true,
       "status": "fresh",
-      "checkedAt": "2026-10-21T05:22:44.868Z",
+      "checkedAt": "2026-10-21T05:49:05.999Z",
       "rawProducts": 1380,
       "listings": 1266
     },
@@ -248,7 +248,7 @@
       "currency": "USD",
       "optional": true,
       "status": "fresh",
-      "checkedAt": "2026-10-21T05:22:37.418Z",
+      "checkedAt": "2026-10-21T05:48:53.694Z",
       "rawProducts": 205,
       "listings": 103
     },
@@ -259,7 +259,7 @@
       "currency": "USD",
       "optional": true,
       "status": "fresh",
-      "checkedAt": "2026-10-21T05:22:38.019Z",
+      "checkedAt": "2026-10-21T05:48:54.945Z",
       "rawProducts": 110,
       "listings": 77
     },
@@ -270,7 +270,7 @@
       "currency": "USD",
       "optional": true,
       "status": "fresh",
-      "checkedAt": "2026-10-21T05:22:38.689Z",
+      "checkedAt": "2026-10-21T05:48:55.746Z",
       "rawProducts": 31,
       "listings": 23
     },
@@ -281,7 +281,7 @@
       "currency": "USD",
       "optional": true,
       "status": "fresh",
-      "checkedAt": "2026-10-21T05:22:39.434Z",
+      "checkedAt": "2026-10-21T05:48:56.782Z",
       "rawProducts": 123,
       "listings": 109
     },
@@ -303,7 +303,7 @@
       "currency": "USD",
       "optional": true,
       "status": "fresh",
-      "checkedAt": "2026-10-21T05:22:45.523Z",
+      "checkedAt": "2026-10-21T05:49:05.121Z",
       "rawProducts": 177,
       "listings": 155
     },
@@ -317,27 +317,6 @@
       "rawProducts": 0,
       "listings": 0,
       "error": "https://milktooth.com/cart.js: HTTP 404"
-    },
-    {
-      "id": "glorious",
-      "name": "Glorious",
-      "url": "https://www.gloriousgaming.com",
-      "currency": "USD",
-      "optional": true,
-      "handles": [
-        "gmmk2-barebone",
-        "gmmk-3-barebones-keyboard",
-        "gmmk-3-pro-he-barebones-keyboard",
-        "glorious-gmmk-pro-75-barebone-black",
-        "gmmk-prebuilt-keyboard",
-        "fox-he-switches",
-        "lynx-he-switches",
-        "panda-he-switches"
-      ],
-      "status": "fresh",
-      "checkedAt": "2026-10-21T05:22:46.709Z",
-      "rawProducts": 8,
-      "listings": 8
     }
   ],
   "shards": [
@@ -454,5 +433,5 @@
     "parts/0110.json",
     "parts/0111.json"
   ],
-  "fingerprint": "50bb40c0165c5ed113760417aadcadb2f7dffae4f0f0c16869235eb82ae4da10"
+  "fingerprint": "44c2713d177feadb5860f633bcffa3b6f37392fbd7478f10436d537c0bb7e933"
 }
