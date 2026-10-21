@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 if(process.env.GITHUB_ACTIONS) process.on('uncaughtException',e=>{console.log('::error title=catalog check::'+String(e.message).replace(/\n/g,' ').slice(0,900));process.exit(1)});
 import {readFile} from 'node:fs/promises';
 import vm from 'node:vm';
-import {digest,requiredFields,EXTRA_KINDS,SWITCH_SYSTEMS,soundFromMaterials,modOf,MOD_TYPES} from './catalog-lib.mjs';
+import {digest,requiredFields,EXTRA_KINDS,SWITCH_SYSTEMS,soundFromMaterials,MOD_TYPES} from './catalog-lib.mjs';
 const base=new URL('../data/',import.meta.url);
 const load=async name=>JSON.parse(await readFile(new URL(name,base),'utf8'));
 const manifest=await load('catalog-manifest.json'),index=await load('catalog-index.json');
@@ -46,7 +46,7 @@ for(const b of catalog.switches){const p=byId.get(b.id.split('~')[0]);assert.ok(
 for(const b of catalog.cases||[]){const p=byId.get(b.id.split('~')[0]);assert.ok(['60','65','75','tkl','full'].includes(b.layout));if(b.kit)assert.ok(b.kit.pcb.hotswap===null||typeof b.kit.pcb.hotswap==='boolean');assert.ok(b.switchSystem===undefined||SWITCH_SYSTEMS.includes(b.switchSystem),b.id);assert.ok(b.fit==null||b.fit.startsWith(p.sourceId+':'),b.id)}
 for(const b of catalog.keycaps||[]){const p=byId.get(b.id.split('~')[0]);assert.ok(b.profile===null||typeof b.profile==='string',b.id)}
 // The admission-report format marks a catalog built by the current rules: extras there carry a known kind and no sound or feel effect.
-if(manifest.builderAdmission)for(const b of catalog.extras){assert.ok(EXTRA_KINDS.includes(b.kind),b.id+' kind');const m=modOf(b.kind,b.name); assert.ok(Object.keys(b.fx).length===0||JSON.stringify(b.fx)===JSON.stringify(MOD_TYPES[m]?.fx),b.id+' fx comes only from its mod type'); if(b.mod!==undefined) assert.equal(b.mod,m,b.id+' mod')}
+if(manifest.builderAdmission)for(const b of catalog.extras){assert.ok(EXTRA_KINDS.includes(b.kind),b.id+' kind');assert.ok(b.mod===undefined||MOD_TYPES[b.mod],b.id+' mod type'); assert.equal(JSON.stringify(b.fx),JSON.stringify(b.mod?MOD_TYPES[b.mod].fx:{}),b.id+' fx comes only from its mod type')}
 for(const b of catalog.pcbs||[]){assert.ok(b.layout===null||['60','65','75','tkl','full'].includes(b.layout),b.id);assert.ok(b.hotswap===null||typeof b.hotswap==='boolean',b.id);assert.ok(b.fit==null||b.fit.startsWith(byId.get(b.id.split('~')[0]).sourceId+':'),b.id)}
 for(const b of catalog.plates||[]){assert.ok(b.layout===null||['60','65','75','tkl','full'].includes(b.layout),b.id);assert.ok(b.material===null||typeof b.material==='string',b.id)}
 // Every listing is admitted or excluded for a named reason.
