@@ -5,7 +5,7 @@
   const status=/\b(?:group buy|pre[- ]?order|in[- ]?stock|extras?|gbextras?|cfg|sale|restock|warehouse find|limited stock|coming soon|sold out)\b|^only keycaps?$/i;
   const catOf=c=>({case:'keyboards',cases:'keyboards',plate:'plates',pcb:'pcbs'}[c]||c);
   const cut=(s,re)=>{const m=re.exec(s);return m&&m.index>0?edge(s.slice(0,m.index)):s};
-  const compact=(s,max)=>{if(s.length<=max)return s;const words=s.split(' '),out=[];for(const w of words){if(out.length&&[...out,w].join(' ').length>max)break;out.push(w)}return edge(out.join(' '))};
+  const compact=(s,max)=>{if(s.length<=max)return s;const words=s.split(' '),out=[];for(const w of words){if([...out,w].join(' ').length>max)break;out.push(w)}return edge(out.join(' ')||s.slice(0,max))};
   function core(value,category) {
     let s=tidy(value).replace(/\[([^\]]+)\]|\(([^)]+)\)/g,(all,a,b)=>status.test(a||b)?' ':all);
     const revisions=s.match(/\b(?:V\d+(?:\.\d+)?|Rev\.?\s*\d+|Version\s+\d+)\b/gi)||[];
@@ -27,10 +27,19 @@
     } else if(category==='stabs') {
       s=cut(s,/\s+stabili[sz]ers?\b/i);
       s=cut(s,/\s+(?:gold\s+plated|PCB\s+screw|plate\s+mount)/i);
+    } else if(category==='extras') {
+      // Generic retailer lube titles are a list of synonyms, not a model name.
+      if(/^(?:lubricating\s+)?(?:grease|oil|lube|lubricant)\b/i.test(s))s='Lubricant';
+      else {
+        s=s.replace(/\b(?:lubricating\s+grease|lube)\b/gi,'Lubricant');
+        const accessory=/\b(?:lubricant|switch\s+films?|switch\s+opener|keycap\s+puller|switch\s+puller|switch\s+tester|deskmat|carrying\s+case|coiled\s+cable|dampening\s+foam|switch\s+pads?)\b/i.exec(s);
+        if(accessory)s=edge(s.slice(0,accessory.index+accessory[0].length));
+      }
     } else {
       s=cut(s,/\s+(?:custom\s+)?(?:mechanical|gaming)\s+keyboard\b/i);
       s=cut(s,/\s+\d+(?:\.\d+)?g\s+\d+(?:\.\d+)?g\b/i);
     }
+    s=cut(s,/\s+(?:with|featuring|suitable|compatible|made\s+of)\b|\s+\d+(?:\.\d+)?\s*(?:ml|grams?|pcs|pieces|pack)\b/i);
     s=s.replace(/\s+\(?\d+\s*(?:pcs|pieces|pack|in\s+1)\)?\s*$/i,'');
     for(const rev of revisions)if(!s.toLowerCase().includes(rev.toLowerCase()))s+=' '+rev;
     return edge(s);
@@ -43,11 +52,14 @@
     // Brand is rendered separately in cards. Match whole prefix words, never substrings.
     main=stripBrand(main);
     main=compact(main,48);
+    // Extras need only a model/type. Sizes and bulk options remain purchase data.
+    if(cat==='extras')return main;
     const variants=segments.map(v=>core(v,cat)).map(v=>edge(v.replace(/\b(?:Default Title)\b/gi,''))).filter(Boolean);
     const unique=[];
     for(let v of variants){if(v.toLowerCase().startsWith(main.toLowerCase()+' '))v=edge(v.slice(main.length));v=compact(v,28);if(v&&v.toLowerCase()!==main.toLowerCase()&&!unique.some(x=>x.toLowerCase()===v.toLowerCase()))unique.push(v)}
-    return main+(unique.length?' · '+unique.join(' / '):'');
+    return compact(main+(unique.length?' · '+unique.join(' / '):''),48);
   }
   function part(p) {return {...p,sourceName:p.sourceName||p.name,name:name(p.sourceName||p.name,p.cat||p.category,p.brand)}}
   globalThis.SwitchdeckNames=Object.freeze({name,part});
 })();
+
