@@ -244,8 +244,10 @@ h1,h2,h3{text-wrap:balance;margin:0;font-weight:700;letter-spacing:-.02em}
 .ractions .btn{width:100%;padding:9px 12px;font-size:13px}
 .rclose{position:absolute;top:12px;left:12px;z-index:2;background:color-mix(in srgb,var(--surface) 70%,transparent)}
 .rlist{overflow:auto;padding:0}
-/* Match %: green, amber or red by position in the list (see toneAt). */
-.rlist .pct.g{color:#2A8A4E}.rlist .pct.y{color:#B7791F}.rlist .pct.r{color:#C2443A}
+/* Match scores use a continuous red → amber → green strength gradient. */
+.match-score{background:linear-gradient(105deg,color-mix(in srgb,var(--match-color),var(--ink) 8%),color-mix(in srgb,var(--match-color),var(--surface) 16%));-webkit-background-clip:text;background-clip:text;color:transparent}
+.rlist .match-score{color:transparent}
+.rlist .pct{font-variant-numeric:tabular-nums}
 .rlist button{width:100%;border:0;background:transparent;display:grid;grid-template-columns:52px minmax(0,1fr) auto;align-items:center;gap:12px;padding:12px 16px;text-align:left;transition:background .2s;animation:fadeUp .4s var(--out) both;animation-delay:calc(var(--i,0) * 30ms)}
 .rlist button:hover{background:var(--tile)}
 .rlist button[aria-current="true"]{background:var(--tile-hover)}
@@ -2176,12 +2178,20 @@ function closeResults(){
 }
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!document.getElementById('results').hidden) closeResults()});
 let rShown=60;
-// Match colours come from where a row sits in the visible list: top third green, middle third amber, bottom third red.
-const toneAt=(i,n)=>i<n/3?'g':i<2*n/3?'y':'r';
+// Map each match’s actual score onto a continuous red → amber → green spectrum.
+function matchColor(score){
+  const stops=[[40,[180,48,55]],[70,[159,112,20]],[99,[28,122,69]]];
+  const value=Math.max(stops[0][0],Math.min(stops.at(-1)[0],Number(score)||40));
+  let lo=stops[0],hi=stops.at(-1);
+  for(let i=1;i<stops.length;i++) if(value<=stops[i][0]){lo=stops[i-1];hi=stops[i];break}
+  const t=(value-lo[0])/(hi[0]-lo[0]);
+  const rgb=lo[1].map((channel,i)=>Math.round(channel+(hi[1][i]-channel)*t));
+  return `rgb(${rgb.join(' ')})`;
+}
 function renderRList(){
   const el=document.getElementById('rlist'); rShown=Math.max(rShown,resIdx+1);
   const shown=resList.slice(0,rShown);
-  el.innerHTML=shown.map((r,i)=>{const c=caseOf(r.b);return `<button style="--i:${i}" data-ri="${i}" aria-current="${i===resIdx}"><span class="rthumb">${caseVisual(r.b,'thumb')}</span><span style="min-width:0"><b>${esc(partName(c))}</b><small>${money(r.t)}${c.soldOut?' · Sold out':''}</small></span>${i===0?'<span class="best">Best match</span>':`<small class="pct ${toneAt(i,shown.length)}">${r.pct}%</small>`}</button>`}).join('')+(resList.length>rShown?`<button class="rmore" id="rmore" style="grid-template-columns:1fr;text-align:center"><small>Show more (${resList.length-rShown} left)</small></button>`:'');
+  el.innerHTML=shown.map((r,i)=>{const c=caseOf(r.b);return `<button style="--i:${i};--match-color:${matchColor(r.pct)}" data-ri="${i}" aria-current="${i===resIdx}"><span class="rthumb">${caseVisual(r.b,'thumb')}</span><span style="min-width:0"><b>${esc(partName(c))}</b><small>${money(r.t)}${c.soldOut?' · Sold out':''}</small></span>${i===0?'<span class="best match-score">Best match</span>':`<small class="pct match-score">${r.pct}%</small>`}</button>`}).join('')+(resList.length>rShown?`<button class="rmore" id="rmore" style="grid-template-columns:1fr;text-align:center"><small>Show more (${resList.length-rShown} left)</small></button>`:'');
   const more=el.querySelector('#rmore'); if(more) more.onclick=()=>{rShown+=60; const st=el.scrollTop; renderRList(); el.scrollTop=st};
   el.querySelectorAll('[data-ri]').forEach(b=>b.onclick=()=>{resIdx=+b.dataset.ri; el.querySelectorAll('[data-ri]').forEach(x=>x.setAttribute('aria-current',x===b)); renderRDetail()});
 }
@@ -2215,7 +2225,7 @@ function renderRDetail(){
       <div><h2>${esc(partName(c))}</h2></div>
       <div class="total"><b>${money(r.t)}</b><span>approx. total</span></div>
       <p class="rcap"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 8h11M9 4l4 4-4 4"/></svg>Made of the ${nParts} parts listed <span class="rcap-w">on the right</span><span class="rcap-n">below</span></p>
-      <div class="stats3"><div><span>Match</span><b>${r.pct}%</b></div><div><span>Sound</span><b>${pitchWord(r.e.pitch)}</b></div><div><span>Feel</span><b>${esc(s?s.type:'As shipped')}</b></div></div>
+      <div class="stats3"><div><span>Match</span><b class="match-score" style="--match-color:${matchColor(r.pct)}">${r.pct}%</b></div><div><span>Sound</span><b>${pitchWord(r.e.pitch)}</b></div><div><span>Feel</span><b>${esc(s?s.type:'As shipped')}</b></div></div>
       ${sf}
       <div class="ractions"><button class="btn primary" id="rbuild">Customize this build</button><button class="btn" id="rcopy">Copy parts list</button></div>
       ${s?'':`<p class="note" style="margin:0">Sold assembled: its switches and keycaps come with it. Swap them in the builder to change the feel or look.</p>`}
