@@ -8,12 +8,14 @@
     "catalog:check": "node scripts/validate-catalog.mjs && npm run catalog:links:check",
     "catalog:links": "node scripts/build-product-links.mjs",
     "catalog:links:check": "node scripts/validate-product-links.mjs",
-    "test": "node --test tests/*.test.*"
+    "test": "node --test tests/*.test.*",
+    "test:ui": "node tests/ui.browser.mjs"
   },
   "engines": {
     "node": ">=22"
   },
   "devDependencies": {
-    "sharp": "^0.35.5"
+    "sharp": "^0.35.5",
+    "playwright": "^1.62.1"
   }
 }

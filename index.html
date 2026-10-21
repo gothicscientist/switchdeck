@@ -591,6 +591,7 @@ a.listen.watch:hover{background:rgba(68,64,60,.16)}
 </style>
 <link rel="stylesheet" href="assets/directory.css">
 <link rel="stylesheet" href="assets/theme.css">
+<link rel="stylesheet" href="assets/polish.css">
 
 <header class="top">
   <div class="bar">
@@ -675,6 +676,7 @@ a.listen.watch:hover{background:rgba(68,64,60,.16)}
 <script src="data/product-links.js"></script>
 <script src="data/builder-catalog.js"></script>
 <script src="assets/directory.js"></script>
+<script src="assets/interactions.js"></script>
 <script>
 /* =========================================================
    CATALOG
@@ -1201,7 +1203,7 @@ function framedPhoto(ph,alt,icon,width=400){
   let src=ph.img; try{const u=new URL(ph.img); if(u.hostname==='cdn.shopify.com') u.searchParams.set('width',width); src=u.href}catch{return icon}
   const white=!ph.bg||(([r,g,b_])=>Math.min(r,g,b_)>=228)([1,3,5].map(i=>parseInt(ph.bg.slice(i,i+2),16)));
   const n=v=>+v.toFixed(4);
-  return `<span class="pf${white?' white':''}"><svg class="pf-photo" viewBox="${n(-pad)} ${n(-pad)} ${n(ar+2*pad)} ${n(1+2*pad)}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="${esc(alt)}"><clipPath id="${id}"><rect width="${n(ar)}" height="1"/></clipPath><image href="${esc(src)}" clip-path="url(#${id})" x="${n(-bx/bw*ar)}" y="${n(-by/bh)}" width="${n(ar/bw)}" height="${n(1/bh)}" preserveAspectRatio="none" onerror="this.closest('.pf').classList.add('err')"/></svg><span class="pf-alt">${icon}</span></span>`;
+  return `<span class="pf pending${white?' white':''}" style="--photo-ratio:${n(ar+2*pad)}/${n(1+2*pad)}" role="img" aria-label="${esc(alt)}"><svg class="pf-photo" viewBox="${n(-pad)} ${n(-pad)} ${n(ar+2*pad)} ${n(1+2*pad)}" preserveAspectRatio="xMidYMid meet" aria-hidden="true"><clipPath id="${id}"><rect width="${n(ar)}" height="1"/></clipPath><image href="${esc(src)}" clip-path="url(#${id})" x="${n(-bx/bw*ar)}" y="${n(-by/bh)}" width="${n(ar/bw)}" height="${n(1/bh)}" preserveAspectRatio="none" onload="this.closest('.pf').classList.remove('pending')" onerror="const p=this.closest('.pf');p.classList.remove('pending');p.classList.add('err');p.setAttribute('aria-label',p.getAttribute('aria-label')+' (illustration)')"/></svg><span class="pf-alt" aria-hidden="true">${icon}</span></span>`;
 }
 function buildBoard(b,opts={}){
   const c=caseOf(b); if(!c) return null;
@@ -1236,9 +1238,17 @@ let toastT;
 function toast(msg){const t=document.getElementById('toast'); t.textContent=msg; t.hidden=false; clearTimeout(toastT); toastT=setTimeout(()=>t.hidden=true,2600)}
 function encodeBuild(b){const o={n:b.name,c:b.case,k:b.color||0,p:b.pcb,l:b.plate,s:b.switches,t:b.stabs,y:b.keycaps,e:b.extras||[]};return 'SY1:'+btoa(unescape(encodeURIComponent(JSON.stringify(o))))}
 function decodeBuild(code){const raw=code.trim().replace(/^SY1:/,''); if(raw.length>50000)throw Error('Build code too long'); const o=JSON.parse(decodeURIComponent(escape(atob(raw)))); if(!o||typeof o!=='object'||Array.isArray(o))throw Error('Invalid build code'); return cleanBuild({name:o.n||'Imported build',case:o.c,color:o.k,pcb:o.p,plate:o.l,switches:o.s,stabs:o.t,keycaps:o.y,extras:o.e})}
-async function copyText(txt,fallbackEl){
-  try{await navigator.clipboard.writeText(txt); toast('Copied to clipboard')}
-  catch(e){ if(fallbackEl){fallbackEl.hidden=false; fallbackEl.value=txt; fallbackEl.select()} toast('Select the text and copy it') }
+async function copyText(txt,fallbackEl,button){
+  if(button?.getAttribute('aria-busy')==='true') return;
+  if(button){clearTimeout(button.copyTimer);button.copyLabel??=button.textContent;button.copyMinWidth??=button.style.minWidth;button.style.minWidth=Math.ceil(button.getBoundingClientRect().width)+'px';button.setAttribute('aria-busy','true')}
+  try{
+    await navigator.clipboard.writeText(txt); toast('Copied to clipboard');
+    if(button?.isConnected){button.textContent='Copied';button.copyTimer=setTimeout(()=>{if(button.isConnected){button.textContent=button.copyLabel;button.style.minWidth=button.copyMinWidth}},1800)}
+  }catch(e){
+    if(button){button.textContent=button.copyLabel;button.style.minWidth=button.copyMinWidth}
+    if(fallbackEl){fallbackEl.hidden=false; fallbackEl.value=txt; fallbackEl.focus(); fallbackEl.select()}
+    toast('Select the text and copy it');
+  }finally{button?.removeAttribute('aria-busy')}
 }
 
 /* =========================================================
@@ -1354,6 +1364,8 @@ let view='finder';
 function go(v,push=true){
   if(!['finder','build','saved','directory'].includes(v))v='finder';
   stopClip();
+  if(!document.getElementById('results').hidden) closeResults(true);
+  if(!document.getElementById('picker').hidden) closePicker();
   clearTimeout(window.__adv);
   view=v;
   renderPill();
@@ -2007,7 +2019,14 @@ if(window.ResizeObserver){
 if(document.fonts) document.fonts.ready.then(scheduleField);
 
 /* question card */
-let qDir=1, hT;
+let qDir=1, hT, budgetCleanup=null, quizRender=0;
+function saveQuizProgress(){store.set('sy.quiz',quizAns);store.set('sy.quizStep',quizStep)}
+function moveQuiz(step){
+  clearTimeout(window.__adv); cancelAnimationFrame(answerFrame);
+  const next=Math.max(0,Math.min(QUESTIONS.length,step));
+  qDir=next<quizStep?-1:1; quizStep=next; saveQuizProgress(); renderQuiz();
+}
+function resetQuiz(){quizAns={}; moveQuiz(0)}
 function renderFinder(){ initField(); renderQuiz(); }
 function icon(name){return {
   back:'<svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 9H3M8 4L3 9l5 5"/></svg>',
@@ -2017,7 +2036,10 @@ function icon(name){return {
   link:'<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6.8 9.2a3 3 0 0 0 4.2 0l2.3-2.3a3 3 0 0 0-4.2-4.2l-.9.9M9.2 6.8a3 3 0 0 0-4.2 0L2.7 9.1a3 3 0 0 0 4.2 4.2l.9-.9"/></svg>'}[name]}
 function renderQuiz(){
   stopClip();
+  const renderId=++quizRender;
+  clearTimeout(window.__adv); budgetCleanup?.(); budgetCleanup=null;
   const card=document.getElementById('qcard'), wrapEl=document.getElementById('qwrap');
+  const focusQuestion=card.contains(document.activeElement)&&window.ThockUI.keyboardUsed;
   const oldH=card.offsetHeight;
   const done=quizStep>=QUESTIONS.length, Q=done?null:QUESTIONS[quizStep];
   const n=evalAns(quizAns).list.length, combos=comboCount(quizAns);
@@ -2044,32 +2066,36 @@ function renderQuiz(){
   const wasWide=wrapEl.classList.contains('wide');
   wrapEl.classList.toggle('wide',!!(Q&&Q.opts&&Q.opts.length>5));
   card.innerHTML=`<div class="qhead"><div class="l"><button class="iconbtn" id="qback" aria-label="Previous question" ${quizStep===0?'disabled':''}>${icon('back')}</button><button class="iconbtn" id="qreset" aria-label="Start over" ${answered()?'':'disabled'}>${icon('reset')}</button></div>
-    <h1>${esc(title)}${Q&&Q.info?`<button type="button" class="qinfo" aria-label="What does this mean?" aria-expanded="false" aria-controls="qinfotext">i</button>`:''}</h1><div class="r" id="qcount"><b>${fmtCombos(shownCombos==null?combos:shownCombos)}</b><span class="w">combinations</span></div></div>
+    <h1 id="quiz-title" tabindex="-1">${esc(title)}${Q&&Q.info?`<button type="button" class="qinfo" aria-label="What does this mean?" aria-expanded="false" aria-controls="qinfotext">i</button>`:''}</h1><div class="r" id="qcount"><b>${fmtCombos(shownCombos==null?combos:shownCombos)}</b><span class="w">combinations</span></div></div>
     <div class="qbody ${qDir<0?'back':''}">${body}</div>`;
   // smooth height change
   // The field is laid out once for the card's final size; resize events during the height tween would re-run it every frame.
   // The card's width also tweens when the option count changes, so the hold lasts until both have settled.
-  if(oldH){card.style.height=''; const newH=card.offsetHeight; layoutField(); fieldHold=true;
+  clearTimeout(hT); fieldHold=false; card.style.height='';
+  if(oldH&&!window.ThockUI.reducedMotion()){const newH=card.offsetHeight; layoutField(); fieldHold=true;
     card.style.height=oldH+'px'; void card.offsetHeight; card.style.height=newH+'px';
     clearTimeout(hT); hT=setTimeout(()=>{card.style.height=''; fieldHold=false; const r=wrapEl.getBoundingClientRect();
       if(Math.abs(r.top-lastCardRect.top)>1||Math.abs(r.width-lastCardRect.width)>1) layoutField()},wasWide!==wrapEl.classList.contains('wide')?520:470)}
   else layoutField();
-  card.querySelector('#qback').onclick=()=>{if(quizStep>0){quizStep--;qDir=-1;renderQuiz()}};
-  card.querySelector('#qreset').onclick=()=>{quizAns={};store.set('sy.quiz',quizAns);quizStep=0;qDir=-1;renderQuiz()};
-  const r2=card.querySelector('#qreset2'); if(r2) r2.onclick=()=>{quizAns={};store.set('sy.quiz',quizAns);quizStep=0;qDir=-1;renderQuiz()};
+  card.setAttribute('role','group');card.setAttribute('aria-labelledby','quiz-title');
+  card.querySelector('#qback').onclick=()=>{if(quizStep>0)moveQuiz(quizStep-1)};
+  card.querySelector('#qreset').onclick=resetQuiz;
+  const r2=card.querySelector('#qreset2'); if(r2) r2.onclick=resetQuiz;
   const vm=card.querySelector('#viewmatches'); if(vm) vm.onclick=()=>openResults();
   card.querySelectorAll('.opt').forEach(b=>b.onclick=()=>choose_(Q,b));
   const qi=card.querySelector('.qinfo'); if(qi) qi.onclick=()=>{const open=qi.getAttribute('aria-expanded')!=='true'; qi.setAttribute('aria-expanded',String(open)); card.querySelector('#qinfotext').hidden=!open};
   if(Q&&Q.budget) wireBudget(card);
+  if(focusQuestion) card.querySelector('#quiz-title').focus({preventScroll:true});
   paintCombos(combos,true);
   // Checking which options would leave no match runs the finder once per option, so it waits for the card's
   // entrance animation and then runs one option per idle moment.
-  if(Q&&Q.opts) setTimeout(()=>markDisabled(Q,card),500);
+  if(Q&&Q.opts) setTimeout(()=>{if(quizRender===renderId)markDisabled(Q,card)},500);
 }
 function setCount(){paintCombos(comboCount(quizAns),true)}
 function choose_(Q,btn){
-  if(btn.disabled) return;
-  quizAns[Q.key]=btn.dataset.v; if(btn.dataset.v==='surprise') quizAns.seed=Math.floor(Math.random()*1e6); store.set('sy.quiz',quizAns);
+  if(btn.disabled||QUESTIONS[quizStep]!==Q) return;
+  const changed=quizAns[Q.key]!==btn.dataset.v;
+  quizAns[Q.key]=btn.dataset.v; if(changed&&btn.dataset.v==='surprise') quizAns.seed=Math.floor(Math.random()*1e6); saveQuizProgress();
   btn.closest('.opts').querySelectorAll('.opt').forEach(o=>o.setAttribute('aria-pressed',o===btn));
   // The pressed option paints first; the counter and field update on the next frame.
   cancelAnimationFrame(answerFrame); answerFrame=requestAnimationFrame(()=>{
@@ -2079,19 +2105,20 @@ function choose_(Q,btn){
   });
   // A must-have that leaves no boards stays on this step so the message can say why.
   if(Q.key==='must'&&mustBlocked()){clearTimeout(window.__adv); window.__adv=setTimeout(renderQuiz,200); return}
-  clearTimeout(window.__adv); window.__adv=setTimeout(()=>{quizStep++;qDir=1;renderQuiz()},320);
+  clearTimeout(window.__adv); window.__adv=setTimeout(()=>moveQuiz(quizStep+1),window.ThockUI.reducedMotion()?0:320);
 }
 /* Must-have that, on its own, empties the results (other answers alone would still match). */
 function mustBlocked(){const m=mustOf(quizAns); return m&&!evalAns(quizAns).list.length&&evalAns({...quizAns,must:'none'}).list.length>0?m:null}
 function mustEmptyMsg(){const m=mustBlocked(); return `No boards match ${esc(MUST_NAMES[m]||'this must-have')} with your other answers. Go back and pick another must-have, or start over.`}
 const MUST_NAMES={hotswap:'swappable switches',rapid:'rapid trigger',knob:'a volume knob',lowprofile:'low profile'};
 function markDisabled(Q,card){
+  if(QUESTIONS[quizStep]!==Q) return;
   if(Q.key==='must') return; // every must-have stays selectable so an empty result can be explained
   const base=mustBlocked()?{...quizAns,must:'none'}:quizAns, step=quizStep;
   const todo=[...card.querySelectorAll('.opt')].filter(b=>b.dataset.v!=='any'&&b.dataset.v!=='surprise');
   const idle=window.requestIdleCallback?f=>requestIdleCallback(f,{timeout:600}):f=>setTimeout(f,16);
   const next=()=>{
-    const b=todo.shift(); if(!b||quizStep!==step||!b.isConnected) return;
+    const b=todo.shift(); if(!b||quizStep!==step||QUESTIONS[quizStep]!==Q||!b.isConnected) return;
     const v=b.dataset.v, n=evalAns({...base,[Q.key]:v}).list.length;
     if(!n&&quizAns[Q.key]!==v){b.disabled=true; b.title='No keyboards match this with your other answers'}
     if(todo.length) idle(next);
@@ -2101,10 +2128,12 @@ function markDisabled(Q,card){
 function wireBudget(card){
   const tr=card.querySelector('#btrack'), fill=card.querySelector('#bfill'), knob=card.querySelector('#bknob'), nl=card.querySelector('#nolimit');
   card.querySelector('#bticks').style.setProperty('--nl',nl.offsetWidth+'px');
-  if(quizAns.budget==null){quizAns.budget=300}
+  if(quizAns.budget==null){quizAns.budget=300;saveQuizProgress()}
   const clampV=v=>Math.min(B_MAX,Math.max(B_MIN,v)), snap=v=>Math.round(clampV(v)/10)*10;
   let W=tr.getBoundingClientRect().width, cur=typeof quizAns.budget==='number'?quizAns.budget:300, raf=0, last=0, tmr=0, dragging=false;
-  if(window.ResizeObserver){const ro=new ResizeObserver(()=>{W=tr.getBoundingClientRect().width;paint()}); ro.observe(tr)}
+  let ro=null;
+  if(window.ResizeObserver){ro=new ResizeObserver(()=>{W=tr.getBoundingClientRect().width;paint()}); ro.observe(tr)}
+  budgetCleanup=()=>{ro?.disconnect();cancelAnimationFrame(raf);clearTimeout(tmr)};
   const label=v=>{const r=snap(v); return r>=B_MAX?`$${B_MAX}+`:`$${r}`};
   function paint(){raf=0;
     const f=(cur-B_MIN)/(B_MAX-B_MIN), pc=Math.min(94,Math.max(6,f*100));
@@ -2112,6 +2141,7 @@ function wireBudget(card){
     knob.style.left='0'; knob.style.transform=`translate3d(${(W*pc/100).toFixed(2)}px,-50%,0) translateX(-50%)`;
     const t=label(cur); if(knob.textContent!==t) knob.textContent=t;
     tr.setAttribute('aria-valuenow',snap(cur));
+    tr.setAttribute('aria-valuetext',quizAns.budget==='any'?'No limit':label(cur));
   }
   const sched=()=>{if(!raf) raf=requestAnimationFrame(paint)};
   const recount=(final)=>{clearTimeout(tmr); const run=()=>{last=performance.now(); setCount(); layoutField()};
@@ -2135,29 +2165,39 @@ function wireBudget(card){
     cur=snap(cur); commit(cur,true); sched()};
   tr.addEventListener('pointerup',end); tr.addEventListener('pointercancel',end);
   tr.addEventListener('keydown',e=>{
+    if(e.ctrlKey||e.metaKey||e.altKey||e.isComposing) return;
     const v=typeof quizAns.budget==='number'?quizAns.budget:300, st=e.shiftKey?50:10; let n=null;
     if(e.key==='ArrowRight'||e.key==='ArrowUp') n=v+st; else if(e.key==='ArrowLeft'||e.key==='ArrowDown') n=v-st;
     else if(e.key==='Home') n=B_MIN; else if(e.key==='End') n=B_MAX;
     if(n==null) return; e.preventDefault(); tr.classList.add('snap'); cur=snap(n); commit(cur,true); sched()});
-  nl.onclick=()=>{const on=quizAns.budget!=='any'; quizAns.budget=on?'any':snap(cur); store.set('sy.quiz',quizAns); nl.setAttribute('aria-pressed',on); tr.style.opacity=on?'.45':''; setCount(); layoutField()};
-  card.querySelector('#bcontinue').onclick=()=>{quizStep++;qDir=1;renderQuiz()};
+  nl.onclick=()=>{const on=quizAns.budget!=='any'; quizAns.budget=on?'any':snap(cur); saveQuizProgress(); nl.setAttribute('aria-pressed',on); tr.style.opacity=on?'.45':''; paint(); setCount(); layoutField()};
+  card.querySelector('#bcontinue').onclick=()=>moveQuiz(quizStep+1);
 }
 document.addEventListener('keydown',e=>{
-  if(view!=='finder'||!document.getElementById('results').hidden||!document.getElementById('picker').hidden) return;
-  if(e.target.matches('input,textarea,select')) return;
+  if(e.defaultPrevented||window.ThockUI.modified(e)||window.ThockUI.modalOpen||view!=='finder') return;
+  if(window.ThockUI.isEditing(e.target)) return;
+  if(e.target.closest('[role="slider"]')&&e.key!=='Enter') return;
   const n=parseInt(e.key,10);
-  if(n>=1&&n<=9){const opts=[...document.querySelectorAll('#qcard .opt')]; const b=opts[n-1]; if(b&&!b.disabled){b.click()}}
+  if(n>=1&&n<=9){const opts=[...document.querySelectorAll('#qcard .opt')]; const b=opts[n-1]; if(b&&!b.disabled){e.preventDefault();b.focus({preventScroll:true});b.click()}}
   if(e.key==='Backspace'){const b=document.getElementById('qback'); if(b&&!b.disabled){e.preventDefault();b.click()}}
+  if(e.key==='Enter'&&!e.target.closest('button,a,summary')){
+    const card=document.getElementById('qcard'), Q=QUESTIONS[quizStep];
+    const action=card.querySelector('#bcontinue,#viewmatches');
+    if(action){e.preventDefault();action.click()}
+    else if(Q?.opts){e.preventDefault();if(quizAns[Q.key]!=null)moveQuiz(quizStep+1);else card.querySelector('.opt:not(:disabled)')?.focus({preventScroll:true})}
+  }
 });
 
 /* =========================================================
    RESULTS
    ========================================================= */
 let resList=[], resIdx=0;
+let resultsCloseTimer;
 // Builds changed on the results screen (opened from a link, or swapped), by the board each list entry started with.
 // They last until the answers change.
 let resCustom=new Map(), resCustomFor='', resNotes=new Map();
 function openResults(caseId,opts={}){
+  clearTimeout(resultsCloseTimer);
   const key=JSON.stringify(quizAns); if(key!==resCustomFor){resCustom=new Map(); resCustomFor=key} resNotes=new Map();
   const base=evalAns(quizAns).list; resList=[...base]; rShown=60;
   const sh=opts.share;
@@ -2175,11 +2215,15 @@ function openResults(caseId,opts={}){
   el.innerHTML=`<div class="rscrim" id="rscrim"><div class="rgrid" role="dialog" aria-modal="true" aria-label="Your matches"><div class="card rdetail" id="rdetail"></div><div class="card rlist" id="rlist"></div></div></div>`;
   el.querySelector('#rscrim').addEventListener('click',e=>{if(e.target.id==='rscrim') closeResults()});
   renderRList(); renderRDetail();
+  window.ThockUI.openModal(el,closeResults,el.querySelector('#rclose'));
 }
-function closeResults(){
+function closeResults(immediate=false){
   const el=document.getElementById('results'), s=el.querySelector('.rscrim'); if(!s) return;
   if(location.hash.startsWith(SHARE_HASH)){try{history.replaceState(null,'','#finder')}catch(e){}}
-  s.classList.add('closing'); setTimeout(()=>{el.hidden=true; el.innerHTML=''; document.body.classList.remove('lock')},220);
+  clearTimeout(resultsCloseTimer);
+  const finish=()=>{el.hidden=true;el.innerHTML='';window.ThockUI.closeModal(el)};
+  if(immediate===true||window.ThockUI.reducedMotion()){finish();return}
+  s.classList.add('closing'); resultsCloseTimer=setTimeout(finish,220);
 }
 /* Share links: #b=<code> (format in assets/share-code.js). Opening one restores the answers and shows that exact
    build on the results screen; parts the catalog no longer has stay empty with a note, never replaced. */
@@ -2195,8 +2239,9 @@ function readShare(code){
 function openShare(code){
   const sh=readShare(code);
   if(!sh){toast("That build link couldn't be read. Check it was copied in full."); try{history.replaceState(null,'','#finder')}catch(e){} if(view!=='finder') go('finder',false); return}
-  quizAns=sh.ans; store.set('sy.quiz',quizAns); quizStep=QUESTIONS.length; qDir=1;
-  const res=document.getElementById('results'); if(!res.hidden){res.hidden=true; res.innerHTML=''}
+  quizAns=sh.ans; quizStep=QUESTIONS.length; qDir=1; saveQuizProgress();
+  clearTimeout(resultsCloseTimer);
+  const res=document.getElementById('results'); if(!res.hidden){res.hidden=true; res.innerHTML='';window.ThockUI.closeModal(res)}
   if(view!=='finder') go('finder',false); else renderQuiz();
   openResults(null,{share:sh});
 }
@@ -2261,7 +2306,6 @@ function shareNote(sh){
   const list=what.length>1?what.slice(0,-1).join(', ')+' and '+what.at(-1):what[0], many=what.length>1||sh.lostExtras>1;
   return {text:'Opened from a shared link.'+(n?` The ${list} in it ${many?'are':'is'} no longer listed. Nothing was put in ${many?'their':'its'} place, and the total leaves ${many?'them':'it'} out.`:'')+(sh.colorReset?' Its case color is no longer offered, so the first color is shown.':''),missing:sh.missing};
 }
-document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!document.getElementById('results').hidden) closeResults()});
 let rShown=60;
 // Map each match’s actual score onto a continuous red → amber → green spectrum.
 function matchColor(score){
@@ -2324,7 +2368,7 @@ function renderRDetail(){
       ${rows.join('')}</div>`;
   el.querySelector('#rclose').onclick=closeResults;
   el.querySelector('#rbuild').onclick=()=>{build={...b,extras:[...b.extras],name:`My ${partName(c)} build`}; persist(); closeResults(); go('build'); toast('Loaded into the builder')};
-  el.querySelector('#rcopy').onclick=()=>copyText(partsText({...b,name:`${partName(c)} build`}),el.querySelector('#rcopyfb'));
+  el.querySelector('#rcopy').onclick=e=>copyText(partsText({...b,name:`${partName(c)} build`}),el.querySelector('#rcopyfb'),e.currentTarget);
   const sb=el.querySelector('#rshare'); let shareT;
   sb.onclick=async()=>{
     const url=shareUrl(b), msg=el.querySelector('#rsharemsg');
@@ -2422,8 +2466,8 @@ function renderRail(){
   <section class="card"><h3>Share</h3><div class="railacts"><button class="btn small" id="copylist">Copy parts list</button><button class="btn small" id="copycode">Copy build code</button></div>
     <textarea id="copyfallback" hidden aria-label="Copy text" style="width:100%;min-height:80px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:6px"></textarea></section>`;
   rail.querySelectorAll('[data-addmod]').forEach(btn=>btn.onclick=()=>{build.extras=[...new Set([...(build.extras||[]),btn.dataset.addmod])]; commit(); toast(`Added ${partName(BYID[btn.dataset.addmod])}`)});
-  rail.querySelector('#copylist').onclick=()=>copyText(partsText(build),rail.querySelector('#copyfallback'));
-  rail.querySelector('#copycode').onclick=()=>copyText(encodeBuild(build),rail.querySelector('#copyfallback'));
+  rail.querySelector('#copylist').onclick=e=>copyText(partsText(build),rail.querySelector('#copyfallback'),e.currentTarget);
+  rail.querySelector('#copycode').onclick=e=>copyText(encodeBuild(build),rail.querySelector('#copyfallback'),e.currentTarget);
 }
 function partsText(b){
   const lines=[`${b.name||'My keyboard'} (thock.cc)`,''];
@@ -2510,13 +2554,13 @@ function openPicker(slot){
   pk.maxF=80;
   document.getElementById('pkq').addEventListener('input',e=>{pk.q=e.target.value.toLowerCase().trim(); pk.limit=48; renderPickList()});
   document.getElementById('pkclose').onclick=closePicker;
-  document.getElementById('pkfilt').onclick=()=>fs.classList.toggle('open');
+  const filterButton=document.getElementById('pkfilt');filterButton.setAttribute('aria-controls','pkfilters');filterButton.setAttribute('aria-expanded','false');
+  filterButton.onclick=()=>filterButton.setAttribute('aria-expanded',String(fs.classList.toggle('open')));
   document.getElementById('scrim').addEventListener('click',e=>{if(e.target.id==='scrim') closePicker()});
   renderPickList();
-  setTimeout(()=>document.getElementById('pkq')?.focus(),30);
+  window.ThockUI.openModal(el,closePicker,document.getElementById('pkq'));
 }
-function closePicker(){const el=document.getElementById('picker'); el.hidden=true; el.innerHTML=''; document.body.style.overflow=''}
-document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!document.getElementById('picker').hidden) closePicker()});
+function closePicker(){const el=document.getElementById('picker'); el.hidden=true; el.innerHTML=''; document.body.style.overflow=''; window.ThockUI.closeModal(el)}
 function renderPickList(){
   if(!pk.slot||!document.getElementById('pklist'))return;
   const slot=pk.slot, pool=POOLS[slot], facets=FACETS[slot]||[];
@@ -2537,7 +2581,7 @@ function renderPickList(){
   const list=document.getElementById('pklist');
   const total=rows.length; rows=rows.slice(0,pk.limit);
   list.innerHTML=`<div class="dbar"><span>${total.toLocaleString('en-US')} ${total===1?'part':'parts'}${hidden?`, ${hidden} hidden because they don't fit your build`:''}</span>
-    <label>Sort <select id="pksort"><option value="featured">Featured</option><option value="priceAsc">Price: low to high</option><option value="priceDesc">Price: high to low</option><option value="name">Name</option>${slot==='switches'?'<option value="force">Force: light to heavy</option>':''}</select></label></div>
+    <label>Sort <select id="pksort" aria-label="Sort parts"><option value="featured">Featured</option><option value="priceAsc">Price: low to high</option><option value="priceDesc">Price: high to low</option><option value="name">Name</option>${slot==='switches'?'<option value="force">Force: light to heavy</option>':''}</select></label></div>
     ${rows.length?'':`<div class="card emptybox"><b>Nothing matches these filters.</b><span>Clear a filter or raise the max price.</span></div>`}
     ${rows.map(({p,price,pr},i)=>{const on=current.includes(p.id);
       let sub=''; if(slot==='switches') sub=p.packQuantity?`${Math.ceil((switchQty(build)||70)/p.packQuantity)} packs × ${p.packQuantity} switches`: `${switchQty(build)||70} switches at ${money(p.price)}`; else if(slot==='case'&&p.assembled) sub='Sold assembled'; else if(slot==='case'&&p.catalogId) sub='Kit · check what\'s included'; else if(slot==='case'&&p.kit) sub='PCB + plate'+(p.kit.stabs?' + stabs':'')+' included';
@@ -2615,6 +2659,8 @@ function cleanAnswers(a){
   return a;
 }
 cleanAnswers(quizAns);
+{const step=store.get('sy.quizStep',0);quizStep=Number.isInteger(step)&&step>=0&&step<=QUESTIONS.length?step:0;
+  const firstMissing=QUESTIONS.findIndex(q=>quizAns[q.key]==null);if(firstMissing>=0)quizStep=Math.min(quizStep,firstMissing)}
 {const n=document.getElementById('affnote'); if(globalThis.SwitchdeckLinks.hasAffiliates()){n.textContent=AFF_NOTE; n.hidden=false}}
 go(['finder','build','saved','directory'].includes(start)?start:'finder',false);
 if(location.hash.startsWith(SHARE_HASH)) openShare(location.hash.slice(SHARE_HASH.length));

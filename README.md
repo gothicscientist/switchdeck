@@ -9,9 +9,15 @@ Requires Node 22 or newer.
 ```sh
 npm ci
 npm test
+npx playwright install chromium
+npm run test:ui
 npm run catalog:check
 npm run site:stage
 ```
+
+The browser suite covers quiz shortcuts and progress, rapid back/forward navigation, refreshed recommendations, clipboard success and failure, modal focus, slow/broken images, browser history, laptop/mobile sizes, and reduced motion. Retailer images are mocked so these checks do not depend on store availability. Set `THOCK_BROWSER_EXECUTABLE` to use an existing Chromium/Chrome executable. Screenshots are written to the ignored `test-results/ui/` folder.
+
+In the finder, use Tab to move between controls, 1–9 to select an option, Enter to continue with a saved answer, and Backspace to return to the previous question. Shortcuts leave text fields, editable content, and browser key combinations alone. Escape closes product overlays. Answers and the current question stay in this browser until “Start over.”
 
 Serve the repository or `dist/` with a static HTTP server. Use HTTP rather than a file URL: the directory loads its index and detail shards on demand. The theme follows the device preference; the header toggle overrides it for the current visit. Builds are stored in the browser on the current origin. Build codes retain the SY1 format for compatibility and can move builds between devices or domains.
 

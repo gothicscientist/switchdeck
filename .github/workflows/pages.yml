@@ -28,6 +28,9 @@ jobs:
         with:
           node-version: '22'
       - run: npm test
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:ui
       - run: npm run catalog:check
       - run: npm run site:stage
       - uses: actions/configure-pages@v5
