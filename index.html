@@ -387,16 +387,6 @@ h1,h2,h3{text-wrap:balance;margin:0;font-weight:700;letter-spacing:-.02em}
 .foot .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
 
 
-.soundpreview{width:min(640px,calc(100vw - 24px));max-height:calc(100dvh - 32px);padding:22px;border:1px solid var(--line);border-radius:20px;background:var(--surface);color:var(--ink);box-shadow:var(--shadow-lg);overflow:auto}
-.soundpreview::backdrop{background:rgba(41,37,36,.48);backdrop-filter:blur(5px)}
-.soundclose{display:flex;justify-content:flex-end;margin:-8px -8px 6px}
-.soundclose .iconbtn{font-size:24px}
-.soundvideo{aspect-ratio:16/9;border-radius:12px;overflow:hidden;background:#1C1917}
-.soundvideo iframe{display:block;width:100%;height:100%;border:0}
-.soundlinks{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
-.sound-search{white-space:normal}
-.rsum>.soundlinks{margin:0}
-@media(max-width:480px){.soundpreview{padding:16px}.soundlinks .store{font-size:11px}}
 
 
 /* sound preview buttons */
@@ -662,6 +652,7 @@ a.listen.watch:hover{background:rgba(68,64,60,.16)}
 
 <script src="assets/part-names.js"></script>
 <script src="assets/affiliates.js"></script>
+<script src="data/sound-videos.js"></script>
 <script src="assets/product-links.js"></script>
 <script src="data/product-links.js"></script>
 <script src="data/builder-catalog.js"></script>
@@ -1233,83 +1224,30 @@ const SOUND_TESTS={
   boxjade:{video:'5LxLPOp0alI',start:243,end:254,creator:'Click and Thock',title:'Clicky Switches Sound Test Compilation — Kailh BOX Jade / GMK',setup:'Tofu60 aluminum case; brass plate; GMK Mitolet keycaps; PCB foam. Same rig as the BOX White clip.',treatment:'BOX Jade typing chapter.'},
   boxwhite:{video:'5LxLPOp0alI',start:210,end:221,creator:'Click and Thock',title:'Clicky Switches Sound Test Compilation — Kailh BOX White / GMK',setup:'Tofu60 aluminum case; brass plate; GMK Mitolet keycaps; PCB foam. Same rig as the BOX Jade clip.',treatment:'Original BOX White typing chapter; not BOX White V2.'},
 };
-// Quiz choices demonstrate named examples, not every switch in a category.
-const SOUND_EXAMPLES={Linear:'milkyyp',Tactile:'u4t',Clicky:'boxjade',Silent:'silentred',
-  thock:'u4t',creamy:'oilking',clack:'nkcream',quiet:'silentred'};
 const switchName=p=>[p.brand==='Various'?'':p.brand,p.name].filter(Boolean).join(' ');
-const soundSearchUrl=p=>'https://www.youtube.com/results?search_query='+encodeURIComponent(switchName(p)+' switches sound test');
-function soundPart(key){
-  if(SOUND_EXAMPLES[key]) return BYID[SOUND_EXAMPLES[key]];
-  if(key.startsWith('part:')) return BYID[key.slice(5)];
-  if(key==='build') return BYID[build.switches];
-  if(/^res:\d+$/.test(key)) return BYID[resList[Number(key.slice(4))]?.b?.switches];
-  return null;
+const soundSearchUrl=p=>'https://www.youtube.com/results?search_query='+encodeURIComponent(switchName(p)+' sound test');
+// Sound tests are links to YouTube, never copies of the audio. A switch with a known video opens that video; any other
+// switch opens a YouTube search for its name. Videos come from the curated list above and data/sound-videos.js
+// (matched by brand and name, so every store's listing of the same switch shares one video).
+let soundByKey=null;
+function soundTest(p){
+  if(!p) return null;
+  if(!soundByKey){
+    soundByKey={...(globalThis.SWITCHDECK_SOUND_VIDEOS||{})};
+    for(const [id,t] of Object.entries(SOUND_TESTS)){const q=BYID[id]; if(q) soundByKey[sameKey(q)]=t}
+  }
+  return SOUND_TESTS[p.id]||soundByKey[sameKey(p)]||null;
 }
-function soundSearchLink(p,label,plain){
-  return p?`<a class="${plain?'textlink':'store sound-search'}" href="${esc(soundSearchUrl(p))}" target="_blank" rel="noopener noreferrer">${esc(label||'YouTube: '+switchName(p)+' sound tests')}${plain?'':' ↗'}</a>`:'';
-}
-// Open the exact switch's recording in the site's sound-test player.
-const soundWatchLink=p=>p?soundButton('part:'+p.id,'Sound test'):'';
-const EQ='<span class="eq" aria-hidden="true"><i></i><i></i><i></i></span>';
+const soundHref=p=>{const t=soundTest(p); return t?`https://www.youtube.com/watch?v=${t.video}${t.start?'&t='+t.start:''}`:soundSearchUrl(p)};
 const SPK='<svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M4 2.5v11L13 8z"/></svg>';
-function soundButton(key,label,compact=false){
-  const p=soundPart(key), name=p?switchName(p):label;
-  const text=label||(p&&SOUND_TESTS[p.id]?'Recorded test':'Find sound tests');
-  return `<button type="button" class="${compact?'play':'listen'}" data-snd="${esc(key)}" aria-haspopup="dialog" aria-controls="soundpreview" aria-expanded="false" aria-label="Open sound test: ${esc(name)}" title="${esc(name)} — ${p&&SOUND_TESTS[p.id]?'real recording':'YouTube sound tests'}">${SPK}${EQ}${compact?'':esc(text)}</button>`;
+// The Sound test button: opens the recording, or a YouTube search, in a new tab.
+function soundLink(p,label='Sound test'){
+  if(!p) return '';
+  const t=soundTest(p), name=switchName(p);
+  return `<a class="listen" href="${esc(soundHref(p))}" target="_blank" rel="noopener noreferrer" aria-label="${esc(label+': '+name+', on YouTube (opens in a new tab)')}" title="${esc(t?t.title+(t.creator?' by '+t.creator:''):'Search YouTube for '+name+' sound test')}">${SPK}${esc(label)}</a>`;
 }
-const playBtn=(key,label)=>soundButton(key,label,true);
-const listenBtn=(key,label)=>soundButton(key,label);
-let sndBtn=null, soundDialog=null;
-function resetSoundButton(){
-  if(sndBtn){sndBtn.classList.remove('playing');sndBtn.setAttribute('aria-expanded','false');sndBtn=null}
-}
-function closeSoundPreview(){
-  if(soundDialog?.open) soundDialog.close();
-  if(soundDialog) soundDialog.innerHTML='';
-  resetSoundButton();
-}
-function getSoundDialog(){
-  if(soundDialog) return soundDialog;
-  soundDialog=document.createElement('dialog');
-  soundDialog.id='soundpreview'; soundDialog.className='soundpreview';
-  soundDialog.setAttribute('aria-label','Recorded sound test');
-  document.body.append(soundDialog);
-  soundDialog.addEventListener('close',()=>{
-    if(soundDialog.open) return; // Ignore a queued close event after reopening.
-    soundDialog.innerHTML=''; // Removing the iframe immediately stops playback.
-    resetSoundButton();
-  });
-  soundDialog.addEventListener('click',e=>{
-    if(e.target===soundDialog){
-      const r=soundDialog.getBoundingClientRect();
-      if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom) closeSoundPreview();
-    }
-  });
-  // Keep Escape from also closing the results or picker underneath.
-  soundDialog.addEventListener('keydown',e=>{
-    if(e.key==='Escape'){e.preventDefault();e.stopPropagation();closeSoundPreview()}
-  });
-  return soundDialog;
-}
-function playSnd(key,btn){
-  const p=soundPart(key);
-  if(!p){toast('Choose a switch to hear its sound test');return}
-  if(soundDialog?.open&&sndBtn===btn){closeSoundPreview();return}
-  closeSoundPreview();
-  const d=getSoundDialog(), recording=SOUND_TESTS[p.id];
-  d.setAttribute('aria-label',switchName(p)+' sound test');
-  const embed=recording?'https://www.youtube-nocookie.com/embed/'+recording.video+'?autoplay=1&playsinline=1&rel=0'+(recording.start?'&start='+recording.start:'')+(recording.end?'&end='+recording.end:''):'';
-  d.innerHTML=`<div class="soundclose"><button type="button" class="iconbtn" id="soundclose" autofocus aria-label="Close sound preview">×</button></div>
-    ${recording?`<div class="soundvideo"><iframe src="${esc(embed)}" title="${esc(recording.title+' by '+recording.creator)}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div>`:''}
-    <div class="soundlinks">${soundSearchLink(p,'More sound tests')}</div>`;
-  sndBtn=btn||null;
-  if(sndBtn){sndBtn.classList.add('playing');sndBtn.setAttribute('aria-expanded','true')}
-  d.querySelector('#soundclose').onclick=closeSoundPreview;
-  d.showModal();
-}
-document.addEventListener('click',e=>{const b=e.target.closest('[data-snd]');if(b){e.preventDefault();e.stopPropagation();playSnd(b.dataset.snd,b)}},true);
-window.addEventListener('hashchange',closeSoundPreview);
-document.addEventListener('visibilitychange',()=>{if(document.hidden) closeSoundPreview()});
+// A second link to the search results, only when the first one already goes to a video.
+const moreSoundTests=p=>p&&soundTest(p)?`<a class="textlink" href="${esc(soundSearchUrl(p))}" target="_blank" rel="noopener noreferrer">More tests</a>`:'';
 
 
 /* =========================================================
@@ -1335,7 +1273,6 @@ const storeChips=p=>buyLinks(p).length?buyLinks(p).map(l=>`<a class="store ${l.m
 let view='finder';
 function go(v,push=true){
   if(!['finder','build','saved','directory'].includes(v))v='finder';
-  closeSoundPreview();
   stopClip();
   clearTimeout(window.__adv);
   view=v;
@@ -2000,7 +1937,7 @@ function renderRDetail(){
   let rows=items.map((i,n)=>`<div class="part" data-pi="${n}" style="--i:${n}"><span class="pt">${i.slot==='case'?caseVisual({case:c.id,color:b.color||0,keycaps:null,extras:[]},'thumb'):thumbFor(i.part)}</span>
       <div class="pn"><small>${esc(SL(i.slot))}</small><b>${esc(partName(i.part))}</b><em>${esc(desc(i.part))}</em>${i.part.soldOut?'<span class="chip warn" style="align-self:flex-start;margin-top:4px">Sold out</span>':''}</div>
       <div class="pp">${money(i.price)}${sub(i)?`<small>${esc(sub(i))}</small>`:''}</div>
-      <div class="stores">${i.slot==='switches'?`<span class="watchrow">${soundWatchLink(i.part)}${soundSearchLink(i.part,'More tests',true)}</span>`:''}${i.slot==='keycaps'&&quizAns.look==='surprise'?'<button type="button" class="listen" id="reroll">↻ Shuffle</button>':''}${storeChips(i.part)}</div></div>`);
+      <div class="stores">${i.slot==='switches'?`<span class="watchrow">${soundLink(i.part)}${moreSoundTests(i.part)}</span>`:''}${i.slot==='keycaps'&&quizAns.look==='surprise'?'<button type="button" class="listen" id="reroll">↻ Shuffle</button>':''}${storeChips(i.part)}</div></div>`);
   if(c.assembled) rows.splice(1,0,`<div class="part inc" style="--i:1"><span class="pt">${pcbSVG(c.kit.pcb)}</span><div class="pn"><small>Included</small><b>Switches and keycaps, per the listing</b><em>Listed as a complete keyboard. Check ${esc(storeOf(c))} for which switches and keycaps it ships with.</em></div><div class="pp"><span class="chip ok">Included</span></div></div>`);
   else if(c.kit&&c.catalogId) rows.splice(1,0,`<div class="part inc" style="--i:1"><span class="pt">${pcbSVG(c.kit.pcb)}</span><div class="pn"><small>Included</small><b>PCB and plate${c.includes?.stabs?' + stabilizers':''}</b><em>Included components verified for the selected variant.</em></div><div class="pp"><span class="chip ok">Kit</span></div></div>`);
   else if(c.kit) rows.splice(1,0,`<div class="part inc" style="--i:1"><span class="pt">${pcbSVG(c.kit.pcb)}</span><div class="pn"><small>Included</small><b>PCB, ${esc(c.kit.plate)} plate${c.kit.stabs?' and stabilizers':''}</b><em>Comes with the ${esc(partName(c))}</em></div><div class="pp"><span class="chip ok">Included</span></div></div>`);
@@ -2083,7 +2020,7 @@ function renderParts(){
     if(s.key==='keycaps'&&li.addon) sub=`<small>incl. numpad kit ${money(li.addon)}</small>`;
     if(s.key==='stabs') sub=`<small>${layoutOf(build)==='full'?'7':'5'}-stab set</small>`;
     h+=`<div class="prow"><div class="slot">${s.label}<small>${s.hint}</small></div>
-      <div class="item"><span class="thumb">${thumbFor(p)}</span><div class="meta"><b>${esc(p.name)}</b><span class="by">${esc(p.brand)}</span><span class="specs">${specChips(p)}${iss.map(i=>`<span class="chip ${i.level}">${i.level==='fail'?'Conflict':'Note'}</span>`).join('')}</span><span class="stores">${s.key==='switches'?listenBtn('part:'+p.id)+soundSearchLink(p):''}${storeChips(p)}</span></div></div>
+      <div class="item"><span class="thumb">${thumbFor(p)}</span><div class="meta"><b>${esc(p.name)}</b><span class="by">${esc(p.brand)}</span><span class="specs">${specChips(p)}${iss.map(i=>`<span class="chip ${i.level}">${i.level==='fail'?'Conflict':'Note'}</span>`).join('')}</span><span class="stores">${s.key==='switches'?soundLink(p)+moreSoundTests(p):''}${storeChips(p)}</span></div></div>
       <div class="price"><span>${money(li.price)}</span>${sub}</div>
       <div class="acts"><button class="btn small" data-pick="${s.key}">Change</button><button class="btn small ghost" data-rm="${s.key}" aria-label="Remove ${esc(p.name)}">✕</button></div></div>`;
   }
@@ -2112,8 +2049,8 @@ function renderRail(){
     <ul class="issues">${sorted.map(i=>`<li class="${i.level}"><i></i><span>${esc(i.msg)}${i.sub?`<br><small>${esc(i.sub)}</small>`:''}</span></li>`).join('')}</ul></section>
   <section class="card"><h3>Price</h3><div class="totals">${items.map(i=>`<div><span>${SLOTS.find(s=>s.key===i.slot).label}${i.slot==='extras'?': '+esc(i.part.name):''}</span><span class="mono">${money(i.price)}</span></div>`).join('')||'<div><span class="note">Nothing yet</span></div>'}
     <div class="grand"><span>Parts subtotal</span><span class="mono">${money(t)}</span></div></div><p class="note" style="margin:0">Approximate list prices, before shipping and tax.</p>${affNote()}</section>
-  <section class="card"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><h3>Sound and feel estimate</h3>${build.switches?listenBtn('build','Hear switches'):''}</div>
-    ${build.switches?`<div class="soundlinks">${soundSearchLink(BYID[build.switches])}</div><p class="note">The recording uses a different keyboard. These meters are estimates of your build.</p>`:''}
+  <section class="card"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><h3>Sound and feel estimate</h3>${build.switches?soundLink(BYID[build.switches],'Hear switches'):''}</div>
+    ${build.switches?`<p class="note">The recording uses a different keyboard. These meters are estimates of your build.</p>`:''}
     ${meter('Pitch',e.pitch,pitchWord(e.pitch),'Deep','Bright')}
     ${meter('Volume',e.vol,volWord(e.vol),'Quiet','Loud')}
     ${meter('Typing feel',e.flex,flexWord(e.flex),'Stiff','Bouncy')}
@@ -2131,7 +2068,7 @@ function partsText(b){
   const c=caseOf(b);
   for(const i of lineItems(b)) lines.push(`${SLOTS.find(s=>s.key===i.slot).label}: ${partName(i.part)}${i.qty?` x${i.qty}`:''} - ${money(i.price)}`,`  ${buyLinks(i.part)[0]?.u||'Exact product link not confirmed yet'}`);
   if(c&&c.kit) lines.push(`Included with kit: PCB, ${c.kit.plate} plate${c.kit.stabs?', stabilizers':''}`);
-  if(BYID[b.switches]) lines.push('', 'Switch sound tests: '+soundSearchUrl(BYID[b.switches]));
+  if(BYID[b.switches]) lines.push('', 'Switch sound test: '+soundHref(BYID[b.switches]));
   lines.push('',`Parts subtotal: ${money(total(b))} (shipping and tax excluded)`,`Build code: ${encodeBuild(b)}`);
   return lines.join('\n');
 }
@@ -2245,7 +2182,7 @@ function renderPickList(){
       return `<article style="--i:${i}" class="card pick ${pr.bad.length?'bad':''} ${on?'selected':''}"><span class="thumb">${thumbFor(p)}</span>
       <div class="meta"><span class="by note">${esc(p.brand)}</span><b>${esc(p.name)}</b><span class="specs">${specChips(p)}</span><p>${esc(p.blurb||'')}</p>
         ${pr.bad.map(m=>`<span class="why">✕ ${esc(m)}</span>`).join('')}${pr.warn.map(m=>`<span class="why" style="color:var(--warn)">! ${esc(m)}</span>`).join('')}
-        <span class="links">${slot==='switches'?listenBtn('part:'+p.id)+soundSearchLink(p):''}${storeChips(p)}</span></div>
+        <span class="links">${slot==='switches'?soundLink(p)+moreSoundTests(p):''}${storeChips(p)}</span></div>
       <div class="side"><span class="p">${money(price)}</span>${sub?`<small>${esc(sub)}</small>`:''}
         ${slot==='extras'&&on?`<button class="btn small" data-unadd="${p.id}">Remove</button>`:`<button class="btn small ${on?'':'primary'}" data-add="${p.id}" ${on?'disabled':''}>${on?'Selected':'Add'}</button>`}</div></article>`}).join('')}
     ${total>rows.length?`<button class="btn block" id="pkmore">Show more (${(total-rows.length).toLocaleString('en-US')} left)</button>`:''}`;

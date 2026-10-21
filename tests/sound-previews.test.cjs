@@ -5,39 +5,19 @@ const { test } = require('node:test');
 
 const html = fs.readFileSync(require('node:path').join(__dirname, '../index.html'), 'utf8');
 const script = html.match(/<script>([\s\S]*?)<\/script>/)[1];
+const sameKeyCode = script.match(/const sameKey=[^\n]+/)[0];
 const soundCode = script.slice(script.indexOf('const SOUND_TESTS='), script.indexOf('/* =========================================================\n   WHERE TO BUY:'));
 // Read the actual catalog literals, so adding a switch without a recording fails here.
 const switchRows = [...script.matchAll(/S\(\{id:'([^']+)',brand:'([^']+)',name:'([^']+)'/g)];
 const BYID = Object.fromEntries(switchRows.map(([,id,brand,name]) => [id,{id,brand,name}]));
 assert.ok(switchRows.length >= 18, 'Catalog switch rows must be found');
 
-function harness() {
-  let dialog;
-  const listeners = {};
-  const windowListeners = {};
-  const close = { onclick: null };
-  const document = {
-    hidden: false,
-    body: { append(d) { dialog = d; } },
-    addEventListener(name, fn) { listeners[name] = fn; },
-    createElement() {
-      return {
-        open: false, innerHTML: '', listeners: {}, attrs: {},
-        setAttribute(k,v) { this.attrs[k] = v; },
-        addEventListener(name, fn) { this.listeners[name] = fn; },
-        querySelector() { return close; },
-        showModal() { this.open = true; },
-        close() { this.open = false; this.listeners.close(); },
-        getBoundingClientRect() { return {left:10,top:10,right:600,bottom:500}; },
-      };
-    },
-  };
-  const sandbox = {BYID, build:{switches:'oilking'}, resList:[{b:{switches:'u4'}}],
-    esc: s => String(s).replaceAll('&','&amp;').replaceAll('"','&quot;').replaceAll('<','&lt;'),
-    document, window:{addEventListener(n,fn){windowListeners[n]=fn;}}, toast(){} };
+function harness(videos = {}) {
+  const sandbox = {BYID, SWITCHDECK_SOUND_VIDEOS: videos, build:{switches:'oilking'},
+    esc: s => String(s).replaceAll('&','&amp;').replaceAll('"','&quot;').replaceAll('<','&lt;')};
   vm.createContext(sandbox);
-  vm.runInContext(soundCode + '\nthis.api={SOUND_TESTS,SOUND_EXAMPLES,soundPart,soundSearchUrl,soundSearchLink,playSnd,closeSoundPreview};', sandbox);
-  return { api:sandbox.api, get dialog(){return dialog}, close, listeners, windowListeners, document };
+  vm.runInContext(sameKeyCode + '\n' + soundCode + '\nthis.api={SOUND_TESTS,soundSearchUrl,soundHref,soundLink,moreSoundTests};', sandbox);
+  return sandbox.api;
 }
 
 test('the whole application parses; synthesizer has been removed', () => {
@@ -45,94 +25,66 @@ test('the whole application parses; synthesizer has been removed', () => {
   assert.doesNotMatch(script, /createOscillator|createBiquadFilter|noiseBuf|function keystroke/);
 });
 
-test('every catalog switch has its own sourced recording metadata', () => {
-  const {api} = harness();
-  assert.equal(Object.keys(api.SOUND_TESTS).length, switchRows.length);
-  for (const [id,p] of Object.entries(BYID)) {
-    const r = api.SOUND_TESTS[id];
-    assert.ok(r, `${id}: missing real recording`);
+test('curated recordings are links with sourced metadata for a known switch', () => {
+  const api = harness();
+  assert.ok(Object.keys(api.SOUND_TESTS).length >= 18);
+  for (const [id,r] of Object.entries(api.SOUND_TESTS)) {
+    assert.ok(BYID[id], `${id}: not a catalog switch`);
     assert.match(r.video, /^[A-Za-z0-9_-]{11}$/);
-    for (const key of ['title','creator','setup','treatment']) assert.ok(r[key], `${id}: missing ${key}`);
+    for (const key of ['title','creator']) assert.ok(r[key], `${id}: missing ${key}`);
     if (r.start !== undefined) assert.ok(r.start >= 0 && r.end > r.start);
-    assert.equal(api.soundPart('part:'+id), p);
   }
   assert.notEqual(api.SOUND_TESTS.panda.video, api.SOUND_TESTS.u4t.video);
   assert.notEqual(api.SOUND_TESTS.u4.video, api.SOUND_TESTS.u4t.video);
 });
 
-test('quiz, builder and results resolve the right switch without category substitution', () => {
-  const {api} = harness();
-  for (const id of Object.values(api.SOUND_EXAMPLES)) assert.ok(api.SOUND_TESTS[id]);
-  assert.equal(api.soundPart('Silent').id, 'silentred');
-  assert.equal(api.soundPart('Tactile').id, 'u4t');
-  assert.equal(api.soundPart('Clicky').id, 'boxjade');
-  assert.equal(api.soundPart('build').id, 'oilking');
-  assert.equal(api.soundPart('res:0').id, 'u4');
-  assert.equal(api.soundPart('res:99'), undefined);
-  assert.equal(api.soundPart('part:missing'), undefined);
-});
-
-test('YouTube search uses the selected full model name and escapes query data', () => {
-  const {api} = harness();
-  for(const p of Object.values(BYID)) {
-    const u = new URL(api.soundSearchUrl(p));
-    assert.equal(u.origin, 'https://www.youtube.com');
-    assert.equal(u.pathname, '/results');
-    assert.equal(u.searchParams.get('search_query'), `${p.brand==='Various'?'':p.brand+' '}${p.name} switches sound test`);
-  }
-  const u = new URL(api.soundSearchUrl({brand:'A & B',name:'Test #1 + / ?'}));
-  assert.equal(u.searchParams.size, 1);
-  assert.equal(u.searchParams.get('search_query'), 'A & B Test #1 + / ? switches sound test');
-  assert.equal(api.soundSearchLink(null), '');
-});
-
-test('recorded preview shows only the player, more tests and close; closing destroys it', () => {
-  const h = harness();
-  h.api.playSnd('part:oilking');
-  assert.ok(h.dialog.open);
-  assert.match(h.dialog.innerHTML, /youtube-nocookie.com\/embed\/-A_M_hvjVNY/);
-  assert.match(h.dialog.innerHTML, /start=92/);
-  assert.match(h.dialog.innerHTML, /end=127/);
-  assert.match(h.dialog.innerHTML, /Click and Thock/);
-  assert.match(h.dialog.innerHTML, />More sound tests/);
-  assert.equal((h.dialog.innerHTML.match(/<a /g)||[]).length, 1);
-  assert.doesNotMatch(h.dialog.innerHTML, /<header|<h2|<p[ >]|soundmeta|soundcontext|Open original recording/);
-  assert.equal(h.dialog.attrs['aria-label'], 'Gateron Oil King sound test');
-  // Native dialog close events can be queued; an old event must not erase a reopened player.
-  h.dialog.listeners.close();
-  assert.match(h.dialog.innerHTML, /youtube-nocookie/);
-  h.close.onclick();
-  assert.equal(h.dialog.open, false);
-  assert.equal(h.dialog.innerHTML, '');
-});
-
-test('a newly added switch never borrows another switch recording', () => {
-  const h = harness();
+test('a switch with no video opens a YouTube search for its full name and sound test', () => {
+  const api = harness();
+  const u = new URL(api.soundSearchUrl({brand:'Test',name:'New model'}));
+  assert.equal(u.origin, 'https://www.youtube.com');
+  assert.equal(u.pathname, '/results');
+  assert.equal(u.searchParams.get('search_query'), 'Test New model sound test');
+  const odd = new URL(api.soundSearchUrl({brand:'A & B',name:'Test #1 + / ?'}));
+  assert.equal(odd.searchParams.size, 1);
+  assert.equal(odd.searchParams.get('search_query'), 'A & B Test #1 + / ? sound test');
+  assert.equal(new URL(api.soundSearchUrl({brand:'Various',name:'Cherry MX Red'})).searchParams.get('search_query'), 'Cherry MX Red sound test');
   BYID.unrecorded = {id:'unrecorded',brand:'Test',name:'New model'};
   try {
-    h.api.playSnd('part:unrecorded');
-    assert.doesNotMatch(h.dialog.innerHTML, /<iframe/);
-    assert.match(h.dialog.innerHTML, />More sound tests/);
-    assert.match(h.dialog.innerHTML, /Test%20New%20model%20switches%20sound%20test/);
+    assert.equal(api.soundHref(BYID.unrecorded), api.soundSearchUrl(BYID.unrecorded));
+    assert.equal(api.moreSoundTests(BYID.unrecorded), '', 'no second link when the first is already the search');
   } finally { delete BYID.unrecorded; }
 });
 
-test('Escape and backgrounding stop the preview without closing underlying results', () => {
-  const h = harness();
-  h.api.playSnd('Tactile');
-  let prevented=false,stopped=false;
-  h.dialog.listeners.keydown({key:'Escape',preventDefault(){prevented=true},stopPropagation(){stopped=true}});
-  assert.ok(prevented && stopped);
-  assert.equal(h.dialog.open, false);
-  h.api.playSnd('Silent');
-  h.document.hidden=true;
-  h.listeners.visibilitychange();
-  assert.equal(h.dialog.innerHTML, '');
+test('a switch with a video opens it directly, at its chapter when it has one', () => {
+  const api = harness();
+  assert.equal(api.soundHref(BYID.oilking), 'https://www.youtube.com/watch?v=-A_M_hvjVNY&t=92');
+  assert.equal(api.soundHref(BYID.milkyyp), 'https://www.youtube.com/watch?v=rAw8qIYDc5A');
+  assert.match(api.moreSoundTests(BYID.oilking), /results\?search_query=Gateron\+Oil\+King\+sound\+test|results\?search_query=Gateron%20Oil%20King%20sound%20test/);
 });
 
-test('results, builder, picker and copied parts list include exact-model search links', () => {
-  assert.match(script, /soundSearchLink\(i.part,/);
-  assert.match(script, /soundSearchLink\(BYID\[build.switches\]\)/);
-  assert.match(script, /soundSearchLink\(p\)/);
-  assert.match(script, /Switch sound tests:.*soundSearchUrl\(BYID\[b.switches\]\)/);
+test('videos found for new switches apply to every store listing of the same switch', () => {
+  const api = harness({gateronnewone:{video:'abcdefghijk',title:'Gateron New One sound test'}});
+  const a = {id:'store-a-1',brand:'Gateron',name:'New One'}, b = {id:'store-b-9',brand:'Gateron',name:'New One Switches'};
+  assert.equal(api.soundHref(a), 'https://www.youtube.com/watch?v=abcdefghijk');
+  assert.equal(api.soundHref(b), 'https://www.youtube.com/watch?v=abcdefghijk');
+  assert.notEqual(api.soundHref({id:'x',brand:'Gateron',name:'Other'}), 'https://www.youtube.com/watch?v=abcdefghijk');
+  // A curated recording also reaches the imported listing of that switch.
+  assert.match(api.soundHref({id:'cannonkeys-1',brand:BYID.oilking.brand,name:BYID.oilking.name}), /v=-A_M_hvjVNY/);
+});
+
+test('Sound test is a plain link that opens in a new tab and never embeds a player', () => {
+  const api = harness();
+  const html = api.soundLink(BYID.oilking);
+  assert.match(html, /^<a class="listen" href="https:\/\/www\.youtube\.com\/watch\?v=-A_M_hvjVNY&amp;t=92" target="_blank" rel="noopener noreferrer"/);
+  assert.match(html, />Sound test<\/a>$/);
+  assert.match(html, /opens in a new tab/);
+  assert.equal(api.soundLink(null), '');
+  assert.doesNotMatch(script, /<iframe|youtube-nocookie|createElement\('dialog'\)|showModal|soundpreview/);
+});
+
+test('results, builder, picker and copied parts list use the direct link', () => {
+  assert.match(script, /soundLink\(i\.part\)\}\$\{moreSoundTests\(i\.part\)\}/);
+  assert.match(script, /soundLink\(BYID\[build\.switches\],'Hear switches'\)/);
+  assert.match(script, /soundLink\(p\)\+moreSoundTests\(p\)/);
+  assert.match(script, /Switch sound test: '\+soundHref\(BYID\[b\.switches\]\)/);
 });

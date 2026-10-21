@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 if(process.env.GITHUB_ACTIONS) process.on('uncaughtException',e=>{console.log('::error title=catalog check::'+String(e.message).replace(/\n/g,' ').slice(0,900));process.exit(1)});
 import {readFile} from 'node:fs/promises';
 import vm from 'node:vm';
+import {parseVideosFile} from './sound-videos.mjs';
 import {digest,requiredFields,EXTRA_KINDS,SWITCH_SYSTEMS,soundFromMaterials,MOD_TYPES} from './catalog-lib.mjs';
 const base=new URL('../data/',import.meta.url);
 const load=async name=>JSON.parse(await readFile(new URL(name,base),'utf8'));
@@ -61,3 +62,8 @@ for(const b of catalog.plates||[]){assert.ok(b.layout===null||['60','65','75','t
 if(manifest.builderAdmission)for(const [cat,r] of Object.entries(manifest.builderAdmission)){assert.equal(r.total,manifest.categories[cat].count,cat);assert.equal(r.admitted+r.soldOutAdmitted+Object.values(r.excluded).reduce((a,b)=>a+b,0),r.total,cat+' admission');assert.ok(Object.keys(r.excluded).every(k=>k.length>3),cat+' reason')}
 for(const b of catalog.stabs||[])assert.ok(['screw','clip','plate'].includes(b.mount),b.id)
 console.log(`Validated ${products.length} listings, ${products.reduce((n,p)=>n+p.variants.length,0)} variants, ${catalog.switches.length} builder switches, ${(catalog.cases||[]).length} keyboards, ${(catalog.keycaps||[]).length} keycap sets, ${(catalog.stabs||[]).length} stabilizers, ${catalog.extras.length} extras, ${(catalog.pcbs||[]).length} PCBs, ${(catalog.plates||[]).length} plates across ${manifest.sources.length} retailers.`);
+// Sound test videos are links only: an 11-character video ID, a title, and optional chapter times.
+for(const [k,v] of Object.entries(parseVideosFile(await readFile(new URL('sound-videos.js',base),'utf8')))){
+  assert.match(v.video,/^[\w-]{11}$/,'sound video '+k);assert.ok(typeof v.title==='string'&&v.title,'sound video title '+k);
+  assert.ok(Object.keys(v).every(f=>['video','title','creator','start'].includes(f)),'sound video fields '+k);
+}

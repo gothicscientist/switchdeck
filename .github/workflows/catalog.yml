@@ -36,6 +36,12 @@ jobs:
           restore-keys: catalog-snapshots-
       - run: npm ci
       - run: npm run catalog:sync
+      - name: Find sound test videos
+        # Looks up a YouTube video for new switches. Skipped without the YOUTUBE_API_KEY secret, and a failure keeps the existing videos.
+        continue-on-error: true
+        run: node scripts/sound-videos.mjs
+        env:
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
       - run: npm run catalog:check
       - run: npm run catalog:audit
       - name: Run tests
