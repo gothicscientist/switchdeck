@@ -159,41 +159,6 @@ h1,h2,h3{text-wrap:balance;margin:0;font-weight:700;letter-spacing:-.02em}
 @media (max-width:760px){.opt .art svg.qphoto{--qp:1.04}}
 :root[data-theme="dark"] .opt .art svg.qphoto{filter:drop-shadow(0 0 .5px rgba(255,255,255,.22)) drop-shadow(0 7px 9px rgba(0,0,0,.4))}
 @media (prefers-reduced-motion:reduce){.opt .art svg.qphoto{transition:none}.opt:hover .art svg.qphoto,.opt[aria-pressed="true"] .art svg.qphoto{transform:scale(var(--qp,1.1))}}
-.qa-press,.qa-ripple,.qa-line,.qa-caret,.qa-arc,.qa-flow,.qa-led,.qa-swap,.qa-glow,.qa-iron,.qa-btn,.qa-float,.qa-plug{transform-box:fill-box;transform-origin:center;animation-timing-function:ease-in-out;animation-iteration-count:infinite}
-.qa-press{animation:qaPress 1.8s}
-.qa-ripple{animation:qaRipple 1.8s ease-out infinite}
-.qa-line{transform-origin:left center;animation:qaType 2.6s}
-.qa-caret{animation:qaBlink 1s}
-.qa-arc{animation:qaArc 2.2s}
-.qa-flow{animation:qaFlow 2.2s}
-.qa-flow-s{animation-name:qaFlowS}
-.qa-led{animation:qaBlink 2.2s}
-.qa-swap{animation:qaSwap 3s}
-.qa-glow{animation:qaGlow 2s}
-.qa-iron{animation:qaIron 3s}
-.qa-btn{animation:qaBtn 1.8s}
-.qa-float{animation:qaFloat 3.2s}
-.qa-plug{animation:qaPlug 2.6s}
-.qa-cable{transform-box:view-box;offset-rotate:0deg;animation:qaCable 2.6s linear infinite}
-.qa-turn{transform-box:fill-box;transform-origin:center;animation:qaTurn 3.4s ease-in-out infinite}
-@keyframes qaTurn{0%,100%{transform:rotate(-40deg)}50%{transform:rotate(40deg)}}
-@media (prefers-reduced-motion:reduce){.qa-turn{animation:none!important}}
-.opt:hover .qa-press{animation-duration:.9s}.opt:hover .qa-ripple{animation-duration:1s}.opt:hover .qa-arc{animation-duration:1.4s}.opt:hover .qa-flow{animation-duration:1.3s}.opt:hover .qa-swap{animation-duration:1.8s}.opt:hover .qa-glow{animation-duration:1.2s}
-@keyframes qaPress{0%,100%{transform:translateY(0)}20%{transform:translateY(3px)}40%{transform:translateY(0)}}
-@keyframes qaRipple{0%{transform:scale(.7);opacity:.7}100%{transform:scale(1.7);opacity:0}}
-@keyframes qaType{0%{transform:scaleX(0);opacity:.4}30%,85%{transform:scaleX(1);opacity:1}100%{transform:scaleX(1);opacity:0}}
-@keyframes qaBlink{0%,100%{opacity:1}50%{opacity:.25}}
-@keyframes qaArc{0%,100%{opacity:.2}40%{opacity:1}}
-@keyframes qaFlow{0%{transform:translateX(0);opacity:0}15%{opacity:1}85%{opacity:1}100%{transform:translateX(56px);opacity:0}}
-@keyframes qaFlowS{0%{transform:translateX(0);opacity:0}15%{opacity:1}85%{opacity:1}100%{transform:translateX(20px);opacity:0}}
-@keyframes qaSwap{0%,30%,100%{transform:translateY(0)}50%,70%{transform:translateY(-12px)}}
-@keyframes qaGlow{0%,100%{transform:scale(.8);opacity:.55}50%{transform:scale(1.15);opacity:1}}
-@keyframes qaBtn{0%,100%{transform:scale(1);opacity:.92}15%{transform:scale(1.3);opacity:1}35%{transform:scale(1);opacity:.92}}
-@keyframes qaFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-2px)}}
-@keyframes qaPlug{0%,100%{transform:translateX(0)}50%{transform:translateX(2px)}}
-@keyframes qaCable{0%{offset-distance:0%;opacity:0}15%{opacity:1}85%{opacity:1}100%{offset-distance:100%;opacity:0}}
-@keyframes qaIron{0%,100%{transform:translate(0,0)}50%{transform:translate(-1.5px,2px)}}
-@media (prefers-reduced-motion:reduce){.qa-press,.qa-ripple,.qa-line,.qa-caret,.qa-arc,.qa-flow,.qa-led,.qa-swap,.qa-glow,.qa-iron,.qa-btn,.qa-float,.qa-plug,.qa-cable{animation:none!important}.qa-ripple,.qa-flow,.qa-cable{opacity:0}}
 .opt[aria-pressed="true"]{background:var(--tile-hover);box-shadow:inset 0 0 0 1.5px var(--ink)}
 .opt .tick{position:absolute;top:-7px;right:-7px;width:20px;height:20px;border-radius:50%;background:var(--ink);color:var(--surface);display:none;place-items:center;box-shadow:0 0 0 2px var(--surface)}
 .opt[aria-pressed="true"] .tick{display:grid;animation:pop .35s var(--spring)}
@@ -1525,53 +1490,26 @@ const QUESTIONS = [
   {key:'wireless',title:'How should it connect?',opts:[
     {v:'wired',b:'Wired only',s:'Nothing to charge',art:()=>quizPhoto('wired')},{v:'yes',b:'Wireless',s:'Bluetooth or 2.4 GHz',art:()=>quizPhoto('wireless')},{v:'any',b:'No preference',s:'Nothing ruled out',art:()=>quizPhoto('either-conn')}]},
   {key:'solder',title:'Will you solder?',info:'Soldering means melting metal to fix each switch permanently to the circuit board. Hot-swap boards have sockets instead, so switches press in and pull out by hand with no tools.',opts:[
-    {v:'hotswap',b:'No, hot-swap',s:'Switches press in by hand',art:()=>quizArt('hotswap')},{v:'either',b:'Happy to solder',s:'Opens up more PCBs',art:()=>quizArt('solder')}]},
+    {v:'hotswap',b:'No, hot-swap',s:'Switches press in by hand',art:()=>quizPhoto('hotswap')},{v:'either',b:'Happy to solder',s:'Opens up more PCBs',art:()=>quizPhoto('solder')}]},
   {key:'budget',title:"What's your budget?",budget:true},
 ];
 function waveSVG(pitch,amp=1){
   const n=26, pts=[]; for(let i=0;i<n;i++){const x=4+i*(112/(n-1)), env=Math.exp(-((i%13)/(2+ (1-pitch)*5))), y=30+Math.sin(i*(1.1+pitch*2.4))*env*20*amp; pts.push(`${x.toFixed(1)},${y.toFixed(1)}`)}
   return `<svg viewBox="0 0 120 60" aria-hidden="true"><polyline points="${pts.join(' ')}" fill="none" stroke="#57534E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 }
-// Purpose and connection options show real product photos cut out to a transparent background (assets/quiz,
+// Purpose, connection and soldering options show real photos cut out to a transparent background (assets/quiz,
 // sources in assets/quiz/CREDITS.md). Each picture is cropped tight and its frame fits it exactly, so it fills the
 // option's art height instead of floating small inside it.
-const QUIZ_PHOTOS={ps5:['ps5',.702],work:['multitasker',1.293],usb:['usb-cable',1.747],receiver:['wireless-receiver',1.131]};
+const QUIZ_PHOTOS={ps5:['ps5',.702],work:['multitasker',1.293],usb:['usb-cable',1.747],receiver:['wireless-receiver',1.131],
+  hotswap:['switch-puller',1.345],solder:['welder',1.303]};
 function quizPhoto(kind){
   // Each item is [photo, height out of 60]; items stand side by side on a shared baseline.
   const items={gaming:[['ps5',60]],work:[['work',60]],both:[['ps5',60],['work',56]],
-    wired:[['usb',60]],wireless:[['receiver',60]],'either-conn':[['usb',50],['receiver',54]]}[kind];
+    wired:[['usb',60]],wireless:[['receiver',60]],'either-conn':[['usb',50],['receiver',54]],
+    hotswap:[['hotswap',60]],solder:[['solder',60]]}[kind];
   const gap=6, n=v=>+v.toFixed(2); let x=0;
   const body=items.map(([k,h])=>{const [f,ar]=QUIZ_PHOTOS[k], w=h*ar, o=`<image href="assets/quiz/${f}.webp" x="${n(x)}" y="${n(60-h)}" width="${n(w)}" height="${h}" preserveAspectRatio="xMidYMid meet"/>`; x+=w+gap; return o}).join('');
   return `<svg class="qphoto" viewBox="0 0 ${n(x-gap)} 60" aria-hidden="true">${body}</svg>`;
-}
-function quizArt(kind){
-  const C={blue:['#8FB2F5','#5B8DEF'],teal:['#6FD3C7','#2BB3A3'],amber:['#F7C477','#F2A541'],coral:['#F59A8D','#EF6F5E'],violet:['#B2A8FA','#8B7CF6']};
-  const grad=(id,c,vert)=>`<linearGradient id="qa-${id}" x1="0" y1="0" x2="${vert?0:1}" y2="${vert?1:1}"><stop offset="0" stop-color="${C[c][0]}"/><stop offset="1" stop-color="${C[c][1]}"/></linearGradient>`;
-  const neutral=`<linearGradient id="qa-n-${kind}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#E7E5E4"/></linearGradient>`;
-  const key=(x,y,s,id,cls)=>`<g class="${cls||''}"><rect x="${x}" y="${y+s*.12}" width="${s}" height="${s}" rx="${s*.26}" fill="#D6D3D1" opacity=".7"/><rect x="${x}" y="${y}" width="${s}" height="${s}" rx="${s*.26}" fill="url(#qa-${id})"/><rect x="${x+s*.2}" y="${y+s*.16}" width="${s*.6}" height="${s*.36}" rx="${s*.14}" fill="#fff" opacity=".28"/></g>`;
-  let defs='',body='';
-  if(kind==='rapid'){
-    defs=grad('rp','blue',1)+grad('rm','violet');
-    const mag=[8,14,20].map((r,i)=>`<path class="qa-arc" style="animation-delay:${i*.22}s" d="M${60-r} 38 A${r} ${r} 0 0 0 ${60+r} 38" fill="none" stroke="url(#qa-rm)" stroke-width="3.2" stroke-linecap="round"/>`).join('');
-    body=`<g class="qa-press"><rect x="42" y="5" width="36" height="26" rx="8" fill="url(#qa-rp)"/><rect x="48" y="9" width="24" height="7" rx="3.5" fill="#fff" opacity=".3"/></g>${mag}`;
-  }else if(kind==='knob'){
-    defs=grad('kb','teal',1);
-    const ticks=Array.from({length:7},(_,i)=>{const a=(-120+i*40)*Math.PI/180;return `<circle class="qa-btn" style="animation-delay:${i*.2}s" cx="${(60+Math.sin(a)*24).toFixed(1)}" cy="${(31-Math.cos(a)*24).toFixed(1)}" r="2" fill="#2BB3A3"/>`}).join('');
-    body=`${ticks}<g class="qa-turn"><circle cx="60" cy="31" r="16" fill="url(#qa-kb)"/><ellipse cx="60" cy="24" rx="9" ry="4.5" fill="#fff" opacity=".22"/><rect x="58.2" y="17" width="3.6" height="9" rx="1.8" fill="#fff" opacity=".95"/></g>`;
-  }else if(kind==='lowprofile'){
-    defs=grad('lp','amber',1)+`<linearGradient id="qa-lb" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#E7E5E4"/><stop offset="1" stop-color="#D6D3D1"/></linearGradient>`;
-    body=`<rect class="qa-led" x="34" y="9" width="52" height="33" rx="9" fill="none" stroke="#A8A29E" stroke-width="1.4" stroke-dasharray="3 3"/><rect x="22" y="44" width="76" height="8" rx="4" fill="url(#qa-lb)"/><g class="qa-press"><rect x="34" y="30" width="52" height="14" rx="6" fill="url(#qa-lp)"/><rect x="42" y="33" width="36" height="4" rx="2" fill="#fff" opacity=".32"/></g>`;
-  }else if(kind==='nomust'){
-    defs=neutral;
-    body=`<circle class="qa-ripple" cx="60" cy="30" r="18" fill="none" stroke="#D6D3D1" stroke-width="1.4"/><circle cx="60" cy="30" r="18" fill="url(#qa-n-nomust)" stroke="#D6D3D1" stroke-width="1.4"/><path d="M51 30 H69" stroke="#A8A29E" stroke-width="3.6" stroke-linecap="round"/>`;
-  }else if(kind==='hotswap'){
-    defs=grad('hs','amber',1)+`<linearGradient id="qa-hb" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#E7E5E4"/><stop offset="1" stop-color="#D6D3D1"/></linearGradient>`;
-    body=`<rect x="26" y="38" width="68" height="14" rx="6" fill="url(#qa-hb)"/><rect x="42" y="42" width="6" height="6" rx="2" fill="#A8A29E"/><rect x="72" y="42" width="6" height="6" rx="2" fill="#A8A29E"/><g class="qa-swap"><rect x="44" y="30" width="3" height="9" rx="1.5" fill="#A8A29E"/><rect x="73" y="30" width="3" height="9" rx="1.5" fill="#A8A29E"/><rect x="38" y="6" width="44" height="28" rx="8" fill="url(#qa-hs)"/><rect x="48" y="11" width="24" height="8" rx="4" fill="#fff" opacity=".3"/></g>`;
-  }else{
-    defs=grad('sd','coral',1)+`<radialGradient id="qa-sg"><stop offset="0" stop-color="#F59A8D"/><stop offset="1" stop-color="#EF6F5E" stop-opacity="0"/></radialGradient><linearGradient id="qa-si" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#78716C"/><stop offset="1" stop-color="#44403C"/></linearGradient>`;
-    body=`<rect x="14" y="44" width="92" height="8" rx="4" fill="#E7E5E4"/><circle class="qa-glow" cx="54" cy="42" r="14" fill="url(#qa-sg)"/><circle cx="54" cy="43" r="4.5" fill="url(#qa-sd)"/><g class="qa-iron"><path d="M54 42 L68 22" stroke="#A8A29E" stroke-width="3.4" stroke-linecap="round"/><path d="M66 25 L94 6" stroke="url(#qa-si)" stroke-width="8" stroke-linecap="round"/></g>`;
-  }
-  return `<svg viewBox="0 0 120 60" aria-hidden="true"><defs>${defs}</defs>${body}</svg>`;
 }
 function surpriseSVG(){
   const cap=(x,y,r,top,side,leg)=>`<g transform="translate(${x} ${y}) rotate(${r})"><rect x="-15" y="-15" width="30" height="30" rx="5" fill="${side}"/><rect x="-11" y="-14" width="22" height="22" rx="4" fill="${top}"/>${leg?`<text x="0" y="2" text-anchor="middle" dominant-baseline="middle" font-family="Host Grotesk,system-ui" font-weight="700" font-size="13" fill="${leg}">?</text>`:''}</g>`;

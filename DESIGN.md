@@ -47,9 +47,10 @@ Every part image is a clean, front-on product photo cropped to its frame (keyboa
 
 ## Quiz photos
 
-The "What is it for?" and "How should it connect?" options show real product photos cut out to a transparent
-background (assets/quiz), not drawn icons: a PS5, a multitasking professional, a coiled USB cable and a wireless
-receiver. Each photo is cropped tight and fills the option's art height (slightly enlarged into the tile's top
+The "What is it for?", "How should it connect?" and "Will you solder?" options show real photos cut out to a
+transparent background (assets/quiz), not drawn icons: a PS5, a multitasking professional, a coiled USB cable, a
+wireless receiver, a switch being pulled from a hot-swap board and a welder. Where a crop cuts through the subject,
+that edge fades out. Each photo is cropped tight and fills the option's art height (slightly enlarged into the tile's top
 padding, so tile sizes never change), with a soft shadow, and lifts a little on hover. Every photo's source and
 licence is recorded in assets/quiz/CREDITS.md: openly licensed Commons photos, or photos the site owner supplied.
 
