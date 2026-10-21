@@ -110,7 +110,10 @@ h1,h2,h3{text-wrap:balance;margin:0;font-weight:700;letter-spacing:-.02em}
 #view-finder::before{background:radial-gradient(ellipse 62% 52% at 50% -4%,rgba(255,255,255,.95),rgba(255,255,255,0) 72%),radial-gradient(ellipse 125% 105% at 50% 42%,rgba(41,37,36,0) 58%,rgba(41,37,36,.055) 100%)}
 #view-finder::after{background:radial-gradient(circle at center,rgba(41,37,36,.1) 0 1px,transparent 1.4px) 0 0/26px 26px;-webkit-mask-image:radial-gradient(ellipse 58% 56% at 50% 36%,#000 8%,transparent 72%);mask-image:radial-gradient(ellipse 58% 56% at 50% 36%,#000 8%,transparent 72%);opacity:.7}
 .fitem{position:absolute;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:8px;border:0;background:transparent;padding:0;cursor:pointer;
-  transition:left .9s var(--out),top .9s var(--out),width .9s var(--out),opacity .6s var(--ease),filter .6s var(--ease)}
+  transform-origin:0 0;transition:translate .9s var(--out),scale .9s var(--out),opacity .6s var(--ease),filter .6s var(--ease)}
+/* Moves are animated with translate and scale (see layoutField), so the browser composites them instead of
+   re-laying out and repainting every board, shadows included, on each frame. */
+.field.flipping .fitem{transition-property:opacity,filter}
 .fitem .art{display:block;width:100%}
 .fitem svg,.fitem img{width:100%;height:auto;display:block;transition:transform .4s var(--out),filter .4s var(--ease)}
 .fitem:hover svg,.fitem:hover img{transform:translateY(-3px)}
@@ -1885,6 +1888,11 @@ function layoutField(){
   const top=pool.slice(0,3);
   const maxBg=mobile?MAX_BG_MOBILE:MAX_BG, slots=mobile?MSLOTS:FIELD_SLOTS;
   const tail=pool.slice(3), rest=(bgSeed?shuffledTail(tail,bgSeed):tail).slice(0,maxBg+(mobile?12:0)); // spares so culled slots can be skipped
+  // FLIP: note where each board is drawn now, jump it to its new place and size, then glide it there with transforms.
+  const fieldBox=document.getElementById('field'), from=new Map();
+  for(const id in fieldEls){const r=fieldEls[id].getBoundingClientRect(); if(r.width) from.set(id,{x:r.left+r.width/2,y:r.top+r.height/2,w:r.width})}
+  fieldBox.classList.add('flipping');
+  for(const id in fieldEls){fieldEls[id].style.translate=''; fieldEls[id].style.scale=''}
   for(const id in fieldEls) if(!top.includes(id)&&!rest.includes(id)) fieldEls[id].className='fitem hidden-slot';
   // Board size and its estimated box (the picture plus a caption line for the centre three).
   const CAP=36, GX=mobile?10:24, GY=mobile?14:18, halfW=(W-24-GX)/2;
@@ -1912,7 +1920,7 @@ function layoutField(){
   fx=[W/2,pairLeft+(f.w[1]||0)/2,pairLeft+(f.w[1]||0)/2+separation];
   fy=[firstTop+(f.h[0]||0)/2,rowTop+rowHeight()/2,rowTop+rowHeight()/2];
   // The area each board takes (with a margin), so a background board never lands on the header, the card or another board.
-  const cr=card.getBoundingClientRect(), taken=[[cr.left-4,cr.top-4,cr.right+4,H]];
+  const cr=card.getBoundingClientRect(), taken=[[cr.left-4,cr.top-4,cr.right+4,H]]; lastCardRect={top:cr.top,width:cr.width};
   if(mobile) taken.push([0,0,W,topBar+4]);
   else for(const q of ['.brand','.nav','.topright']){const e=document.querySelector(q); if(!e) continue; const r=e.getBoundingClientRect(); if(r.width>0) taken.push([r.left-8,r.top-8,r.right+8,r.bottom+8])}
   const hits=(a,b)=>a[0]<b[2]&&b[0]<a[2]&&a[1]<b[3]&&b[1]<a[3];
@@ -1944,6 +1952,14 @@ function layoutField(){
   }
   for(const id of rest.slice(used)) if(fieldEls[id]) fieldEls[id].className='fitem hidden-slot';
   lastBg=placedBg.join();
+  const moves=[];
+  for(const [id,a] of from){const el=fieldEls[id], r=el.getBoundingClientRect(); if(!r.width) continue;
+    const dx=a.x-(r.left+r.width/2), dy=a.y-(r.top+r.height/2), k=a.w/r.width;
+    if(Math.abs(dx)>.5||Math.abs(dy)>.5||Math.abs(k-1)>.002) moves.push([el,dx,dy,k])}
+  for(const [el,dx,dy,k] of moves){el.style.translate=`${dx.toFixed(1)}px ${dy.toFixed(1)}px`; el.style.scale=k.toFixed(4)}
+  void fieldBox.offsetWidth;
+  fieldBox.classList.remove('flipping');
+  for(const [el] of moves){el.style.translate=''; el.style.scale=''}
 }
 let introOn=false, introN=0, introFeat=0, introDone=false;
 function place(id,{x,y,w,max=Infinity,flat=false,cls,r}){
@@ -1961,7 +1977,8 @@ function place(id,{x,y,w,max=Infinity,flat=false,cls,r}){
   el.tabIndex=cls==='feat'?0:-1;
 }
 let fieldFrame=0;
-function scheduleField(){cancelAnimationFrame(fieldFrame);fieldFrame=requestAnimationFrame(layoutField)}
+let fieldHold=false, lastCardRect={top:0,width:0}, answerFrame=0;
+function scheduleField(){if(fieldHold) return; cancelAnimationFrame(fieldFrame);fieldFrame=requestAnimationFrame(layoutField)}
 addEventListener('resize',scheduleField);
 if(window.visualViewport) visualViewport.addEventListener('resize',scheduleField);
 if(window.ResizeObserver){
@@ -2005,12 +2022,19 @@ function renderQuiz(){
     const optB=(o,i)=>`<button class="opt" style="--i:${i}" aria-pressed="${quizAns[Q.key]===o.v}" data-v="${o.v}">${o.art?`<span class="art">${o.art()}</span>`:''}<b>${esc(o.b)}</b>${o.s?`<span>${esc(o.s)}</span>`:''}<i class="tick">${icon('tick')}</i></button>`;
     body=`${Q.info?`<p class="qinfotext" id="qinfotext" hidden>${esc(Q.info)}</p>`:''}${Q.hint?`<p class="qhint">${esc(Q.hint)}</p>`:''}<div class="opts" style="--option-count:${Q.opts.length}">${Q.opts.map((o,i)=>o.clip?`<div class="optw" style="--i:${i}">${optB(o,i)}${clipBtn(o.clip,o.b)}</div>`:optB(o,i)).join('')}</div>${Q.key==='must'&&mustBlocked()?`<p class="qempty" role="status" style="margin:14px 0 0;text-align:center;color:var(--muted);font-size:13px">${mustEmptyMsg()}</p>`:''}${Q.key==='sound'?`<p class="qcredit" id="qcredit" aria-live="polite">Recordings from <a href="assets/sounds/CREDITS.md" target="_blank" rel="noopener">Freesound, CC0</a></p>`:''}`;
   }
+  const wasWide=wrapEl.classList.contains('wide');
   wrapEl.classList.toggle('wide',!!(Q&&Q.opts&&Q.opts.length>5));
   card.innerHTML=`<div class="qhead"><div class="l"><button class="iconbtn" id="qback" aria-label="Previous question" ${quizStep===0?'disabled':''}>${icon('back')}</button><button class="iconbtn" id="qreset" aria-label="Start over" ${answered()?'':'disabled'}>${icon('reset')}</button></div>
     <h1>${esc(title)}${Q&&Q.info?`<button type="button" class="qinfo" aria-label="What does this mean?" aria-expanded="false" aria-controls="qinfotext">i</button>`:''}</h1><div class="r" id="qcount"><b>${fmtCombos(shownCombos==null?combos:shownCombos)}</b><span class="w">combinations</span></div></div>
     <div class="qbody ${qDir<0?'back':''}">${body}</div>`;
   // smooth height change
-  if(oldH){const newH=card.offsetHeight; card.style.height=oldH+'px'; void card.offsetHeight; card.style.height=newH+'px'; clearTimeout(hT); hT=setTimeout(()=>{card.style.height=''; layoutField()},470)}
+  // The field is laid out once for the card's final size; resize events during the height tween would re-run it every frame.
+  // The card's width also tweens when the option count changes, so the hold lasts until both have settled.
+  if(oldH){card.style.height=''; const newH=card.offsetHeight; layoutField(); fieldHold=true;
+    card.style.height=oldH+'px'; void card.offsetHeight; card.style.height=newH+'px';
+    clearTimeout(hT); hT=setTimeout(()=>{card.style.height=''; fieldHold=false; const r=wrapEl.getBoundingClientRect();
+      if(Math.abs(r.top-lastCardRect.top)>1||Math.abs(r.width-lastCardRect.width)>1) layoutField()},wasWide!==wrapEl.classList.contains('wide')?520:470)}
+  else layoutField();
   card.querySelector('#qback').onclick=()=>{if(quizStep>0){quizStep--;qDir=-1;renderQuiz()}};
   card.querySelector('#qreset').onclick=()=>{quizAns={};store.set('sy.quiz',quizAns);quizStep=0;qDir=-1;renderQuiz()};
   const r2=card.querySelector('#qreset2'); if(r2) r2.onclick=()=>{quizAns={};store.set('sy.quiz',quizAns);quizStep=0;qDir=-1;renderQuiz()};
@@ -2019,17 +2043,21 @@ function renderQuiz(){
   const qi=card.querySelector('.qinfo'); if(qi) qi.onclick=()=>{const open=qi.getAttribute('aria-expanded')!=='true'; qi.setAttribute('aria-expanded',String(open)); card.querySelector('#qinfotext').hidden=!open};
   if(Q&&Q.budget) wireBudget(card);
   paintCombos(combos,true);
-  layoutField();
-  if(Q&&Q.opts) setTimeout(()=>markDisabled(Q,card),30);
+  // Checking which options would leave no match runs the finder once per option, so it waits for the card's
+  // entrance animation and then runs one option per idle moment.
+  if(Q&&Q.opts) setTimeout(()=>markDisabled(Q,card),500);
 }
 function setCount(){paintCombos(comboCount(quizAns),true)}
 function choose_(Q,btn){
   if(btn.disabled) return;
   quizAns[Q.key]=btn.dataset.v; if(btn.dataset.v==='surprise') quizAns.seed=Math.floor(Math.random()*1e6); store.set('sy.quiz',quizAns);
   btn.closest('.opts').querySelectorAll('.opt').forEach(o=>o.setAttribute('aria-pressed',o===btn));
-  setCount(); const bgBefore=lastBg; layoutField();
-  // An answer that leaves the background boards where they were shuffles them once.
-  if(lastBg===bgBefore){bgSeed=1+Math.floor(Math.random()*1e6); layoutField()}
+  // The pressed option paints first; the counter and field update on the next frame.
+  cancelAnimationFrame(answerFrame); answerFrame=requestAnimationFrame(()=>{
+    setCount(); const bgBefore=lastBg; layoutField();
+    // An answer that leaves the background boards where they were shuffles them once.
+    if(lastBg===bgBefore){bgSeed=1+Math.floor(Math.random()*1e6); layoutField()}
+  });
   // A must-have that leaves no boards stays on this step so the message can say why.
   if(Q.key==='must'&&mustBlocked()){clearTimeout(window.__adv); window.__adv=setTimeout(renderQuiz,200); return}
   clearTimeout(window.__adv); window.__adv=setTimeout(()=>{quizStep++;qDir=1;renderQuiz()},320);
@@ -2040,12 +2068,16 @@ function mustEmptyMsg(){const m=mustBlocked(); return `No boards match ${esc(MUS
 const MUST_NAMES={hotswap:'swappable switches',rapid:'rapid trigger',knob:'a volume knob',lowprofile:'low profile'};
 function markDisabled(Q,card){
   if(Q.key==='must') return; // every must-have stays selectable so an empty result can be explained
-  const base=mustBlocked()?{...quizAns,must:'none'}:quizAns;
-  for(const b of card.querySelectorAll('.opt')){
-    const v=b.dataset.v; if(v==='any'||v==='surprise') continue;
-    const n=evalAns({...base,[Q.key]:v}).list.length;
+  const base=mustBlocked()?{...quizAns,must:'none'}:quizAns, step=quizStep;
+  const todo=[...card.querySelectorAll('.opt')].filter(b=>b.dataset.v!=='any'&&b.dataset.v!=='surprise');
+  const idle=window.requestIdleCallback?f=>requestIdleCallback(f,{timeout:600}):f=>setTimeout(f,16);
+  const next=()=>{
+    const b=todo.shift(); if(!b||quizStep!==step||!b.isConnected) return;
+    const v=b.dataset.v, n=evalAns({...base,[Q.key]:v}).list.length;
     if(!n&&quizAns[Q.key]!==v){b.disabled=true; b.title='No keyboards match this with your other answers'}
-  }
+    if(todo.length) idle(next);
+  };
+  idle(next);
 }
 function wireBudget(card){
   const tr=card.querySelector('#btrack'), fill=card.querySelector('#bfill'), knob=card.querySelector('#bknob'), nl=card.querySelector('#nolimit');
