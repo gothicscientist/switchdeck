@@ -92,3 +92,11 @@ test('each must-have narrows the finder results and the combination count',async
   kept.lowprofile.forEach(c=>assert.equal(c.sys,'low-profile',c.id));
 });
 
+
+test('price caps filter recommendations without biasing sound match scores',()=>{
+  assert.doesNotMatch(html,/sc-=budget\\?Math\\.max\\(0,\\(budget\\*\\.5-t\\)\\/budget\\)\\*20:t\\/60/);
+  assert.doesNotMatch(html,/if\\(budget\\) sc-=Math\\.max\\(0,\\(budget\\*0\\.5-t\\)\\/budget\\)\\*20; else sc-=t\\/60/);
+  assert.match(html,/if\\(budget&&t>budget\\) continue/,'the chosen cap still excludes over-budget recommendations');
+  assert.match(html,/ps===top\\[top\\.length-1\\]\\.ps&&t>top\\[top\\.length-1\\]\\.t/,'higher price wins an exact score tie');
+  assert.match(html,/list\\.sort\\(\\(a,b\\)=>b\\.sc-a\\.sc\\|\\|b\\.t-a\\.t\\)/,'higher priced equal-score recommendations are surfaced first');
+});

@@ -1656,7 +1656,7 @@ function evalAns(ans){
       const e=estimate(b);
       let sc=100 - Math.abs(e.pitch-T.p)*0.7 - Math.abs(e.vol-T.v)*0.45 - 6;
       if(feel) sc-=4; if(ans.look&&ans.look!=='any'&&!surprise) sc-=4; if(c.soldOut) sc-=10;
-      if(budget) sc-=Math.max(0,(budget*0.5-t)/budget)*20; else sc-=t/60;
+      
       if(ans.use==='gaming'&&(c.layout==='60'||c.layout==='65')) sc+=3;
       if(ans.use==='work'&&(c.layout==='75'||c.layout==='tkl'||c.layout==='full')) sc+=3;
       list.push({b,sc,t,e}); continue;
@@ -1689,11 +1689,11 @@ function evalAns(ans){
       for(const y of bd.sws){
         const t=kPrice+switchCost(y.s,cf.qty); if(budget&&t>budget) continue;
         let sc=100-Math.abs(clampSound(kp+y.sp)-T.p)*.7-Math.abs(clampSound(kv+y.s.vol*.6+xs.v)-T.v)*.45+y.q+kAdj;
-        sc-=budget?Math.max(0,(budget*.5-t)/budget)*20:t/60;
+
         const pen=useSw?repeatCost(REPEAT_SW,useSw.get(y.key)):0, ps=sc-pen;
-        if(top.length<n||ps>top[top.length-1].ps){
+        if(top.length<n||ps>top[top.length-1].ps||(ps===top[top.length-1].ps&&t>top[top.length-1].t)){
           top.push({cf,k,s:y.s,kk:x.key,sk:y.key,sc:sc+(useKc?repeatCost(REPEAT_KC,useKc.get(x.key)):0),ps,t});
-          top.sort((a,b)=>b.ps-a.ps); if(top.length>n) top.pop();
+          top.sort((a,b)=>b.ps-a.ps||b.t-a.t); if(top.length>n) top.pop();
         }
       }
     }
@@ -1723,7 +1723,7 @@ function evalAns(ans){
   }
   // Mods: each build gets the ones that pull its sound toward the answer, if the budget leaves room.
   const T0=SOUND_T[ans.sound]||null, useMod=new Map();
-  list.sort((a,b)=>b.sc-a.sc);
+  list.sort((a,b)=>b.sc-a.sc||b.t-a.t);
   for(const r of list){
     const room=budget?budget-r.t:MODS_MAX_SPEND; if(room<=0) continue;
     const picks=suggestMods(r.b,T0,room,useMod); if(!picks.length) continue;
@@ -1731,7 +1731,7 @@ function evalAns(ans){
     r.sc+=picks.reduce((s,x)=>s+Math.min(x.gain,6),0)*0.5;
     for(const x of picks) useMod.set(sameKey(x.m),(useMod.get(sameKey(x.m))||0)+1);
   }
-  list.sort((a,b)=>b.sc-a.sc);
+  list.sort((a,b)=>b.sc-a.sc||b.t-a.t);
   const top=list[0]?list[0].sc:100;
   list.forEach(r=>r.pct=Math.max(40,Math.min(99,Math.round(99-(top-r.sc)*0.9))));
   const res={list,byCase:new Map(list.map(r=>[r.b.case,r]))};
@@ -2322,7 +2322,7 @@ function buildScore(b,ans=quizAns){
   if(c.soldOut) sc-=10;
   if(ans.use==='gaming'&&(c.layout==='60'||c.layout==='65')) sc+=3;
   if(ans.use==='work'&&(c.layout==='75'||c.layout==='tkl'||c.layout==='full')) sc+=3;
-  sc-=budget?Math.max(0,(budget*.5-t)/budget)*20:t/60;
+
   if(budget&&t>budget) sc-=10+(t-budget)/budget*40;
   if(feel&&sw&&!feelOk(sw,feel)) sc-=12;
   if(look&&kc&&!(kc.mood||[]).includes(look)) sc-=6;
