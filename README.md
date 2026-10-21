@@ -1,6 +1,6 @@
-# Switchdeck keyboard builder and parts directory
+# Thock: keyboard builder and parts directory
 
-A static keyboard builder with a sourced, searchable retailer directory. Open the [site](https://gothicscientist.github.io/switchdeck/) and choose **Parts directory**, or **Browse all parts** from the builder.
+A static keyboard builder with a sourced, searchable retailer directory. Open the [site](https://thock.cc/) and choose **Parts directory**, or **Browse all parts** from the builder.
 
 ## Catalog
 

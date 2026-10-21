@@ -10,7 +10,7 @@ const root=fileURLToPath(new URL('../',import.meta.url));
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 async function getJSON(url) {
   for(let i=0;i<4;i++) {
-    const r=await fetch(url,{headers:{'User-Agent':'SwitchdeckCatalog/1.0 (+https://github.com/gothicscientist/switchdeck)'},signal:AbortSignal.timeout(45000)});
+    const r=await fetch(url,{headers:{'User-Agent':'ThockCatalog/1.0 (+https://thock.cc)'},signal:AbortSignal.timeout(45000)});
     if(r.ok) return r.json();
     if(r.status!==429&&r.status<500)throw Error(url+': HTTP '+r.status);
     await sleep(Math.min(15000,Number(r.headers.get('retry-after')||2)*1000*(i+1)));

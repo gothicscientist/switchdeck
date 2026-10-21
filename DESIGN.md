@@ -1,4 +1,4 @@
-# Switchyard design notes
+# Thock design notes
 
 Read this before a design pass so each pass starts from the same decisions.
 
