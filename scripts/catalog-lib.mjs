@@ -504,6 +504,7 @@ function extrasRule(p) {
 const ACCESSORY_WORDS=/socket|layout bars?|grease|screw ?driver|multi-?tool|tool ?kit|keychain|spacer|\bbrush\b|\bpuller\b|\bopener\b|tester|\bsandbox\b|\bcloth\b|lubricant|\bmat\b|\bpin\b/i;
 function keyboardsRule(p) {
   const s=p.specs, n=p.name;
+  if(+s.layout===70||/\b70\s*(?:%|percent)/i.test(n))return {reason:"layout the builder can't draw"};
   if(JUNK.test(n)) return {reason:'not a keyboard part'};
   if(NOT_A_BOARD.test(n.replace(/(?:hot[- ]?swap(?:pable)?|with|and|\+|&)\s+(?:pcb|plate)\b/ig,' '))||ACCESSORY_WORDS.test(n)) return {accessory:true};
   if(UNSUPPORTED_SYSTEM.test(n)) return {reason:'unsupported switch system (Topre/EC/Alps)'};
@@ -529,6 +530,7 @@ const CASE_BOTH=/(?:top|upper)\s*(?:and|&|\+|,|\/)\s*(?:bottom|lower)|(?:bottom|
 const CASE_ACCESSORY=/folio|sleeve|carrying|travel|\bbag\b|pouch|protective|dust|storage/i;
 function casesRule(p) {
   const s=p.specs, n=p.name;
+  if(+s.layout===70||/\b70\s*(?:%|percent)/i.test(n))return {reason:"layout the builder can't draw"};
   if(CASE_ACCESSORY.test(n)||(CASE_PART.test(n)&&!CASE_BOTH.test(n))) return {accessory:true};
   if(pool(p).some(v=>/\bswitch|cherry mx|gateron|kailh|keyboard\b/i.test(v.name))) return {reason:'not a bare case (sold as a keyboard)'};
   if(NO_DRAW.test(n)) return {reason:"layout the builder can't draw"};

@@ -1625,9 +1625,11 @@ function evalAns(ans){
   const list=[], boards=[];
   for(const c of FINDER_CASES){
     if(c.soldOut) continue;
+    if(c.layoutLabel==='70%') continue;
     if(L&&c.layout!==L) continue;
     const wl=/tri|blue|2\.4|wireless/i.test(c.conn);
     if(ans.wireless==='yes'&&!wl) continue;
+    if(ans.wireless==='wired'&&wl) continue;
     if(ans.solder==='hotswap'&&c.kit&&c.kit.pcb.hotswap!==true) continue;
     if(must&&!boardHasMust(c,must)) continue;
     if(c.assembled){
@@ -1757,9 +1759,11 @@ function comboCount(ans){
   let n=0;
   for(const c of FINDER_CASES){
     if(c.soldOut) continue;
+    if(c.layoutLabel==='70%') continue;
     if(L&&c.layout!==L) continue;
     const wl=/tri|blue|2\.4|wireless/i.test(c.conn);
     if(ans.wireless==='yes'&&!wl) continue;
+    if(ans.wireless==='wired'&&wl) continue;
     if(ans.solder==='hotswap'&&c.kit&&c.kit.pcb.hotswap!==true) continue;
     if(must&&!boardHasMust(c,must)) continue;
     if(c.assembled){ if(!budget||c.price<=budget) n++; continue; }
@@ -2406,8 +2410,9 @@ document.getElementById('importbtn').onclick=()=>{
    ========================================================= */
 const start=(location.hash||'').replace('#','');
 // The directory lists retailer listings; one listing can hold several builder parts (one per spring weight or type).
+const BY_LISTING=new Map();for(const p of ALLPARTS)if(p.catalogId){if(!BY_LISTING.has(p.catalogId))BY_LISTING.set(p.catalogId,[]);BY_LISTING.get(p.catalogId).push(p)}
 window.SwitchdeckBuilder={
-  parts:(id,url)=>ALLPARTS.filter(p=>p.catalogId===id&&(!url||p.retailers?.some(r=>r.url===url))),
+  parts:(id,url)=>(BY_LISTING.get(id)||[]).filter(p=>!url||p.retailers?.some(r=>r.url===url)),
   has:(id,url)=>!!window.SwitchdeckBuilder.parts(id,url).length,
   add:(id,url)=>{const parts=window.SwitchdeckBuilder.parts(id,url);if(!parts.length){toast('This variant is not available in the builder');return}const p=parts.find(p=>!p.soldOut)||parts[0];go('build');choose(p.cat,p)}
 };

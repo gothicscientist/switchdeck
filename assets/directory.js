@@ -11,7 +11,7 @@
   const purchaseLinks=p=>globalThis.SwitchdeckLinks.linksFor(p).map(r=>`<a class="btn small" href="${esc(r.href||r.url)}" target="_blank" rel="sponsored noopener noreferrer">${esc(r.name)}${r.available===false?', sold out':''} ↗</a>`).join('');
   const shortSpecs=p=>Object.entries(p.specs||{}).slice(0,4).map(([k,v])=>`${fields[k]||k}: ${typeof v==='boolean'?(v?'Yes':'No'):v}`).join(', ');
   const isBuilder=(p,url)=>window.SwitchdeckBuilder?.has(p.id,url)||false;
-  async function json(file){const r=await fetch(new URL('data/'+file,document.baseURI),{signal:AbortSignal.timeout(20000)});if(!r.ok)throw Error('Catalog request failed ('+r.status+')');return r.json()}
+  async function json(file){const u=new URL('data/'+file,document.baseURI),version=document.querySelector('meta[name="thock-catalog-version"]')?.content;if(version)u.searchParams.set('v',version);const r=await fetch(u,{signal:AbortSignal.timeout(20000)});if(!r.ok)throw Error('Catalog request failed ('+r.status+')');return r.json()}
   function image(src,cls,alt){return `<img class="${cls}" src="${esc(safeURL(src))}" alt="${esc(alt)}" loading="lazy" decoding="async" referrerpolicy="no-referrer">`}
   // A photo that fails to load is swapped for a plain keyboard outline, not a broken-image box.
   const FALLBACK='data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 60"><rect x="8" y="14" width="104" height="34" rx="6" fill="none" stroke="#a8a29e" stroke-width="2"/><g fill="#d6d3d1">'+Array.from({length:30},(_,i)=>`<rect x="${14+(i%10)*9.4}" y="${19+Math.floor(i/10)*8.5}" width="7" height="6.5" rx="1.2"/>`).join('')+'</g></svg>');

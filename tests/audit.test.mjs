@@ -52,6 +52,11 @@ test('kit listing with in-stock components and a sold-out full kit keeps kit pri
   const r=admit(p);assert.equal(r.parts[0].price,64.3);assert.equal(r.parts[0].soldOut,true);assert.match(r.parts[0].retailers[0].url,/variant=3/);
 });
 
+test('a 70% board without function keys is not silently classified as a 75% board',()=>{
+  const p=normalize({id:101,title:'Example K14 Pro Wireless Mechanical Keyboard',handle:'k14',vendor:'Example',product_type:'Keyboard',tags:[],body_html:'Layout: 70%',images:[{src:'https://example.com/photo.jpg'}],options:[],variants:[{id:1,title:'Default Title',price:'70',available:true}]},SOURCES[0],new Date().toISOString());
+  assert.equal(p.specs.layout,'70');assert.equal(admit(p).reason,"layout the builder can't draw");
+});
+
 test('network errors, temporary HTTP failures and invalid JSON are retried; permanent 404 is not',async()=>{
   let calls=0;
   const request=async()=>{calls++;if(calls===1)throw Error('socket reset');if(calls===2)return new Response('busy',{status:503});if(calls===3)return new Response('<html>oops');return Response.json({products:[]})};
