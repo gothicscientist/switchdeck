@@ -91,6 +91,16 @@ globalThis.SWITCHDECK_SOUND_VIDEOS={
   "video": "Ed_H1t0yh7c",
   "title": "Nude Rosa Silent Switches: Best Silent Switch? by Epomaker: Full Review and Soundtest!"
  },
+ "everfreecurry": {
+  "video": "vvGc2B0vrQ8",
+  "title": "Budget Quiet Switch || Everfree Curry || typing test ASMR",
+  "creator": "enomooshiKEY"
+ },
+ "everfreegrayish": {
+  "video": "pxgYPCeq9jk",
+  "title": "Yunzii AL66 | Gateron Everfree Grayish Switch | Review & Modding | Sound Test",
+  "creator": "AnitaTech"
+ },
  "everfreesilentyellow": {
   "video": "lF73kwneHLA",
   "title": "Switch Sound Test: Gateron Ink V2 Pro Black, Gateron EverFree Silent Yellow, Nuphy Rose Glacier"
@@ -244,6 +254,21 @@ globalThis.SWITCHDECK_SOUND_VIDEOS={
   "title": "Gateron Oil King Yellow Heavy Tactile switch Sound Test!",
   "creator": "Click and Thock"
  },
+ "gateronpro30black": {
+  "video": "_y-E2nrV8Tk",
+  "title": "GMK67 | Gateron G Pro 3.0 Switch (Black) Sound Test",
+  "creator": "KeyboardKev"
+ },
+ "gateronpro30red": {
+  "video": "Fa481u1nlHU",
+  "title": "Gateron G Pro 3.0 Red unboxing sound test",
+  "creator": "SPEC"
+ },
+ "gateronpro30silver": {
+  "video": "jq1cY1SviQA",
+  "title": "Gaming linear mechanical switches | Gateron G Pro 3.0 Silver | YUNZII AL68 | sound test",
+  "creator": "Jur1cek"
+ },
  "gateronproultraglory": {
   "video": "W8UVuAVJAIc",
   "title": "Gateron PRO ULTRA GLORY Switch Typing Sound Review on Cerakey"
@@ -315,6 +340,16 @@ globalThis.SWITCHDECK_SOUND_VIDEOS={
   "video": "wd0tJs_ItME",
   "title": "Geon HG Yellow Silent Tactile Review & Soundtest",
   "creator": "Unqualified Typist"
+ },
+ "haimuckxhaimuclipperswordfish": {
+  "video": "jYDzkOXGDhQ",
+  "title": "Bakeneko POPS with CK x Haimu Clipper Swordfish Tactiles! #keyboardtyping #typing #mechkeyboard",
+  "creator": "The Manic Geek"
+ },
+ "haimuckxhaimupastelthistle": {
+  "video": "iIfU8-RRfbM",
+  "title": "Zoom65 V2 Sound Test PP Plate With CK x Haimu Pastel Thistle Tactile Switch THOCKY",
+  "creator": "Carter"
  },
  "haimuheartbeatsilent": {
   "video": "pwuHPlq874s",
