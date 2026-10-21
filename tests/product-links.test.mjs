@@ -20,11 +20,16 @@ test('an imported builder keeps its exact variant URL ahead of a generic source 
  const r={'source-123':[{name:'Store',url:'https://example.com/products/part'},{name:'Amazon',url:'https://www.amazon.com/dp/B0CR1JTHWV'}]};
  const links=linksFor(p,r);assert.equal(links[0].name,'Amazon');assert.match(links[1].url,/variant=456$/);
 });
+test('priced selected variants never inherit an Amazon pack or assembled product from a listing-level match',()=>{
+ const p={id:'primary',variantId:'123',retailers:[{name:'Primary',url:'https://shop.example/products/a?variant=123'}]};
+ const out=linksFor(p,{primary:[{name:'Amazon',url:'https://www.amazon.com/dp/B012345678'},{name:'Primary',url:'https://shop.example/products/a?variant=456'}]});
+ assert.equal(out.length,1);assert.match(out[0].url,/variant=123$/);
+});
 test('the real finder, builder and directory data resolve only to product pages',async()=>{
  const html=await readFile(new URL('../index.html',import.meta.url),'utf8');
  const script=html.match(/<script>([\s\S]*?)<\/script>/)[1];
  const ctx={URL,window:{},localStorage:{getItem:()=>null},innerWidth:1300};vm.createContext(ctx);
- for(const f of ['assets/part-names.js','assets/product-links.js','data/product-links.js','data/builder-catalog.js'])vm.runInContext(await readFile(new URL('../'+f,import.meta.url),'utf8'),ctx);
+ for(const f of ['assets/build-engine.js','assets/part-names.js','assets/product-links.js','data/product-links.js','data/builder-catalog.js'])vm.runInContext(await readFile(new URL('../'+f,import.meta.url),'utf8'),ctx);
  vm.runInContext(script.slice(0,script.indexOf('const LAYOUTS =')),ctx);
  const results=vm.runInContext('ALLPARTS.map(p=>({id:p.id,links:SwitchdeckLinks.linksFor(p)}))',ctx);
  const report=JSON.parse(await readFile(new URL('../data/product-link-report.json',import.meta.url),'utf8'));

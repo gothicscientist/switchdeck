@@ -1,16 +1,16 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-21T03:40:33.058Z",
+  "generatedAt": "2026-10-21T03:48:26.017Z",
   "listingCount": 8906,
   "inStockCount": 4819,
-  "builderSwitchCount": 2000,
-  "builderExtraCount": 1298,
-  "builderCaseCount": 1519,
+  "builderSwitchCount": 1998,
+  "builderExtraCount": 1322,
+  "builderCaseCount": 1881,
   "builderKeycapCount": 1802,
   "builderStabCount": 130,
-  "builderPcbCount": 234,
-  "builderPlateCount": 538,
-  "builderSoldOutCount": 3614,
+  "builderPcbCount": 408,
+  "builderPlateCount": 814,
+  "builderSoldOutCount": 4251,
   "builderAdmission": {
     "keycaps": {
       "total": 2765,
@@ -32,11 +32,11 @@
     },
     "keyboards": {
       "total": 2340,
-      "admitted": 730,
-      "soldOutAdmitted": 885,
+      "admitted": 742,
+      "soldOutAdmitted": 887,
       "excluded": {
         "layout the builder can't draw": 149,
-        "no layout": 325,
+        "no layout": 311,
         "not a keyboard part": 9,
         "unsupported switch system (Topre/EC/Alps)": 112,
         "non-ANSI layout": 111,
@@ -154,9 +154,9 @@
       "name": "CannonKeys",
       "url": "https://cannonkeys.com",
       "currency": "USD",
-      "status": "fresh",
+      "status": "replayed",
       "checkedAt": "2026-10-21T03:39:48.092Z",
-      "rawProducts": 1185,
+      "rawProducts": 917,
       "listings": 917
     },
     {
@@ -164,9 +164,9 @@
       "name": "Divinikey",
       "url": "https://divinikey.com",
       "currency": "USD",
-      "status": "fresh",
+      "status": "replayed",
       "checkedAt": "2026-10-21T03:39:51.983Z",
-      "rawProducts": 1482,
+      "rawProducts": 1353,
       "listings": 1353
     },
     {
@@ -174,9 +174,9 @@
       "name": "NovelKeys",
       "url": "https://novelkeys.com",
       "currency": "USD",
-      "status": "fresh",
+      "status": "replayed",
       "checkedAt": "2026-10-21T03:39:46.569Z",
-      "rawProducts": 410,
+      "rawProducts": 347,
       "listings": 347
     },
     {
@@ -184,9 +184,9 @@
       "name": "KBDfans",
       "url": "https://kbdfans.com",
       "currency": "USD",
-      "status": "fresh",
+      "status": "replayed",
       "checkedAt": "2026-10-21T03:39:49.791Z",
-      "rawProducts": 467,
+      "rawProducts": 382,
       "listings": 382
     },
     {
@@ -194,9 +194,9 @@
       "name": "Keychron",
       "url": "https://www.keychron.com",
       "currency": "USD",
-      "status": "fresh",
+      "status": "replayed",
       "checkedAt": "2026-10-21T03:39:52.285Z",
-      "rawProducts": 712,
+      "rawProducts": 640,
       "listings": 640
     },
     {
@@ -204,9 +204,9 @@
       "name": "KeebsForAll",
       "url": "https://keebsforall.com",
       "currency": "USD",
-      "status": "fresh",
+      "status": "replayed",
       "checkedAt": "2026-10-21T03:39:53.281Z",
-      "rawProducts": 452,
+      "rawProducts": 412,
       "listings": 412
     },
     {
@@ -214,9 +214,9 @@
       "name": "Mode Designs",
       "url": "https://modedesigns.com",
       "currency": "USD",
-      "status": "fresh",
+      "status": "replayed",
       "checkedAt": "2026-10-21T03:39:52.567Z",
-      "rawProducts": 73,
+      "rawProducts": 46,
       "listings": 46
     },
     {
@@ -225,9 +225,9 @@
       "url": "https://mechanicalkeyboards.com",
       "currency": "USD",
       "optional": true,
-      "status": "fresh",
+      "status": "replayed",
       "checkedAt": "2026-10-21T03:40:26.260Z",
-      "rawProducts": 5738,
+      "rawProducts": 3076,
       "listings": 3076
     },
     {
@@ -236,9 +236,9 @@
       "url": "https://kprepublic.com",
       "currency": "USD",
       "optional": true,
-      "status": "fresh",
+      "status": "replayed",
       "checkedAt": "2026-10-21T03:40:02.724Z",
-      "rawProducts": 1380,
+      "rawProducts": 1266,
       "listings": 1266
     },
     {
@@ -247,9 +247,9 @@
       "url": "https://meletrix.com",
       "currency": "USD",
       "optional": true,
-      "status": "fresh",
+      "status": "replayed",
       "checkedAt": "2026-10-21T03:39:54.313Z",
-      "rawProducts": 205,
+      "rawProducts": 103,
       "listings": 103
     },
     {
@@ -258,9 +258,9 @@
       "url": "https://qwertykeys.com",
       "currency": "USD",
       "optional": true,
-      "status": "fresh",
+      "status": "replayed",
       "checkedAt": "2026-10-21T03:39:55.748Z",
-      "rawProducts": 110,
+      "rawProducts": 77,
       "listings": 77
     },
     {
@@ -269,9 +269,9 @@
       "url": "https://www.wobkey.com",
       "currency": "USD",
       "optional": true,
-      "status": "fresh",
+      "status": "replayed",
       "checkedAt": "2026-10-21T03:39:56.785Z",
-      "rawProducts": 31,
+      "rawProducts": 23,
       "listings": 23
     },
     {
@@ -280,9 +280,9 @@
       "url": "https://epomaker.com",
       "currency": "USD",
       "optional": true,
-      "status": "fresh",
+      "status": "replayed",
       "checkedAt": "2026-10-21T03:39:57.757Z",
-      "rawProducts": 123,
+      "rawProducts": 109,
       "listings": 109
     },
     {
@@ -291,10 +291,9 @@
       "url": "https://kineticlabs.com",
       "currency": "USD",
       "optional": true,
-      "status": "skipped",
+      "status": "replayed",
       "rawProducts": 0,
-      "listings": 0,
-      "error": "Unexpected token '<', \"\n   <!DOCTYPE \"... is not valid JSON"
+      "listings": 0
     },
     {
       "id": "dangkeebs",
@@ -302,9 +301,9 @@
       "url": "https://dangkeebs.com",
       "currency": "USD",
       "optional": true,
-      "status": "fresh",
+      "status": "replayed",
       "checkedAt": "2026-10-21T03:40:04.917Z",
-      "rawProducts": 177,
+      "rawProducts": 155,
       "listings": 155
     },
     {
@@ -313,10 +312,29 @@
       "url": "https://milktooth.com",
       "currency": "USD",
       "optional": true,
-      "status": "skipped",
+      "status": "replayed",
       "rawProducts": 0,
-      "listings": 0,
-      "error": "https://milktooth.com/cart.js: HTTP 404"
+      "listings": 0
+    },
+    {
+      "id": "glorious",
+      "name": "Glorious",
+      "url": "https://www.gloriousgaming.com",
+      "currency": "USD",
+      "optional": true,
+      "handles": [
+        "gmmk2-barebone",
+        "gmmk-3-barebones-keyboard",
+        "gmmk-3-pro-he-barebones-keyboard",
+        "glorious-gmmk-pro-75-barebone-black",
+        "gmmk-prebuilt-keyboard",
+        "fox-he-switches",
+        "lynx-he-switches",
+        "panda-he-switches"
+      ],
+      "status": "replayed",
+      "rawProducts": 0,
+      "listings": 0
     }
   ],
   "shards": [
@@ -433,5 +451,5 @@
     "parts/0110.json",
     "parts/0111.json"
   ],
-  "fingerprint": "ee1b105a02eb6f83efee308ad613efbbdf8fe104ef0f8f3b1cc2b38b49ac2f61"
+  "fingerprint": "9b9bad32af38b58724825525c810ac60a70d9e9fcda695d9b673bfe923a510e5"
 }

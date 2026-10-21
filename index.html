@@ -665,6 +665,7 @@ a.listen.watch:hover{background:rgba(68,64,60,.16)}
 <script src="assets/product-links.js"></script>
 <script src="data/product-links.js"></script>
 <script src="data/builder-catalog.js"></script>
+<script src="assets/build-engine.js"></script>
 <script src="assets/directory.js"></script>
 <script>
 /* =========================================================
@@ -760,7 +761,7 @@ const PLATES = [];
 for (const [fit,[layout,label]] of Object.entries(PLATE_FITS)) for (const [mat,m] of Object.entries(PLATE_MAT))
   PLATES.push({id:`plate-${fit}-${mat.replace(/\s/g,'').toLowerCase()}`,cat:'plate',brand:'KBDfans',name:`${label} Plate · ${mat}`,fit,layout,material:mat,price:m.price + (layout==='tkl'?10:0),plateStabs:mat!=='PC',blurb:m.desc});
 
-const S = (o)=>Object.assign({cat:'switches'},o);
+const S = (o)=>Object.assign({cat:'switches',switchSystem:'mx-mechanical'},o);
 const SWITCHES = [
   S({id:'milkyyp',brand:'Gateron',name:'Milky Yellow Pro',type:'Linear',force:50,travel:4.0,pins:5,price:0.22,sound:'mid',vol:50,factory:true,col:{top:'#EDE6D5',bot:'#EDE6D5',stem:'#F2C230'},blurb:'The budget linear everyone recommends. Smooth out of the box.'}),
   S({id:'ks3yellow',brand:'Gateron',name:'Yellow KS-3',type:'Linear',force:50,travel:4.0,pins:5,price:0.18,sound:'bright',vol:55,factory:false,col:{top:'#2B2C30',bot:'#2B2C30',stem:'#F2C230'},blurb:'Cheapest decent linear. Lube them for the best feel.'}),
@@ -859,6 +860,9 @@ for(const p of ALLPARTS) Object.assign(p,SwitchdeckNames.part(p));
 // Reviewed, version-specific matches enrich existing parts without replacing kit prices or fit rules.
 for(const [id,meta] of Object.entries(window.SWITCHDECK_CATALOG?.curated||{})){const p=ALLPARTS.find(p=>p.id===id);if(p&&meta.retailers){p.photo=meta.photo?{...meta.photo}:(p.photo&&{page:p.photo.page});p.retailers=meta.retailers;if(meta.retailers.length&&meta.retailers.every(r=>r.available===false))p.soldOut=true}}
 const BYID = Object.fromEntries(ALLPARTS.map(p=>[p.id,p]));
+// Historical hand-authored prices/fit claims remain inspectable, but are not current purchase evidence.
+for(const p of ALLPARTS) if(!p.catalogId){p.pricing={status:'incomplete',reason:'Historical example; verify current variant and price'};p.availability='unverified';}
+const PURCHASE=globalThis.SwitchdeckBuild.create({cases:FINDER_CASES,switches:SWITCHES,keycaps:KEYCAPS,pcbs:PCBS,plates:PLATES,stabs:STABS,extras:EXTRAS});
 
 const SLOTS = [
   {key:'case',label:'Case or kit',hint:'Sets the layout'},
@@ -913,86 +917,21 @@ function effPlate(b){const c=caseOf(b); if(c&&c.kit) return {material:c.kit.plat
 function stabsIncluded(b){const c=caseOf(b); return !!(c&&c.kit&&c.kit.stabs)}
 const layoutOf = b=>{const c=caseOf(b); return c?c.layout:null};
 const keyCount = b=>{const c=caseOf(b); return c?c.keys:0};
-function switchQty(b){const n=keyCount(b); return Math.ceil((n||0)/10)*10}
-function switchCost(s,q){return s.packQuantity?Math.ceil(q/s.packQuantity)*s.packPrice:+(s.price*q).toFixed(2)}
+function switchQty(b){return keyCount(b)||0}
+function switchCost(s,q){return s.packQuantity?SwitchdeckBuild.swCost(s,q):+(s.price*q).toFixed(2)}
 
-function lineItems(b){
-  const c=caseOf(b), L=layoutOf(b), items=[];
-  if(c) items.push({slot:'case',part:c,price:c.price});
-  if(!(c&&c.kit)){ if(b.pcb) items.push({slot:'pcb',part:BYID[b.pcb],price:BYID[b.pcb].price}); if(b.plate) items.push({slot:'plate',part:BYID[b.plate],price:BYID[b.plate].price}); }
-  if(b.switches){const s=BYID[b.switches], q=switchQty(b)||70; items.push({slot:'switches',part:s,price:switchCost(s,q),qty:s.packQuantity?Math.ceil(q/s.packQuantity)*s.packQuantity:q});}
-  if(b.stabs && !stabsIncluded(b)){const s=BYID[b.stabs]; items.push({slot:'stabs',part:s,price:L==='full'?s.fullPrice:s.price});}
-  if(b.keycaps){const k=BYID[b.keycaps]; let p=k.price, add=0; if(L&&k.covers&&!k.covers.includes(L)&&k.addon&&k.addon[L]) add=k.addon[L]; items.push({slot:'keycaps',part:k,price:p+add,addon:add});}
-  for(const id of b.extras||[]){const e=BYID[id]; if(e) items.push({slot:'extras',part:e,price:e.price});}
-  return items;
-}
+function lineItems(b){return PURCHASE.items(b)}
+
 const total = b=>lineItems(b).reduce((s,i)=>s+i.price,0);
 
 function compat(b){
-  const out=[], c=caseOf(b), pcb=effPcb(b), plate=effPlate(b), sw=BYID[b.switches], kc=BYID[b.keycaps], st=BYID[b.stabs], L=layoutOf(b);
-  const add=(level,slot,msg,sub)=>out.push({level,slot,msg,sub});
-  if(!c){add('info','case','Pick a case or kit to start','The case decides the layout and which parts fit.');return out}
-  if(c.assembled) add('info','case',`${partName(c)} is sold assembled`,'It ships with switches and keycaps. What you pick here are swaps or upgrades.');
-  else if(c.kit&&c.catalogId) add('info','case',`${partName(c)} is a kit listing`,`Check ${storeOf(c)} for exactly what's included.`);
-  else if(c.kit) add('ok','case',`${partName(c)} is a kit`,`PCB, plate${c.kit.stabs?' and stabilizers':''} are included.`);
-  if(!c.kit){
-    const p=BYID[b.pcb], pl=BYID[b.plate];
-    if(p && (p.fit==null||c.fit==null)) add('info','pcb',`Check that ${p.name} fits the ${partName(c)}`,`The stores don't list them as made for each other.`);
-    else if(p && p.fit!==c.fit) add('fail','pcb',`${p.name} doesn't fit the ${partName(c)}`,`It's a ${LAYOUT_NAMES[p.layout]} board for a different mounting pattern.`);
-    else if(p) add('ok','pcb',`${p.name} fits the ${partName(c)}`);
-    if(pl && (pl.fit==null||c.fit==null)) add('info','plate',`Check that ${pl.name} fits the ${partName(c)}`);
-    else if(pl && pl.fit!==c.fit) add('fail','plate',`${pl.name} doesn't fit the ${partName(c)}`);
-    if(!pl && p) add('warn','plate','No plate selected','Plateless builds flex a lot and switches can wobble. 5-pin switches help.');
-  }
-  if(kc&&!kc.covers) add('info','keycaps',`Check that ${kc.name} covers a ${LAYOUT_NAMES[L]} board`,`${storeOf(kc)} doesn't list a key count for this set.`);
-  else if(kc){
-    if(!kc.covers.includes(L)){
-      if(kc.addon&&kc.addon[L]) add('warn','keycaps',`${kc.brand} ${kc.name} base kit doesn't cover ${LAYOUT_NAMES[L]}`,`Added the numpad kit (+${money(kc.addon[L])}) to the price.`);
-      else add('fail','keycaps',`${kc.name} doesn't include the keys for a ${LAYOUT_NAMES[L]} board`);
-    } else add('ok','keycaps',`${kc.name} covers the ${LAYOUT_NAMES[L]} layout`);
-  }
-  if(sw && boardSystem(c)!==swSystemOf(sw)) add('fail','switches',`${partName(sw)} won't fit this board`,`It's a ${SYSTEM_NAMES[swSystemOf(sw)]} switch and the ${partName(c)} takes ${SYSTEM_NAMES[boardSystem(c)]} switches.`);
-  if(sw && c.assembled && pcb?.hotswap===false) add('warn','switches','Replacing these switches needs desoldering','This assembled keyboard has soldered switches.');
-  if(kc && boardSystem(c)==='low-profile') add('info','keycaps','Check the keycap stem and stabilizer fit','Low-profile keyboards need keycaps made for their switch and stabilizer system.');
-  for(const [slot,id] of [['case',b.case],['pcb',b.pcb],['plate',b.plate],['switches',b.switches],['keycaps',b.keycaps],['stabs',b.stabs]]){const q=BYID[id]; if(q&&q.soldOut) add('info',slot,`${partName(q)} is sold out`,`${storeOf(q)} lists it as out of stock right now.`)}
-  if(sw && pcb){
-    if(sw.pins===5 && pcb.pins===3) add('warn','switches','5-pin switches on a 3-pin PCB','Clip the two plastic side legs off each switch.');
-    if(pcb.hotswap==null) add('info','pcb','Check whether the PCB is hot-swap',`${storeOf(c)} doesn't say. If it's solder-only you'll need an iron.`);
-    else if(!pcb.hotswap) add('warn','pcb','This PCB needs soldering',`You'll solder ${keyCount(b)} switches. Plan 1–2 hours and a soldering iron.`);
-    else add('ok','switches','Hot-swap PCB: switches press in, no soldering');
-    if(sw.pins===3 && !plate) add('fail','switches','3-pin switches need a plate','Without a plate they have nothing to hold them straight.');
-  }
-  if(pcb){
-    const needStabs=!stabsIncluded(b);
-    if(needStabs && !st) add('info','stabs',c.catalogId?'Check whether stabilizers are included':'Add stabilizers',c.catalogId?`Most kits include them. If this one doesn't, a ${LAYOUT_NAMES[L]} board needs ${L==='full'?'7':'5'}.`:`A ${LAYOUT_NAMES[L]} board needs ${L==='full'?'7':'5'} stabilizers for its long keys.`);
-    if(st && needStabs){
-      if(st.mount==='plate'){ if(!plate) add('fail','stabs','Plate-mount stabilizers need a plate'); else if(plate.material==='PC') add('warn','stabs','Plate-mount stabs on a PC plate','PC plates often skip stab cutouts. Check the plate before buying.'); else add('ok','stabs','Plate-mount stabilizers fit the plate'); }
-      else if(!pcb.stabs?.length) add('info','stabs','Check which stabilizers fit',`${storeOf(c)} doesn't list the stabilizer type for this PCB.`);
-      else if(!pcb.stabs.includes(st.mount)) add('fail','stabs',`This PCB doesn't take ${st.mount==='clip'?'clip-in':'screw-in'} stabilizers`,`It supports ${pcb.stabs.map(m=>m==='clip'?'clip-in':'screw-in').join(' and ')}.`);
-      else add('ok','stabs',`${st.mount==='clip'?'Clip-in':'Screw-in'} stabilizers fit the PCB`);
-    }
-  }
-  if(kc && pcb){
-    if(kc.profile==='Cherry' && pcb.led==='north' && sw && sw.type!=='Silent linear') add('warn','keycaps','Cherry-profile caps can hit north-facing switches','Some Cherry-profile keys (mostly the number row) can rub the switch housing. Test a few before installing all.');
-    if(kc.shine && !pcb.rgb) add('info','keycaps','Shine-through caps, but no RGB','The board has no lighting, so the translucent sides stay dark.');
-    if(pcb.rgb && !kc.shine && kc.legends!=='Blank') add('info','keycaps','RGB will only glow under the caps','These legends are not shine-through.');
-  }
-  if(sw && (b.extras||[]).includes('krytox')){
-    if(sw.factory) add('info','extras',`${sw.name} come factory lubed`,'Extra lube is optional.');
-    if(!(b.extras||[]).includes('opener')) add('info','extras','Lubing needs a switch opener','Add one from Extras.');
-  }
-  for(const id of b.extras||[]){const m=BYID[id]; if(!m||!m.mod) continue; const fit=modFit(m,c);
-    if(fit==='check') add('info','extras',`Check that ${partName(m)} fits the ${partName(c)}`,'The store lists it by layout, not for this board.');
-    else if(fit===false&&m.catalogId) add('warn','extras',`${partName(m)} is made for a different board`,'Pick a mod listed for this board or layout.');}
-  if(pcb && pcb.hotswap && !(b.extras||[]).includes('puller')) add('info','extras','Get a switch puller','Swapping switches on a hot-swap board needs one.');
-  if(/Tri-mode|Bluetooth/.test(c.conn)) add('ok','case',`${c.conn} wireless`, 'Use the cable for the lowest latency.');
-  const missing=SLOTS.filter(s=>needed(b,s.key)&&!b[s.key]).map(s=>s.label.toLowerCase());
-  if(missing.length) add('info','build',`Still needed: ${missing.join(', ')}`);
-  return out;
+ const result=PURCHASE.evaluate(b), c=caseOf(b), out=[...result.issues];
+ if(result.ready)out.push({level:'ok',slot:'build',msg:'Complete, confirmed-fitting parts; in stock',sub:'Parts subtotal excludes shipping and tax.'});
+ else if(c)out.push({level:'info',slot:'case',msg:c.pricing?.reason||'Build needs verification',sub:'Unverified fit, deferred stock and partial prices are excluded from automatic recommendations.'});
+ return out;
 }
-function needed(b,key){const c=caseOf(b); if(key==='extras') return false; if(!c) return key==='case';
-  if(c.assembled&&(key==='switches'||key==='keycaps'||key==='stabs')) return false;
-  if(c.catalogId&&key==='stabs'&&!c.kit?.stabs) return false; if(c.kit&&(key==='pcb'||key==='plate')) return false; if(key==='stabs'&&stabsIncluded(b)) return false; return true}
+function needed(b,key){const c=caseOf(b);if(key==='extras')return false;if(!c)return key==='case';if(key==='case')return true;return !c.includes?.[key];}
+
 function verdict(issues){
   if(issues.some(i=>i.level==='fail')) return {level:'fail',text:'Parts conflict'};
   if(issues.some(i=>i.level==='warn')) return {level:'warn',text:'Works, with notes'};
@@ -1221,6 +1160,7 @@ function specChips(p){
   if(p.cat==='keycaps'){ch.push(p.profile,p.material,p.legends); if(p.shine) ch.push('Shine-through')}
   if(p.cat==='stabs'){ch.push({screw:'PCB screw-in',clip:'PCB clip-in',plate:'Plate-mount'}[p.mount])}
   if(p.cat==='extras'){ch.push(p.kind)}
+  if(p.availability==='preorder')ch.push('Preorder');if(p.availability==='made-to-order')ch.push('Made to order');if(p.pricing?.status==='incomplete')ch.push('Incomplete price');if(p.keycapFit?.status==='unknown')ch.push('Fit unverified');
   return (p.soldOut?'<span class="chip warn">Sold out</span>':'')+ch.filter(Boolean).map(c=>`<span class="chip">${esc(c)}</span>`).join('');
 }
 let toastT;
@@ -1567,11 +1507,7 @@ function surpriseSVG(){
 const B_MIN=100, B_MAX=600;
 const SOUND_T={thock:{p:25,v:50},creamy:{p:40,v:38},clack:{p:74,v:62},quiet:{p:40,v:15}};
 function configsFor(c,ans){
-  if(c.kit) return [{pcb:null,plate:null}];
-  if(!c.fit) return []; // no PCB or plate is known to fit this case
-  const out=[];
-  for(const p of PCBS) if(!p.soldOut&&p.fit===c.fit && !((ans.solder==='hotswap'||ans.must==='hotswap')&&p.hotswap!==true)) for(const pl of PLATES) if(!pl.soldOut&&pl.fit===c.fit) out.push({pcb:p.id,plate:pl.id});
-  return out;
+  return PURCHASE.configurations(c,ans);
 }
 const evalCache=new Map();
 function hashStr(str){let h=2166136261; for(let i=0;i<str.length;i++){h^=str.charCodeAt(i); h=Math.imul(h,16777619)} return h>>>0}
@@ -1670,122 +1606,29 @@ function suggestMods(b,T,room,useMod){
   return picks;
 }
 function evalAns(ans){
-  const key=JSON.stringify(ans); if(evalCache.has(key)) return evalCache.get(key);
-  const L=ans.layout&&ans.layout!=='any'?ans.layout:null;
-  const budget=typeof ans.budget==='number'&&ans.budget<B_MAX?ans.budget:null;
-  const feel=ans.feel&&ans.feel!=='any'?ans.feel:null;
-  const must=mustOf(ans), mustSys=mustSystem(must);
-  const surprise=ans.look==='surprise', look=ans.look&&ans.look!=='any'&&!surprise?ans.look:null;
-  const T=SOUND_T[ans.sound]||{p:45,v:50};
-  const extras=[], xs=extrasSound(extras);
-  // Shortlists: the parts that suit the answers best on their own. The exact build score is worked out per board.
-  // One shortlist per switch family (MX-style, magnetic, low-profile, optical): a board only takes its own family.
-  const swBy={};
-  for(const s of SWITCHES) if(!s.soldOut&&s.vol!=null&&feelOk(s,feel)&&(!mustSys||swSystem(s)===mustSys)){const q=swQuality(s,ans), sp=swPitch(s); (swBy[swSystemOf(s)]??=[]).push({s,q,sp,key:sameKey(s),proxy:q-Math.abs(sp-(T.p-50))*.35-Math.abs(20+.6*s.vol-T.v)*.45})}
-  // Reserve room for affordable choices so a high sound score cannot price every build out of budget.
-  const shortlist=(pool,n,price)=>{const ranked=[...pool].sort((a,b)=>b.proxy-a.proxy);return [...new Set([...ranked.slice(0,n-8),...[...pool].sort((a,b)=>price(a)-price(b)).slice(0,8)])]};
-  for(const k in swBy) swBy[k]=shortlist(swBy[k],SW_SHORT,x=>switchCost(x.s,110));
-  const kcPool=KEYCAPS.filter(k=>!k.soldOut&&(surprise?(k.photo||k.pal):!look||(k.mood||[]).includes(look)))
-    .map(k=>{const s=capSound(k), q=kcQuality(k,look); return {k,q,kp:s.p,kv:s.v,key:sameKey(k),proxy:q-Math.abs(s.p-(T.p-50)/2)*.35}});
-  const kcs=surprise?kcPool:shortlist(kcPool,KC_SHORT,x=>x.k.price);
-  const list=[], boards=[];
-  for(const c of FINDER_CASES){
-    if(c.soldOut) continue;
-    if(c.layoutLabel==='70%') continue;
-    if(L&&c.layout!==L) continue;
-    const wl=/tri|blue|2\.4|wireless/i.test(c.conn);
-    if(ans.wireless==='yes'&&!wl) continue;
-    if(ans.wireless==='wired'&&wl) continue;
-    if(ans.solder==='hotswap'&&c.kit&&c.kit.pcb.hotswap!==true) continue;
-    if(must&&!boardHasMust(c,must)) continue;
-    if(c.assembled){
-      // Ships with its own switches and keycaps, which stores rarely spec, so feel and look can't be checked.
-      const b={case:c.id,color:0,pcb:null,plate:null,switches:null,keycaps:null,stabs:null,extras:[]};
-      const t=total(b); if(budget&&t>budget) continue;
-      const e=estimate(b);
-      let sc=100 - Math.abs(e.pitch-T.p)*0.7 - Math.abs(e.vol-T.v)*0.45 - 6;
-      if(feel) sc-=4; if(ans.look&&ans.look!=='any'&&!surprise) sc-=4; if(c.soldOut) sc-=10;
-      if(budget) sc-=Math.max(0,(budget*0.5-t)/budget)*20; else sc-=t/60;
-      if(ans.use==='gaming'&&(c.layout==='60'||c.layout==='65')) sc+=3;
-      if(ans.use==='work'&&(c.layout==='75'||c.layout==='tkl'||c.layout==='full')) sc+=3;
-      list.push({b,sc,t,e}); continue;
-    }
-    // Keycap sets that fit this layout: listed coverage, a numpad add-on, or unknown coverage (a "check" note, scored lower).
-    let ks=kcs.filter(x=>!x.k.covers||x.k.covers.includes(c.layout)||(x.k.addon&&x.k.addon[c.layout]));
-    if(surprise){let r=hashStr(`${c.id}:${ans.seed||0}`)||1; const pick=[], pool=[...ks];
-      while(pick.length<SURPRISE_KC&&pool.length){r=(Math.imul(r,1664525)+1013904223)>>>0; pick.push(pool.splice(r%pool.length,1)[0])} ks=pick}
-    const sws=swBy[boardSystem(c)]||[];
-    if(!ks.length||!sws.length) continue;
-    const cfgs=configsFor(c,ans).map(cf=>{
-      const b0={case:c.id,color:0,pcb:cf.pcb,plate:cf.plate,switches:null,keycaps:null,stabs:null,extras};
-      if(!stabsIncluded(b0)){const pcb=effPcb(b0); b0.stabs=pcb?.stabs?.includes('screw')?'durockv2':pcb?.stabs?.includes('clip')?'cherryclip':null}
-      const cs=caseSound(c,effPlate(b0)), pcbE=effPcb(b0);
-      let adj=0;
-      if(ans.use==='gaming'&&(c.layout==='60'||c.layout==='65')) adj+=3;
-      if(ans.use==='work'&&(c.layout==='75'||c.layout==='tkl'||c.layout==='full')) adj+=3;
-      if(pcbE.hotswap===false||(pcbE.hotswap==null&&!c.catalogId)) adj-=8; if(c.catalogId) adj-=3; if(c.soldOut) adj-=10;
-      return {b0,base:total(b0),qty:switchQty(b0)||70,p0:50+cs.p,v0:50+cs.v,adj};
-    });
-    boards.push({c,ks,sws,cfgs});
+ const key=JSON.stringify(ans);if(evalCache.has(key))return evalCache.get(key);
+ const a={...ans,...(ans.budget>=B_MAX?{budget:undefined}:{})},T=SOUND_T[ans.sound]||{p:45,v:50};
+ const useSw=new Map(),useKc=new Map(),list=[];
+ // Price and exact fit are checked against the whole catalog BEFORE score shortlisting.
+ const shortlist=(xs,quality,cost)=>{const ranked=xs.slice().sort((x,y)=>quality(y)-quality(x));const cheap=xs.slice().sort((x,y)=>cost(x)-cost(y)).slice(0,8);return [...new Map([...ranked.slice(0,32),...cheap].map(x=>[x.id,x])).values()]};
+ const groups=PURCHASE.domains(a).sort((x,y)=>x.best-y.best);
+ for(const {c,ds} of groups){
+  let best=null;
+  for(const d of ds){
+   if(c.assembled){const e=estimate(d.b),sc=80-Math.abs(e.pitch-T.p)*.5-Math.abs(e.vol-T.v)*.35;const r={b:d.b,t:d.base,e,sc};if(!best||r.sc>best.sc)best=r;continue;}
+   const ss=shortlist(d.switches,s=>swQuality(s,ans)-repeatCost(REPEAT_SW,useSw.get(sameKey(s))),s=>switchCost(s,d.quantity));
+   const kk=shortlist(d.keycaps,k=>kcQuality(k,ans.look)-repeatCost(REPEAT_KC,useKc.get(sameKey(k))),k=>SwitchdeckBuild.capCost(k,c));
+   for(const s of ss)for(const k of kk){
+    const t=Math.round((d.base+switchCost(s,d.quantity)+SwitchdeckBuild.capCost(k,c))*100)/100;if(Number.isFinite(a.budget)&&t>a.budget+1e-7)continue;
+    const b={...d.b,switches:s.id,keycaps:k.id},e=estimate(b);
+    const sc=100-Math.abs(e.pitch-T.p)*.7-Math.abs(e.vol-T.v)*.45+swQuality(s,ans)+kcQuality(k,ans.look)-repeatCost(REPEAT_SW,useSw.get(sameKey(s)))-repeatCost(REPEAT_KC,useKc.get(sameKey(k)))-(Number.isFinite(a.budget)?Math.max(0,(a.budget*.5-t)/a.budget)*20:t/60);
+    if(!best||sc>best.sc)best={b,t,e,sc};
+   }
   }
-  // Up to n best pairings for one board, ranked by score minus the repeat penalty (sc keeps the plain score).
-  const rank=(bd,useSw,useKc,n)=>{
-    const top=[];
-    for(const cf of bd.cfgs) for(const x of bd.ks){
-      const k=x.k, add=k.covers&&!k.covers.includes(bd.c.layout)?(k.addon&&k.addon[bd.c.layout]||0):0;
-      const kAdj=cf.adj+x.q-(add?4:0)-(k.covers?0:3)-(useKc?repeatCost(REPEAT_KC,useKc.get(x.key)):0);
-      const kp=cf.p0+x.kp+xs.p, kv=(cf.v0+x.kv)*.4, kPrice=cf.base+k.price+add;
-      for(const y of bd.sws){
-        const t=kPrice+switchCost(y.s,cf.qty); if(budget&&t>budget) continue;
-        let sc=100-Math.abs(clampSound(kp+y.sp)-T.p)*.7-Math.abs(clampSound(kv+y.s.vol*.6+xs.v)-T.v)*.45+y.q+kAdj;
-        sc-=budget?Math.max(0,(budget*.5-t)/budget)*20:t/60;
-        const pen=useSw?repeatCost(REPEAT_SW,useSw.get(y.key)):0, ps=sc-pen;
-        if(top.length<n||ps>top[top.length-1].ps){
-          top.push({cf,k,s:y.s,kk:x.key,sk:y.key,sc:sc+(useKc?repeatCost(REPEAT_KC,useKc.get(x.key)):0),ps,t});
-          top.sort((a,b)=>b.ps-a.ps); if(top.length>n) top.pop();
-        }
-      }
-    }
-    return top;
-  };
-  // First the plain best score per board fixes the order; then each board, best first, takes its best pairing
-  // after the repeat penalty, skipping any that the compatibility check rejects.
-  for(const bd of boards){const t=rank(bd,null,null,1)[0]; bd.prior=t?t.sc:-Infinity}
-  boards.sort((a,b)=>b.prior-a.prior);
-  const useSw=new Map(), useKc=new Map(), useSt=new Map();
-  for(const bd of boards){
-    if(bd.prior===-Infinity) continue;
-    for(const p of rank(bd,useSw,useKc,4)){
-      const b={...p.cf.b0,switches:p.s.id,keycaps:p.k.id,extras:[...extras]};
-      const iss=compat(b); if(iss.some(i=>i.level==='fail')) continue;
-      // Stabilizers: any in-stock set of the mount the default took, cheaper and photographed first, rotated like the
-      // switches and keycaps; the default stays when nothing else fits the budget.
-      let t=p.t; const st0=BYID[b.stabs];
-      if(st0){let best=null;
-        for(const st of STABS) if(st.mount===st0.mount&&!st.soldOut){const t2=t-(layoutOf(b)==='full'?st0.fullPrice:st0.price)+(layoutOf(b)==='full'?st.fullPrice:st.price); if(budget&&t2>budget) continue;
-          const v=(st.photo?1:0)+(!st.catalogId?1:0)-(t2-t)/8-repeatCost(1.2,useSt.get(sameKey(st))); if(!best||v>best.v) best={st,v,t2}}
-        if(best){b.stabs=best.st.id; t=best.t2; useSt.set(sameKey(best.st),(useSt.get(sameKey(best.st))||0)+1)}}
-      list.push({b,sc:p.sc-iss.filter(i=>i.level==='warn').length*5,t,e:estimate(b)});
-      useSw.set(p.sk,(useSw.get(p.sk)||0)+1); useKc.set(p.kk,(useKc.get(p.kk)||0)+1);
-      break;
-    }
-  }
-  // Mods: each build gets the ones that pull its sound toward the answer, if the budget leaves room.
-  const T0=SOUND_T[ans.sound]||null, useMod=new Map();
-  list.sort((a,b)=>b.sc-a.sc);
-  for(const r of list){
-    const room=budget?budget-r.t:MODS_MAX_SPEND; if(room<=0) continue;
-    const picks=suggestMods(r.b,T0,room,useMod); if(!picks.length) continue;
-    r.b={...r.b,extras:[...r.b.extras,...picks.map(x=>x.m.id)]}; r.t=total(r.b); r.e=estimate(r.b);
-    r.sc+=picks.reduce((s,x)=>s+Math.min(x.gain,6),0)*0.5;
-    for(const x of picks) useMod.set(sameKey(x.m),(useMod.get(sameKey(x.m))||0)+1);
-  }
-  list.sort((a,b)=>b.sc-a.sc);
-  const top=list[0]?list[0].sc:100;
-  list.forEach(r=>r.pct=Math.max(40,Math.min(99,Math.round(99-(top-r.sc)*0.9))));
-  const res={list,byCase:new Map(list.map(r=>[r.b.case,r]))};
-  if(evalCache.size>400) evalCache.clear();
-  evalCache.set(key,res); return res;
+  if(best&&PURCHASE.evaluate(best.b,a).ready){list.push(best);for(const [slot,m] of [['switches',useSw],['keycaps',useKc]])if(BYID[best.b[slot]]){const k=sameKey(BYID[best.b[slot]]);m.set(k,(m.get(k)||0)+1)}}
+ }
+ list.sort((a,b)=>b.sc-a.sc);const top=list[0]?.sc||100;list.forEach(r=>r.pct=Math.max(40,Math.min(99,Math.round(99-(top-r.sc)*.9))));
+ const res={list,byCase:new Map(list.map(r=>[r.b.case,r]))};if(evalCache.size>400)evalCache.clear();evalCache.set(key,res);return res;
 }
 /*COMBOS-START*/
 /* Must-haves. A board passes only when the catalog positively says so; a null or missing fact never matches.
@@ -1800,7 +1643,7 @@ function boardHasMust(c,must){
   if(!must) return true; if(!c) return false;
   if(must==='hotswap') return c.kit?c.kit.pcb&&c.kit.pcb.hotswap===true:!!c.fit&&PCBS.some(p=>p.fit===c.fit&&p.hotswap===true);
   if(must==='knob') return c.knob===true;
-  if(must==='rapid') return c.switchSystem==='hall-effect'||c.rapidTrigger===true;
+  if(must==='rapid') return c.switchSystem==='hall-effect'&&c.rapidTrigger===true;
   if(must==='lowprofile') return c.switchSystem==='low-profile';
   return true;
 }
@@ -1811,54 +1654,8 @@ function boardHasMust(c,must){
    with board + switch (whole packs) + keycaps (+addon) <= budget, counted per board by two pointers over sorted prices. */
 const comboCache=new Map();
 function comboCount(ans){
-  const key=JSON.stringify(ans); if(comboCache.has(key)) return comboCache.get(key);
-  const L=ans.layout&&ans.layout!=='any'?ans.layout:null;
-  const budget=typeof ans.budget==='number'&&ans.budget<B_MAX?ans.budget:null;
-  const feel=ans.feel&&ans.feel!=='any'?ans.feel:null;
-  const look=ans.look&&ans.look!=='any'&&ans.look!=='surprise'?ans.look:null;
-  const must=mustOf(ans), mustSys=mustSystem(must);
-  const sws=SWITCHES.filter(s=>{
-    if(s.soldOut) return false;
-    if(feel&&!(feel==='Silent'?/Silent/.test(s.type):s.type===feel)) return false;
-    if(ans.sound==='quiet'&&!/Silent/.test(s.type)) return false;
-    if((ans.sound==='thock'||ans.sound==='creamy')&&s.type==='Clicky') return false;
-    if(ans.sound==='clack'&&/Silent/.test(s.type)) return false;
-    if(ans.use==='gaming'&&(s.type==='Clicky'||(s.force!=null&&s.force>55))) return false;
-    if(mustSys&&swSystem(s)!==mustSys) return false;
-    return true;
-  });
-  const kcs=KEYCAPS.filter(k=>!k.soldOut&&k.covers&&(!look||(k.mood||[]).includes(look)));
-  const kcByLayout={}; // layout -> keycap prices (addon included), sorted ascending
-  const kcFor=lay=>kcByLayout[lay]||(kcByLayout[lay]=kcs.filter(k=>k.covers.includes(lay)||(k.addon&&k.addon[lay])).map(k=>k.price+(!k.covers.includes(lay)&&k.addon&&k.addon[lay]||0)).sort((a,b)=>a-b));
-  const swByQty=new Map(); // switch family + pack-rounded purchase size -> switch costs, sorted ascending
-  const swFor=(sys,q)=>{const k=sys+':'+q; let a=swByQty.get(k); if(!a){a=sws.filter(s=>swSystemOf(s)===sys).map(s=>switchCost(s,q)).sort((x,y)=>x-y); swByQty.set(k,a)} return a};
-  let n=0;
-  for(const c of FINDER_CASES){
-    if(c.soldOut) continue;
-    if(c.layoutLabel==='70%') continue;
-    if(L&&c.layout!==L) continue;
-    const wl=/tri|blue|2\.4|wireless/i.test(c.conn);
-    if(ans.wireless==='yes'&&!wl) continue;
-    if(ans.wireless==='wired'&&wl) continue;
-    if(ans.solder==='hotswap'&&c.kit&&c.kit.pcb.hotswap!==true) continue;
-    if(must&&!boardHasMust(c,must)) continue;
-    if(c.assembled){ if(!budget||c.price<=budget) n++; continue; }
-    const configs=configsFor(c,ans); if(!configs.length) continue;
-    const kp=kcFor(c.layout), sc=swFor(boardSystem(c),switchQty({case:c.id})||70);
-    if(!kp.length||!sc.length) continue;
-    if(!budget){ n+=kp.length*sc.length; continue; }
-    // Count each switch/keycap pair once using its cheapest complete case/PCB/plate configuration.
-    const base=Math.min(...configs.map(cf=>{
-      const b={case:c.id,pcb:cf.pcb,plate:cf.plate,extras:[]},p=effPcb(b);
-      if(!stabsIncluded(b))b.stabs=p?.stabs?.includes('screw')?'durockv2':p?.stabs?.includes('clip')?'cherryclip':null;
-      return total(b);
-    }));
-    const rem=budget-base+1e-9; if(rem<0) continue;
-    let j=kp.length; // two pointers: as the switch cost rises, fewer keycap sets fit
-    for(let i=0;i<sc.length;i++){ while(j>0&&kp[j-1]+sc[i]>rem) j--; if(!j) break; n+=j }
-  }
-  if(comboCache.size>400) comboCache.clear();
-  comboCache.set(key,n); return n;
+ const key=JSON.stringify(ans);if(comboCache.has(key))return comboCache.get(key);
+ const n=PURCHASE.count({...ans,...(ans.budget>=B_MAX?{budget:undefined}:{})});if(comboCache.size>400)comboCache.clear();comboCache.set(key,n);return n;
 }
 /* Counter display: tween from the value currently shown to the new count. */
 let shownCombos=null, comboRaf=0;
@@ -2191,21 +1988,21 @@ function matchColor(score){
 function renderRList(){
   const el=document.getElementById('rlist'); rShown=Math.max(rShown,resIdx+1);
   const shown=resList.slice(0,rShown);
-  el.innerHTML=shown.map((r,i)=>{const c=caseOf(r.b);return `<button style="--i:${i};--match-color:${matchColor(r.pct)}" data-ri="${i}" aria-current="${i===resIdx}"><span class="rthumb">${caseVisual(r.b,'thumb')}</span><span style="min-width:0"><b>${esc(partName(c))}</b><small>${money(r.t)}${c.soldOut?' · Sold out':''}</small></span>${i===0?'<span class="best match-score">Best match</span>':`<small class="pct match-score">${r.pct}%</small>`}</button>`}).join('')+(resList.length>rShown?`<button class="rmore" id="rmore" style="grid-template-columns:1fr;text-align:center"><small>Show more (${resList.length-rShown} left)</small></button>`:'');
+  el.innerHTML=shown.map((r,i)=>{const c=caseOf(r.b);return `<button style="--i:${i};--match-color:${matchColor(r.pct)}" data-ri="${i}" aria-current="${i===resIdx}"><span class="rthumb">${caseVisual(r.b,'thumb')}</span><span style="min-width:0"><b>${esc(partName(c))}</b><small>${money(r.t)} parts subtotal${c.soldOut?' · Sold out':''}</small></span>${i===0?'<span class="best match-score">Best match</span>':`<small class="pct match-score">${r.pct}%</small>`}</button>`}).join('')+(resList.length>rShown?`<button class="rmore" id="rmore" style="grid-template-columns:1fr;text-align:center"><small>Show more (${resList.length-rShown} left)</small></button>`:'');
   const more=el.querySelector('#rmore'); if(more) more.onclick=()=>{rShown+=60; const st=el.scrollTop; renderRList(); el.scrollTop=st};
   el.querySelectorAll('[data-ri]').forEach(b=>b.onclick=()=>{resIdx=+b.dataset.ri; el.querySelectorAll('[data-ri]').forEach(x=>x.setAttribute('aria-current',x===b)); renderRDetail()});
 }
 function renderRDetail(){
   const r=resList[resIdx], b=r.b, c=caseOf(b), s=BYID[b.switches];
   const items=lineItems(b), SL=k=>SLOTS.find(x=>x.key===k).label;
-  const sub=i=>i.slot==='switches'?`${i.qty} × ${money(i.part.price)}`:i.slot==='keycaps'&&i.addon?`incl. ${money(i.addon)} numpad kit`:i.slot==='stabs'?`${layoutOf(b)==='full'?7:5}-stab set`:'';
+  const sub=i=>i.slot==='switches'?`${i.qty} × ${money(i.part.price)}`:i.slot==='keycaps'&&i.addon?`incl. ${money(i.addon)} numpad kit`:i.slot==='stabs'?`Set coverage verified`:'';
   const desc=p=>p.cat==='case'?[LAYOUT_NAMES[p.layout],p.material,p.mount&&p.mount+' mount',p.assembled?'sold assembled':p.kit&&'kit'].filter(Boolean).join(', '):p.cat==='switches'?[p.type,p.force&&`${p.force} g`,p.pins&&`${p.pins}-pin`].filter(Boolean).join(', '):p.cat==='keycaps'?[p.profile&&`${p.profile} profile`,p.material,p.legends].filter(Boolean).join(', '):p.cat==='pcb'?[p.hotswap===true?'Hot-swap':p.hotswap===false?'Solder':null,p.pins&&`${p.pins}-pin`].filter(Boolean).join(', '):p.cat==='plate'?p.material||'':p.blurb||'';
   let rows=items.map((i,n)=>`<div class="part" data-pi="${n}" style="--i:${n}"><span class="pt">${i.slot==='case'?caseVisual({case:c.id,color:b.color||0,keycaps:null,extras:[]},'thumb'):thumbFor(i.part)}</span>
       <div class="pn"><small>${esc(SL(i.slot))}</small><b>${esc(partName(i.part))}</b><em>${esc(desc(i.part))}</em>${i.part.soldOut?'<span class="chip warn" style="align-self:flex-start;margin-top:4px">Sold out</span>':''}</div>
       <div class="pp">${money(i.price)}${sub(i)?`<small>${esc(sub(i))}</small>`:''}</div>
       <div class="stores">${i.slot==='switches'?`<span class="watchrow">${soundWatchLink(i.part)}${soundSearchLink(i.part,'More tests',true)}</span>`:''}${i.slot==='keycaps'&&quizAns.look==='surprise'?'<button type="button" class="listen" id="reroll">↻ Shuffle</button>':''}${storeChips(i.part)}</div></div>`);
   if(c.assembled) rows.splice(1,0,`<div class="part inc" style="--i:1"><span class="pt">${pcbSVG(c.kit.pcb)}</span><div class="pn"><small>Included</small><b>Switches and keycaps, per the listing</b><em>Listed as a complete keyboard. Check ${esc(storeOf(c))} for which switches and keycaps it ships with.</em></div><div class="pp"><span class="chip ok">Included</span></div></div>`);
-  else if(c.kit&&c.catalogId) rows.splice(1,0,`<div class="part inc" style="--i:1"><span class="pt">${pcbSVG(c.kit.pcb)}</span><div class="pn"><small>Kit</small><b>PCB and plate, per the listing</b><em>Check ${esc(storeOf(c))} for exactly what the ${esc(partName(c))} kit includes.</em></div><div class="pp"><span class="chip ok">Kit</span></div></div>`);
+  else if(c.kit&&c.catalogId) rows.splice(1,0,`<div class="part inc" style="--i:1"><span class="pt">${pcbSVG(c.kit.pcb)}</span><div class="pn"><small>Included</small><b>PCB and plate${c.includes?.stabs?' + stabilizers':''}</b><em>Included components verified for the selected variant.</em></div><div class="pp"><span class="chip ok">Kit</span></div></div>`);
   else if(c.kit) rows.splice(1,0,`<div class="part inc" style="--i:1"><span class="pt">${pcbSVG(c.kit.pcb)}</span><div class="pn"><small>Included</small><b>PCB, ${esc(c.kit.plate)} plate${c.kit.stabs?' and stabilizers':''}</b><em>Comes with the ${esc(partName(c))}</em></div><div class="pp"><span class="chip ok">Included</span></div></div>`);
   const nParts=items.length+(c.kit?1:0);
   // Sound and feel for this build, with a pin where the quiz's sound answer sits on pitch and volume.
@@ -2223,7 +2020,7 @@ function renderRDetail(){
     <div class="rsum swapin">
       <div class="board">${caseVisual(b,'detail')}</div>
       <div><h2>${esc(partName(c))}</h2></div>
-      <div class="total"><b>${money(r.t)}</b><span>approx. total</span></div>
+      <div class="total"><b>${money(r.t)}</b><span>parts subtotal</span></div>
       <p class="rcap"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 8h11M9 4l4 4-4 4"/></svg>Made of the ${nParts} parts listed <span class="rcap-w">on the right</span><span class="rcap-n">below</span></p>
       <div class="stats3"><div><span>Match</span><b class="match-score" style="--match-color:${matchColor(r.pct)}">${r.pct}%</b></div><div><span>Sound</span><b>${pitchWord(r.e.pitch)}</b></div><div><span>Feel</span><b>${esc(s?s.type:'As shipped')}</b></div></div>
       ${sf}
@@ -2233,7 +2030,7 @@ function renderRDetail(){
     </div>
     <div class="rparts swapin"><div class="phead"><h3>Parts in this build</h3><span>${nParts} parts, ${money(r.t)}</span></div>${affNote()}
       ${rows.join('')}
-      </div>`;
+      <p class="note">Parts subtotal excludes shipping and tax. Stock and prices were checked at the linked retailer.</p></div>`;
   el.querySelector('#rclose').onclick=closeResults;
   el.querySelector('#rbuild').onclick=()=>{build={...b,extras:[...b.extras],name:`My ${partName(c)} build`}; persist(); closeResults(); go('build'); toast('Loaded into the builder')};
   el.querySelector('#rcopy').onclick=()=>copyText(partsText({...b,name:`${partName(c)} build`}),el.querySelector('#rcopyfb'));
@@ -2315,7 +2112,7 @@ function renderRail(){
   <section class="card"><h3>Compatibility</h3><div class="verdict ${v.level}">${v.text}</div>
     <ul class="issues">${sorted.map(i=>`<li class="${i.level}"><i></i><span>${esc(i.msg)}${i.sub?`<br><small>${esc(i.sub)}</small>`:''}</span></li>`).join('')}</ul></section>
   <section class="card"><h3>Price</h3><div class="totals">${items.map(i=>`<div><span>${SLOTS.find(s=>s.key===i.slot).label}${i.slot==='extras'?': '+esc(i.part.name):''}</span><span class="mono">${money(i.price)}</span></div>`).join('')||'<div><span class="note">Nothing yet</span></div>'}
-    <div class="grand"><span>Total</span><span class="mono">${money(t)}</span></div></div><p class="note" style="margin:0">Approximate list prices, before shipping and tax.</p>${affNote()}</section>
+    <div class="grand"><span>Parts subtotal</span><span class="mono">${money(t)}</span></div></div><p class="note" style="margin:0">Approximate list prices, before shipping and tax.</p>${affNote()}</section>
   <section class="card"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><h3>Sound and feel estimate</h3>${build.switches?listenBtn('build','Hear switches'):''}</div>
     ${build.switches?`<div class="soundlinks">${soundSearchLink(BYID[build.switches])}</div><p class="note">The recording uses a different keyboard. These meters are estimates of your build.</p>`:''}
     ${meter('Pitch',e.pitch,pitchWord(e.pitch),'Deep','Bright')}
@@ -2336,7 +2133,7 @@ function partsText(b){
   for(const i of lineItems(b)) lines.push(`${SLOTS.find(s=>s.key===i.slot).label}: ${partName(i.part)}${i.qty?` x${i.qty}`:''} - ${money(i.price)}`,`  ${buyLinks(i.part)[0]?.u||'Exact product link not confirmed yet'}`);
   if(c&&c.kit) lines.push(`Included with kit: PCB, ${c.kit.plate} plate${c.kit.stabs?', stabilizers':''}`);
   if(BYID[b.switches]) lines.push('', 'Switch sound tests: '+soundSearchUrl(BYID[b.switches]));
-  lines.push('',`Total: ${money(total(b))} (approx.)`,`Build code: ${encodeBuild(b)}`);
+  lines.push('',`Parts subtotal: ${money(total(b))} (shipping and tax excluded)`,`Build code: ${encodeBuild(b)}`);
   return lines.join('\n');
 }
 function commit(){build.example=false; persist(); renderBuilder()}
@@ -2372,7 +2169,7 @@ let pk={slot:null,q:'',f:{},compat:true,sort:'featured',maxPrice:null,minF:30,ma
 function partPrice(slot,p){
   if(slot==='switches') return switchCost(p,switchQty(build)||70);
   if(slot==='stabs') return layoutOf(build)==='full'?p.fullPrice:p.price;
-  if(slot==='keycaps'){const L=layoutOf(build); return p.price+((L&&p.covers&&!p.covers.includes(L)&&p.addon&&p.addon[L])||0)}
+  if(slot==='keycaps')return SwitchdeckBuild.capCost(p,{layout:layoutOf(build)});
   return p.price;
 }
 function tryPart(slot,p){
@@ -2507,6 +2304,7 @@ const start=(location.hash||'').replace('#','');
 const BY_LISTING=new Map();for(const p of ALLPARTS)if(p.catalogId){if(!BY_LISTING.has(p.catalogId))BY_LISTING.set(p.catalogId,[]);BY_LISTING.get(p.catalogId).push(p)}
 window.SwitchdeckBuilder={
   parts:(id,url)=>(BY_LISTING.get(id)||[]).filter(p=>!url||p.retailers?.some(r=>r.url===url)),
+  variant:(id,v)=>(BY_LISTING.get(id)||[]).find(p=>String(p.variantId)===String(v)),
   has:(id,url)=>!!window.SwitchdeckBuilder.parts(id,url).length,
   add:(id,url)=>{const parts=window.SwitchdeckBuilder.parts(id,url);if(!parts.length){toast('This variant is not available in the builder');return}const p=parts.find(p=>!p.soldOut)||parts[0];go('build');choose(p.cat,p)}
 };

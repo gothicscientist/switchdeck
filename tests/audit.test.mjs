@@ -9,7 +9,7 @@ const html=await readFile(new URL('../index.html',import.meta.url),'utf8');
 const inline=[...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g)].map(m=>m[1]).filter(Boolean).join('\n');
 async function engine(storage={}){
   const ctx={URL,window:{},localStorage:{getItem:k=>storage[k]??null},innerWidth:1300,btoa:s=>Buffer.from(s,'binary').toString('base64'),atob:s=>Buffer.from(s,'base64').toString('binary')};vm.createContext(ctx);
-  for(const f of ['assets/product-links.js','data/product-links.js','assets/part-names.js','data/builder-catalog.js'])vm.runInContext(await readFile(new URL('../'+f,import.meta.url),'utf8'),ctx);
+  for(const f of ['assets/product-links.js','data/product-links.js','assets/part-names.js','data/builder-catalog.js','assets/build-engine.js'])vm.runInContext(await readFile(new URL('../'+f,import.meta.url),'utf8'),ctx);
   vm.runInContext(inline.slice(0,inline.indexOf('const LAYOUTS =')),ctx);
   vm.runInContext(inline.slice(inline.indexOf('function partName('),inline.indexOf('let toastT;'))+inline.match(/function decodeBuild\(code\)\{[^\n]+/)[0]+'\n'+inline.match(/const storeOf[^\n]+/)[0],ctx);
   vm.runInContext(inline.slice(inline.indexOf('const B_MIN='),inline.indexOf('/*COMBOS-END*/')),ctx);
@@ -54,7 +54,7 @@ test('reviewed legacy parts inherit sold-out status from their current retailer 
 
 test('kit listing with in-stock components and a sold-out full kit keeps kit price and stock',()=>{
   const p=normalize({id:100,title:'XD84 Pro Custom Mechanical Keyboard Kit 75%',handle:'xd84',vendor:'Example',product_type:'Keyboard',tags:[],body_html:'75% layout',images:[{src:'https://example.com/photo.jpg'}],options:[],variants:[{id:1,title:'XD84 Pro / Plate Only',price:'16.60',available:true},{id:2,title:'XD84 Pro / PCB only',price:'33.90',available:true},{id:3,title:'XD84 Pro / Kit 1',price:'64.30',available:false}]},SOURCES[0],new Date().toISOString());
-  const r=admit(p);assert.equal(r.parts[0].price,64.3);assert.equal(r.parts[0].soldOut,true);assert.match(r.parts[0].retailers[0].url,/variant=3/);
+  const r=admit(p);const kit=r.parts.find(p=>p.cat==='case');assert.equal(kit.price,64.3);assert.equal(kit.soldOut,true);assert.match(kit.retailers[0].url,/variant=3/);assert.equal(r.parts.find(p=>p.cat==='plate').price,16.6);assert.ok(r.parts.filter(p=>p.cat==='case').every(p=>p.availability!=='in-stock'));
 });
 
 test('a 70% board without function keys is not silently classified as a 75% board',()=>{

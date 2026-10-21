@@ -1,0 +1,23 @@
+[
+  {
+    "family": "Gateron Jupiter",
+    "types": {
+      "Red": "Linear",
+      "Brown": "Tactile",
+      "Banana": "Tactile"
+    },
+    "url": "https://www.keychron.com/products/gateron-jupiter-switch-set",
+    "checkedAt": "2026-10-20",
+    "method": "Manufacturer Product Information tables; also retailer V1/V2/V3/V6 Max switch tables"
+  },
+  {
+    "family": "Keychron K Pro",
+    "types": {
+      "Red": "Linear",
+      "Brown": "Tactile"
+    },
+    "url": "https://www.keychron.com/blogs/news/red-switch-vs-brown-switch",
+    "checkedAt": "2026-10-20",
+    "method": "Manufacturer K Pro switch comparison; blue is retained as unknown until independently evidenced"
+  }
+]

@@ -38,6 +38,9 @@
   const hasAffiliates=(cfg=globalThis.SWITCHDECK_AFFILIATES||{})=>Object.values(cfg).some(a=>a&&(a.wrap||a.param&&a.code));
   function linksFor(p,registry=globalThis.SWITCHDECK_PRODUCT_LINKS||{}){
     if(!p)return [];
+    // A priced builder variant is a specific purchase. A product-level match (including an
+    // Amazon ASIN for another pack or assembly option) is not evidence for that variant.
+    if(p.variantId)return orderLinks([...(p.retailers||[]),...(registry[p.id]||[]).filter(r=>String(r.variantId)===String(p.variantId))]);
     const id=p.catalogId||p.id?.split('~')[0];
     return orderLinks([...(p.id===id?registry[p.id]||[]:[]),...(p.retailers||[]),...(p.id===id?[]:[...(registry[p.id]||[]),...(registry[id]||[])]),
       ...(p.url?[{name:p.retailer||p.brand,url:p.url,available:p.available}]:[]),
