@@ -1,16 +1,16 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-20T23:52:32.872Z",
+  "generatedAt": "2026-10-21T02:23:46.792Z",
   "listingCount": 8906,
-  "inStockCount": 4821,
+  "inStockCount": 4819,
   "builderSwitchCount": 2000,
-  "builderExtraCount": 1296,
+  "builderExtraCount": 1298,
   "builderCaseCount": 1528,
-  "builderKeycapCount": 1829,
+  "builderKeycapCount": 1827,
   "builderStabCount": 130,
   "builderPcbCount": 234,
   "builderPlateCount": 538,
-  "builderSoldOutCount": 3618,
+  "builderSoldOutCount": 3622,
   "builderAdmission": {
     "keycaps": {
       "total": 2765,
@@ -22,8 +22,8 @@
     },
     "deskmats": {
       "total": 345,
-      "admitted": 152,
-      "soldOutAdmitted": 177,
+      "admitted": 151,
+      "soldOutAdmitted": 178,
       "excluded": {
         "not a keyboard part": 2,
         "not a full set": 14
@@ -31,8 +31,8 @@
     },
     "keyboards": {
       "total": 2340,
-      "admitted": 737,
-      "soldOutAdmitted": 886,
+      "admitted": 735,
+      "soldOutAdmitted": 888,
       "excluded": {
         "layout the builder can't draw": 140,
         "no layout": 325,
@@ -98,8 +98,8 @@
     },
     "cases": {
       "total": 153,
-      "admitted": 60,
-      "soldOutAdmitted": 51,
+      "admitted": 59,
+      "soldOutAdmitted": 52,
       "excluded": {
         "no layout": 9,
         "layout the builder can't draw": 17,
@@ -147,12 +147,32 @@
   },
   "sources": [
     {
+      "id": "cannonkeys",
+      "name": "CannonKeys",
+      "url": "https://cannonkeys.com",
+      "currency": "USD",
+      "status": "fresh",
+      "checkedAt": "2026-10-21T02:22:54.227Z",
+      "rawProducts": 1185,
+      "listings": 917
+    },
+    {
+      "id": "divinikey",
+      "name": "Divinikey",
+      "url": "https://divinikey.com",
+      "currency": "USD",
+      "status": "fresh",
+      "checkedAt": "2026-10-21T02:22:58.169Z",
+      "rawProducts": 1482,
+      "listings": 1353
+    },
+    {
       "id": "novelkeys",
       "name": "NovelKeys",
       "url": "https://novelkeys.com",
       "currency": "USD",
       "status": "fresh",
-      "checkedAt": "2026-10-20T23:51:37.086Z",
+      "checkedAt": "2026-10-21T02:22:48.734Z",
       "rawProducts": 410,
       "listings": 347
     },
@@ -162,19 +182,9 @@
       "url": "https://kbdfans.com",
       "currency": "USD",
       "status": "fresh",
-      "checkedAt": "2026-10-20T23:51:41.377Z",
-      "rawProducts": 466,
+      "checkedAt": "2026-10-21T02:22:51.875Z",
+      "rawProducts": 467,
       "listings": 382
-    },
-    {
-      "id": "divinikey",
-      "name": "Divinikey",
-      "url": "https://divinikey.com",
-      "currency": "USD",
-      "status": "fresh",
-      "checkedAt": "2026-10-20T23:51:43.645Z",
-      "rawProducts": 1482,
-      "listings": 1353
     },
     {
       "id": "keychron",
@@ -182,29 +192,9 @@
       "url": "https://www.keychron.com",
       "currency": "USD",
       "status": "fresh",
-      "checkedAt": "2026-10-20T23:51:45.801Z",
+      "checkedAt": "2026-10-21T02:22:56.406Z",
       "rawProducts": 712,
       "listings": 640
-    },
-    {
-      "id": "mode",
-      "name": "Mode Designs",
-      "url": "https://modedesigns.com",
-      "currency": "USD",
-      "status": "fresh",
-      "checkedAt": "2026-10-20T23:51:46.738Z",
-      "rawProducts": 73,
-      "listings": 46
-    },
-    {
-      "id": "cannonkeys",
-      "name": "CannonKeys",
-      "url": "https://cannonkeys.com",
-      "currency": "USD",
-      "status": "fresh",
-      "checkedAt": "2026-10-20T23:51:47.044Z",
-      "rawProducts": 1185,
-      "listings": 917
     },
     {
       "id": "keebsforall",
@@ -212,9 +202,41 @@
       "url": "https://keebsforall.com",
       "currency": "USD",
       "status": "fresh",
-      "checkedAt": "2026-10-20T23:51:48.499Z",
+      "checkedAt": "2026-10-21T02:22:57.567Z",
       "rawProducts": 452,
       "listings": 412
+    },
+    {
+      "id": "mode",
+      "name": "Mode Designs",
+      "url": "https://modedesigns.com",
+      "currency": "USD",
+      "status": "fresh",
+      "checkedAt": "2026-10-21T02:22:57.061Z",
+      "rawProducts": 73,
+      "listings": 46
+    },
+    {
+      "id": "mechanicalkeyboards",
+      "name": "MechanicalKeyboards.com",
+      "url": "https://mechanicalkeyboards.com",
+      "currency": "USD",
+      "optional": true,
+      "status": "fresh",
+      "checkedAt": "2026-10-21T02:23:39.322Z",
+      "rawProducts": 5738,
+      "listings": 3076
+    },
+    {
+      "id": "kprepublic",
+      "name": "KPrepublic",
+      "url": "https://kprepublic.com",
+      "currency": "USD",
+      "optional": true,
+      "status": "fresh",
+      "checkedAt": "2026-10-21T02:23:11.122Z",
+      "rawProducts": 1380,
+      "listings": 1266
     },
     {
       "id": "meletrix",
@@ -223,7 +245,7 @@
       "currency": "USD",
       "optional": true,
       "status": "fresh",
-      "checkedAt": "2026-10-20T23:51:50.406Z",
+      "checkedAt": "2026-10-21T02:22:59.794Z",
       "rawProducts": 205,
       "listings": 103
     },
@@ -234,7 +256,7 @@
       "currency": "USD",
       "optional": true,
       "status": "fresh",
-      "checkedAt": "2026-10-20T23:51:52.151Z",
+      "checkedAt": "2026-10-21T02:23:01.537Z",
       "rawProducts": 110,
       "listings": 77
     },
@@ -245,7 +267,7 @@
       "currency": "USD",
       "optional": true,
       "status": "fresh",
-      "checkedAt": "2026-10-20T23:51:53.600Z",
+      "checkedAt": "2026-10-21T02:23:02.501Z",
       "rawProducts": 31,
       "listings": 23
     },
@@ -256,7 +278,7 @@
       "currency": "USD",
       "optional": true,
       "status": "fresh",
-      "checkedAt": "2026-10-20T23:51:54.880Z",
+      "checkedAt": "2026-10-21T02:23:03.691Z",
       "rawProducts": 123,
       "listings": 109
     },
@@ -278,7 +300,7 @@
       "currency": "USD",
       "optional": true,
       "status": "fresh",
-      "checkedAt": "2026-10-20T23:51:57.738Z",
+      "checkedAt": "2026-10-21T02:23:12.156Z",
       "rawProducts": 177,
       "listings": 155
     },
@@ -292,28 +314,6 @@
       "rawProducts": 0,
       "listings": 0,
       "error": "https://milktooth.com/cart.js: HTTP 404"
-    },
-    {
-      "id": "kprepublic",
-      "name": "KPrepublic",
-      "url": "https://kprepublic.com",
-      "currency": "USD",
-      "optional": true,
-      "status": "fresh",
-      "checkedAt": "2026-10-20T23:51:59.272Z",
-      "rawProducts": 1380,
-      "listings": 1266
-    },
-    {
-      "id": "mechanicalkeyboards",
-      "name": "MechanicalKeyboards.com",
-      "url": "https://mechanicalkeyboards.com",
-      "currency": "USD",
-      "optional": true,
-      "status": "fresh",
-      "checkedAt": "2026-10-20T23:52:25.814Z",
-      "rawProducts": 5738,
-      "listings": 3076
     }
   ],
   "shards": [
@@ -430,5 +430,5 @@
     "parts/0110.json",
     "parts/0111.json"
   ],
-  "fingerprint": "0108bb386a8941d4cc0200e91a2244782d045467c6c6c687805aba31baef2000"
+  "fingerprint": "ea8e5246de692b0995b0ee3b30044d0fed76b6b7e03569a37d80a7d6c3314f34"
 }
