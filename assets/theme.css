@@ -1,0 +1,34 @@
+/* Same warm neutrals, with a soft charcoal canvas and quieter raised surfaces. */
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#1C1B1A; --surface:#262523; --tile:#302E2C; --tile-hover:#3B3835;
+  --ink:#F2F0ED; --ink-2:#D6D1CA; --muted:#B0A9A1; --faint:#918A82; --line:#403C38;
+  --dark:#E7E2DB; --dark-hover:#FFFFFF; --on-dark:#242220;
+  --accent:#D6D1CA; --accent-soft:rgba(214,209,202,.12);
+  --ok:#79C896; --warn:#E5B66C; --fail:#EF9389; --info:#93B6EC;
+  --ok-soft:rgba(121,200,150,.12); --warn-soft:rgba(229,182,108,.12);
+  --fail-soft:rgba(239,147,137,.12); --info-soft:rgba(147,182,236,.12);
+  --glass:rgba(28,27,26,.82); --scrim:rgba(0,0,0,.5);
+  --shadow-card:0 1px 2px rgba(0,0,0,.16),0 12px 40px rgba(0,0,0,.22);
+  --shadow-sm:0 1px 2px rgba(0,0,0,.2); --shadow-lg:0 24px 70px rgba(0,0,0,.5);
+}
+.theme-toggle{flex:none;position:relative;display:grid;place-items:center;width:36px;height:36px;padding:0;border:0;border-radius:50%;background:transparent;color:var(--muted);transition:color .2s,background .2s,transform .15s}
+.theme-toggle:hover{color:var(--ink);background:var(--tile-hover)}
+.theme-toggle:active{transform:scale(.92)}
+.theme-toggle svg{grid-area:1/1;width:20px;height:20px;transition:opacity .2s,transform .25s var(--ease)}
+.theme-toggle .theme-sun{opacity:0;transform:rotate(-45deg) scale(.7)}
+:root[data-theme="dark"] .theme-moon{opacity:0;transform:rotate(45deg) scale(.7)}
+:root[data-theme="dark"] .theme-sun{opacity:1;transform:none}
+:root[data-theme="dark"] #view-finder::before{background:radial-gradient(ellipse 62% 52% at 50% -4%,rgba(214,209,202,.065),transparent 72%),radial-gradient(ellipse 125% 105% at 50% 42%,transparent 58%,rgba(0,0,0,.16) 100%)}
+:root[data-theme="dark"] #view-finder::after{background-image:radial-gradient(circle at center,rgba(214,209,202,.16) 0 1px,transparent 1.4px)}
+/* Product photography retains its original colors in either theme. */
+:root[data-theme="dark"] .pf.white>.pf-photo{mix-blend-mode:normal}
+:root[data-theme="dark"] .rlist .pct.g{color:var(--ok)}
+:root[data-theme="dark"] .rlist .pct.y{color:var(--warn)}
+:root[data-theme="dark"] .rlist .pct.r{color:var(--fail)}
+:root[data-theme="dark"] .directory-categories button[aria-pressed=true]{color:var(--on-dark)}
+:root[data-theme="dark"] .directory-detail select{background:var(--surface)}
+:root[data-theme="dark"] .directory-dialog::backdrop{background:var(--scrim)}
+@media(max-width:760px){.topright{gap:4px}.theme-toggle{width:40px;height:44px}.pricepill{font-size:12px;gap:4px}.fp-th{display:none}.top .bar{padding-left:max(12px,env(safe-area-inset-left,0px));padding-right:max(12px,env(safe-area-inset-right,0px))}}
+@media(prefers-reduced-motion:reduce){.theme-toggle,.theme-toggle svg{transition:none}}
+@media(max-width:480px){.nav{gap:2px}.nav button{width:32px}.theme-toggle{width:36px}.pricepill{font-size:11px;gap:0}.pricepill .statusdot{display:none}}
