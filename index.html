@@ -153,12 +153,12 @@ h1,h2,h3{text-wrap:balance;margin:0;font-weight:700;letter-spacing:-.02em}
 .opt .art{height:58px;width:100%;display:flex;align-items:center;justify-content:center;margin-bottom:10px}
 .opt .art svg,.opt .art img{max-height:58px;max-width:100%}
 .opt .art{position:relative}
-.opt .art svg.qphoto{height:100%;overflow:visible;transform:scale(var(--qp,1.1));transform-origin:50% 100%;filter:drop-shadow(0 7px 8px rgba(41,37,36,.16)) drop-shadow(0 1.5px 2px rgba(41,37,36,.14));transition:transform .55s var(--out)}
-.opt:hover .art svg.qphoto,.opt[aria-pressed="true"] .art svg.qphoto{transform:translateY(-2px) scale(calc(var(--qp,1.1) + .03))}
-/* Photos grow a little into the tile's top padding (tile sizes stay fixed); phones have less padding to spare. */
-@media (max-width:760px){.opt .art svg.qphoto{--qp:1.04}}
-:root[data-theme="dark"] .opt .art svg.qphoto{filter:drop-shadow(0 0 .5px rgba(255,255,255,.22)) drop-shadow(0 7px 9px rgba(0,0,0,.4))}
-@media (prefers-reduced-motion:reduce){.opt .art svg.qphoto{transition:none}.opt:hover .art svg.qphoto,.opt[aria-pressed="true"] .art svg.qphoto{transform:scale(var(--qp,1.1))}}
+.opt .art svg.qphoto{height:100%;overflow:visible;transform:scale(var(--qp,1.24));transform-origin:50% 54%;filter:drop-shadow(0 3px 4px rgba(41,37,36,.14)) drop-shadow(0 1px 1px rgba(41,37,36,.12));transition:transform .55s var(--out)}
+.opt:hover .art svg.qphoto,.opt[aria-pressed="true"] .art svg.qphoto{transform:scale(calc(var(--qp,1.24) + .03))}
+/* Photos grow into the tile's top padding and the gap above the label, so they read large while tile sizes stay fixed. */
+@media (max-width:760px){.opt .art svg.qphoto{--qp:1.16}}
+:root[data-theme="dark"] .opt .art svg.qphoto{filter:drop-shadow(0 3px 4px rgba(0,0,0,.35))}
+@media (prefers-reduced-motion:reduce){.opt .art svg.qphoto{transition:none}.opt:hover .art svg.qphoto,.opt[aria-pressed="true"] .art svg.qphoto{transform:scale(var(--qp,1.24))}}
 .opt[aria-pressed="true"]{background:var(--tile-hover);box-shadow:inset 0 0 0 1.5px var(--ink)}
 .opt .tick{position:absolute;top:-7px;right:-7px;width:20px;height:20px;border-radius:50%;background:var(--ink);color:var(--surface);display:none;place-items:center;box-shadow:0 0 0 2px var(--surface)}
 .opt[aria-pressed="true"] .tick{display:grid;animation:pop .35s var(--spring)}
@@ -1501,7 +1501,7 @@ function waveSVG(pitch,amp=1){
 // sources in assets/quiz/CREDITS.md). Each picture is cropped tight and its frame fits it exactly, so it fills the
 // option's art height instead of floating small inside it.
 const QUIZ_PHOTOS={ps5:['ps5',.702],work:['multitasker',1.293],usb:['usb-cable',1.747],receiver:['wireless-receiver',1.131],
-  hotswap:['switch-puller',1.345],solder:['welder',1.303]};
+  hotswap:['switch-puller',1.129],solder:['welder',1.2]};
 function quizPhoto(kind){
   // Each item is [photo, height out of 60]; items stand side by side on a shared baseline.
   const items={gaming:[['ps5',60]],work:[['work',60]],both:[['ps5',60],['work',56]],
