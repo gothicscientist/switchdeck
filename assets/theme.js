@@ -1,13 +1,11 @@
-/* Apply before paint; follow the system until an explicit choice is saved. */
+/* Match the browser/device before paint; manual toggles last for this visit. */
 (() => {
   const root = document.documentElement;
   const system = window.matchMedia('(prefers-color-scheme: dark)');
-  let preference;
-  try { preference = localStorage.getItem('sy.theme'); } catch {}
-  if (preference !== 'dark' && preference !== 'light') preference = null;
+  let override = null;
 
   function apply() {
-    const dark = (preference || (system.matches ? 'dark' : 'light')) === 'dark';
+    const dark = override ?? system.matches;
     root.dataset.theme = dark ? 'dark' : 'light';
     const button = document.getElementById('theme-toggle');
     if (button) {
@@ -16,17 +14,15 @@
     }
   }
   apply();
-  system.addEventListener('change', () => { if (!preference) apply(); });
-  window.addEventListener('storage', event => {
-    if (event.key !== 'sy.theme' && event.key !== null) return;
-    preference = event.newValue === 'light' || event.newValue === 'dark' ? event.newValue : null;
+  system.addEventListener('change', () => {
+    override = null;
     apply();
   });
   document.addEventListener('DOMContentLoaded', () => {
     apply();
-    document.getElementById('theme-toggle').addEventListener('click', () => {
-      preference = root.dataset.theme === 'dark' ? 'light' : 'dark';
-      try { localStorage.setItem('sy.theme', preference); } catch {}
+    document.getElementById('theme-toggle')?.addEventListener('click', () => {
+      const dark = root.dataset.theme !== 'dark';
+      override = dark === system.matches ? null : dark;
       apply();
     });
   }, { once: true });
