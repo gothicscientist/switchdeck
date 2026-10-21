@@ -153,10 +153,12 @@ h1,h2,h3{text-wrap:balance;margin:0;font-weight:700;letter-spacing:-.02em}
 .opt .art{height:58px;width:100%;display:flex;align-items:center;justify-content:center;margin-bottom:10px}
 .opt .art svg,.opt .art img{max-height:58px;max-width:100%}
 .opt .art{position:relative}
-.opt .art svg.qphoto{overflow:visible;filter:drop-shadow(0 7px 8px rgba(41,37,36,.16)) drop-shadow(0 1.5px 2px rgba(41,37,36,.14));transition:transform .55s var(--out)}
-.opt:hover .art svg.qphoto,.opt[aria-pressed="true"] .art svg.qphoto{transform:translateY(-2px) scale(1.03)}
+.opt .art svg.qphoto{height:100%;overflow:visible;transform:scale(var(--qp,1.1));transform-origin:50% 100%;filter:drop-shadow(0 7px 8px rgba(41,37,36,.16)) drop-shadow(0 1.5px 2px rgba(41,37,36,.14));transition:transform .55s var(--out)}
+.opt:hover .art svg.qphoto,.opt[aria-pressed="true"] .art svg.qphoto{transform:translateY(-2px) scale(calc(var(--qp,1.1) + .03))}
+/* Photos grow a little into the tile's top padding (tile sizes stay fixed); phones have less padding to spare. */
+@media (max-width:760px){.opt .art svg.qphoto{--qp:1.04}}
 :root[data-theme="dark"] .opt .art svg.qphoto{filter:drop-shadow(0 0 .5px rgba(255,255,255,.22)) drop-shadow(0 7px 9px rgba(0,0,0,.4))}
-@media (prefers-reduced-motion:reduce){.opt .art svg.qphoto{transition:none}.opt:hover .art svg.qphoto{transform:none}}
+@media (prefers-reduced-motion:reduce){.opt .art svg.qphoto{transition:none}.opt:hover .art svg.qphoto,.opt[aria-pressed="true"] .art svg.qphoto{transform:scale(var(--qp,1.1))}}
 .qa-press,.qa-ripple,.qa-line,.qa-caret,.qa-arc,.qa-flow,.qa-led,.qa-swap,.qa-glow,.qa-iron,.qa-btn,.qa-float,.qa-plug{transform-box:fill-box;transform-origin:center;animation-timing-function:ease-in-out;animation-iteration-count:infinite}
 .qa-press{animation:qaPress 1.8s}
 .qa-ripple{animation:qaRipple 1.8s ease-out infinite}
@@ -1519,9 +1521,9 @@ const QUESTIONS = [
     {v:'dark',b:'Dark',s:'Black and charcoal',art:()=>capsSVG(BYID.gmkwob)},{v:'light',b:'Light',s:'White and cream',art:()=>capsSVG(BYID.bow)},
     {v:'colorful',b:'Colorful',s:'Bold accents',art:()=>capsSVG(BYID.gmklaser)},{v:'retro',b:'Retro',s:'Vintage beige',art:()=>capsSVG(BYID.devtty)},{v:'surprise',b:'Surprise me',s:'We pick a set for you',art:()=>surpriseSVG()}]},
   {key:'use',title:'What is it for?',opts:[
-    {v:'gaming',b:'Gaming',s:'Fast, light presses',art:()=>quizPhoto('gaming'),photo:true},{v:'work',b:'Work',s:'Typing and coding',art:()=>quizPhoto('work'),photo:true},{v:'any',b:'No preference',s:'A bit of both',art:()=>quizPhoto('both'),photo:true}]},
+    {v:'gaming',b:'Gaming',s:'Fast, light presses',art:()=>quizPhoto('gaming')},{v:'work',b:'Work',s:'Typing and coding',art:()=>quizPhoto('work')},{v:'any',b:'No preference',s:'A bit of both',art:()=>quizPhoto('both')}]},
   {key:'wireless',title:'How should it connect?',opts:[
-    {v:'wired',b:'Wired only',s:'Nothing to charge',art:()=>quizPhoto('wired'),photo:true},{v:'yes',b:'Wireless',s:'Bluetooth or 2.4 GHz',art:()=>quizPhoto('wireless'),photo:true},{v:'any',b:'No preference',s:'Nothing ruled out',art:()=>quizPhoto('either-conn'),photo:true}]},
+    {v:'wired',b:'Wired only',s:'Nothing to charge',art:()=>quizPhoto('wired')},{v:'yes',b:'Wireless',s:'Bluetooth or 2.4 GHz',art:()=>quizPhoto('wireless')},{v:'any',b:'No preference',s:'Nothing ruled out',art:()=>quizPhoto('either-conn')}]},
   {key:'solder',title:'Will you solder?',info:'Soldering means melting metal to fix each switch permanently to the circuit board. Hot-swap boards have sockets instead, so switches press in and pull out by hand with no tools.',opts:[
     {v:'hotswap',b:'No, hot-swap',s:'Switches press in by hand',art:()=>quizArt('hotswap')},{v:'either',b:'Happy to solder',s:'Opens up more PCBs',art:()=>quizArt('solder')}]},
   {key:'budget',title:"What's your budget?",budget:true},
@@ -1530,18 +1532,17 @@ function waveSVG(pitch,amp=1){
   const n=26, pts=[]; for(let i=0;i<n;i++){const x=4+i*(112/(n-1)), env=Math.exp(-((i%13)/(2+ (1-pitch)*5))), y=30+Math.sin(i*(1.1+pitch*2.4))*env*20*amp; pts.push(`${x.toFixed(1)},${y.toFixed(1)}`)}
   return `<svg viewBox="0 0 120 60" aria-hidden="true"><polyline points="${pts.join(' ')}" fill="none" stroke="#57534E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 }
-// Purpose and connection options show real product photos, cut out from openly licensed Wikimedia Commons pictures
-// (assets/quiz/CREDITS.md). Each photo sits in the same 120x60 frame as the drawn icons, with room around it.
-const QUIZ_PHOTOS={controller:['controller',1.418],briefcase:['briefcase',1.015],usb:['usb-cable',1.747],receiver:['wireless-receiver',2.299]};
+// Purpose and connection options show real product photos cut out to a transparent background (assets/quiz,
+// sources in assets/quiz/CREDITS.md). Each picture is cropped tight and its frame fits it exactly, so it fills the
+// option's art height instead of floating small inside it.
+const QUIZ_PHOTOS={ps5:['ps5',.702],work:['multitasker',1.293],usb:['usb-cable',1.747],receiver:['wireless-receiver',1.131]};
 function quizPhoto(kind){
-  const img=(k,cx,cy,h,maxW=Infinity)=>{const [f,ar]=QUIZ_PHOTOS[k]; let w=h*ar; if(w>maxW){w=maxW; h=w/ar}
-    const n=v=>+v.toFixed(2);
-    return `<image href="assets/quiz/${f}.webp" x="${n(cx-w/2)}" y="${n(cy-h/2)}" width="${n(w)}" height="${n(h)}" preserveAspectRatio="xMidYMid meet"/>`};
-  const body={gaming:img('controller',60,30,44),work:img('briefcase',60,30,46),
-    both:img('controller',40,31,30)+img('briefcase',83,30,34),
-    wired:img('usb',60,30,44,82),wireless:img('receiver',60,31,30,70),
-    'either-conn':img('usb',41,30,30,54)+img('receiver',86,32,22,42)}[kind];
-  return `<svg class="qphoto" viewBox="0 0 120 60" aria-hidden="true">${body}</svg>`;
+  // Each item is [photo, height out of 60]; items stand side by side on a shared baseline.
+  const items={gaming:[['ps5',60]],work:[['work',60]],both:[['ps5',60],['work',56]],
+    wired:[['usb',60]],wireless:[['receiver',60]],'either-conn':[['usb',50],['receiver',54]]}[kind];
+  const gap=6, n=v=>+v.toFixed(2); let x=0;
+  const body=items.map(([k,h])=>{const [f,ar]=QUIZ_PHOTOS[k], w=h*ar, o=`<image href="assets/quiz/${f}.webp" x="${n(x)}" y="${n(60-h)}" width="${n(w)}" height="${h}" preserveAspectRatio="xMidYMid meet"/>`; x+=w+gap; return o}).join('');
+  return `<svg class="qphoto" viewBox="0 0 ${n(x-gap)} 60" aria-hidden="true">${body}</svg>`;
 }
 function quizArt(kind){
   const C={blue:['#8FB2F5','#5B8DEF'],teal:['#6FD3C7','#2BB3A3'],amber:['#F7C477','#F2A541'],coral:['#F59A8D','#EF6F5E'],violet:['#B2A8FA','#8B7CF6']};
@@ -2150,7 +2151,7 @@ function renderQuiz(){
   } else {
     title=Q.title;
     const optB=(o,i)=>`<button class="opt" style="--i:${i}" aria-pressed="${quizAns[Q.key]===o.v}" data-v="${o.v}">${o.art?`<span class="art">${o.art()}</span>`:''}<b>${esc(o.b)}</b>${o.s?`<span>${esc(o.s)}</span>`:''}<i class="tick">${icon('tick')}</i></button>`;
-    body=`${Q.info?`<p class="qinfotext" id="qinfotext" hidden>${esc(Q.info)}</p>`:''}${Q.hint?`<p class="qhint">${esc(Q.hint)}</p>`:''}<div class="opts" style="--option-count:${Q.opts.length}">${Q.opts.map((o,i)=>o.clip?`<div class="optw" style="--i:${i}">${optB(o,i)}${clipBtn(o.clip,o.b)}</div>`:optB(o,i)).join('')}</div>${Q.key==='must'&&mustBlocked()?`<p class="qempty" role="status" style="margin:14px 0 0;text-align:center;color:var(--muted);font-size:13px">${mustEmptyMsg()}</p>`:''}${Q.key==='sound'?`<p class="qcredit" id="qcredit" aria-live="polite">Recordings from <a href="assets/sounds/CREDITS.md" target="_blank" rel="noopener">Freesound, CC0</a></p>`:''}${Q.opts.some(o=>o.photo)?`<p class="qcredit">Photos from <a href="assets/quiz/CREDITS.md" target="_blank" rel="noopener">Wikimedia Commons</a></p>`:''}`;
+    body=`${Q.info?`<p class="qinfotext" id="qinfotext" hidden>${esc(Q.info)}</p>`:''}${Q.hint?`<p class="qhint">${esc(Q.hint)}</p>`:''}<div class="opts" style="--option-count:${Q.opts.length}">${Q.opts.map((o,i)=>o.clip?`<div class="optw" style="--i:${i}">${optB(o,i)}${clipBtn(o.clip,o.b)}</div>`:optB(o,i)).join('')}</div>${Q.key==='must'&&mustBlocked()?`<p class="qempty" role="status" style="margin:14px 0 0;text-align:center;color:var(--muted);font-size:13px">${mustEmptyMsg()}</p>`:''}${Q.key==='sound'?`<p class="qcredit" id="qcredit" aria-live="polite">Recordings from <a href="assets/sounds/CREDITS.md" target="_blank" rel="noopener">Freesound, CC0</a></p>`:''}`;
   }
   // The card's width change is measured at its final size, then played from the old width, so the field is laid out once
   // for where the card will end up instead of chasing it while it grows or shrinks.

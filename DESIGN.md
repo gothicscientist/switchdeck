@@ -48,10 +48,10 @@ Every part image is a clean, front-on product photo cropped to its frame (keyboa
 ## Quiz photos
 
 The "What is it for?" and "How should it connect?" options show real product photos cut out to a transparent
-background (assets/quiz), not drawn icons: a controller, a briefcase, a coiled USB cable and a wireless receiver.
-They sit small in the option's art frame with plenty of space around them and a soft shadow, and lift slightly on
-hover. Only openly licensed photos (CC0, CC BY, CC BY-SA) are used, each credited in assets/quiz/CREDITS.md, which
-those cards link to. Never use store or press photos here.
+background (assets/quiz), not drawn icons: a PS5, a multitasking professional, a coiled USB cable and a wireless
+receiver. Each photo is cropped tight and fills the option's art height (slightly enlarged into the tile's top
+padding, so tile sizes never change), with a soft shadow, and lifts a little on hover. Every photo's source and
+licence is recorded in assets/quiz/CREDITS.md: openly licensed Commons photos, or photos the site owner supplied.
 
 ## Results: share and swap
 
