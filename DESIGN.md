@@ -39,7 +39,7 @@ There is no brand blue. Status colours are muted so they sit next to product pho
 - All-caps tracked labels ("CASE OR KIT", "THE PARTS DIRECTORY").
 - Meta strings joined with middle dots ("75% · kit"). Use commas in plain language, or separate elements with spacing.
 - Marketing slogans as headings ("Find your next piece."). Name the page plainly.
-- Decorative carousels, segmented meters and glow effects in the results view. The sound and feel scales are hairlines.
+- Decorative carousels, segmented meters and glow effects in the results view. The sound and feel scales are hairlines. Match, sound and feel sit in one open row split by hairline dividers, with Match set larger; no tiles behind them.
 
 ## Image rule
 
