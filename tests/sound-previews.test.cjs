@@ -86,7 +86,7 @@ test('YouTube search uses the selected full model name and escapes query data', 
   assert.equal(api.soundSearchLink(null), '');
 });
 
-test('real preview uses a visible credited player; closing destroys it', () => {
+test('recorded preview shows only the player, more tests and close; closing destroys it', () => {
   const h = harness();
   h.api.playSnd('part:oilking');
   assert.ok(h.dialog.open);
@@ -94,9 +94,10 @@ test('real preview uses a visible credited player; closing destroys it', () => {
   assert.match(h.dialog.innerHTML, /start=92/);
   assert.match(h.dialog.innerHTML, /end=127/);
   assert.match(h.dialog.innerHTML, /Click and Thock/);
-  assert.match(h.dialog.innerHTML, /FR4/);
-  assert.match(h.dialog.innerHTML, /not a recording of your custom build/);
-  assert.match(h.dialog.innerHTML, /Open original recording/);
+  assert.match(h.dialog.innerHTML, />More sound tests/);
+  assert.equal((h.dialog.innerHTML.match(/<a /g)||[]).length, 1);
+  assert.doesNotMatch(h.dialog.innerHTML, /<header|<h2|<p[ >]|soundmeta|soundcontext|Open original recording/);
+  assert.equal(h.dialog.attrs['aria-label'], 'Gateron Oil King sound test');
   // Native dialog close events can be queued; an old event must not erase a reopened player.
   h.dialog.listeners.close();
   assert.match(h.dialog.innerHTML, /youtube-nocookie/);
@@ -111,7 +112,7 @@ test('a newly added switch never borrows another switch recording', () => {
   try {
     h.api.playSnd('part:unrecorded');
     assert.doesNotMatch(h.dialog.innerHTML, /<iframe/);
-    assert.match(h.dialog.innerHTML, /No curated recording for this exact model yet/);
+    assert.match(h.dialog.innerHTML, />More sound tests/);
     assert.match(h.dialog.innerHTML, /Test%20New%20model%20switches%20sound%20test/);
   } finally { delete BYID.unrecorded; }
 });

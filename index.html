@@ -380,19 +380,14 @@ h1,h2,h3{text-wrap:balance;margin:0;font-weight:700;letter-spacing:-.02em}
 
 .soundpreview{width:min(640px,calc(100vw - 24px));max-height:calc(100dvh - 32px);padding:22px;border:1px solid var(--line);border-radius:20px;background:var(--surface);color:var(--ink);box-shadow:var(--shadow-lg);overflow:auto}
 .soundpreview::backdrop{background:rgba(41,37,36,.48);backdrop-filter:blur(5px)}
-.soundhead{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
-.soundhead small{color:var(--muted);font-size:10px;letter-spacing:.1em}
-.soundhead h2{margin:5px 0 12px;font-size:21px}
-.soundhead .iconbtn{flex-shrink:0;font-size:24px}
+.soundclose{display:flex;justify-content:flex-end;margin:-8px -8px 6px}
+.soundclose .iconbtn{font-size:24px}
 .soundvideo{aspect-ratio:16/9;border-radius:12px;overflow:hidden;background:#1C1917}
 .soundvideo iframe{display:block;width:100%;height:100%;border:0}
-.soundmeta{display:grid;gap:5px;margin:15px 0;font-size:12px;line-height:1.55;color:var(--muted)}
-.soundmeta strong{color:var(--ink)}
-.soundmeta p{margin:0}
 .soundlinks{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
 .sound-search{white-space:normal}
 .rsum>.soundlinks{margin:0}
-@media(max-width:480px){.soundpreview{padding:16px}.soundhead h2{font-size:18px}.soundlinks .store{font-size:11px}}
+@media(max-width:480px){.soundpreview{padding:16px}.soundlinks .store{font-size:11px}}
 
 
 /* sound preview buttons */
@@ -1322,8 +1317,7 @@ function getSoundDialog(){
   if(soundDialog) return soundDialog;
   soundDialog=document.createElement('dialog');
   soundDialog.id='soundpreview'; soundDialog.className='soundpreview';
-  soundDialog.setAttribute('aria-labelledby','soundtitle');
-  soundDialog.setAttribute('aria-describedby','soundcontext');
+  soundDialog.setAttribute('aria-label','Recorded sound test');
   document.body.append(soundDialog);
   soundDialog.addEventListener('close',()=>{
     if(soundDialog.open) return; // Ignore a queued close event after reopening.
@@ -1347,19 +1341,12 @@ function playSnd(key,btn){
   if(!p){toast('Choose a switch to hear its sound test');return}
   if(soundDialog?.open&&sndBtn===btn){closeSoundPreview();return}
   closeSoundPreview();
-  const d=getSoundDialog(), recording=SOUND_TESTS[p.id], example=!!SOUND_EXAMPLES[key];
-  const isBuild=key==='build'||key.startsWith('res:');
-  const context=example?'A recorded example of this sound or switch type.':isBuild?'A recording of your selected switch on the setup below.':'A recording of this switch on the setup below.';
-  const url=recording?'https://www.youtube.com/watch?v='+recording.video+(recording.start?'&t='+recording.start+'s':''):'';
+  const d=getSoundDialog(), recording=SOUND_TESTS[p.id];
+  d.setAttribute('aria-label',switchName(p)+' sound test');
   const embed=recording?'https://www.youtube-nocookie.com/embed/'+recording.video+'?autoplay=1&playsinline=1&rel=0'+(recording.start?'&start='+recording.start:'')+(recording.end?'&end='+recording.end:''):'';
-  d.innerHTML=`<header class="soundhead"><div><small>RECORDED SOUND TEST</small><h2 id="soundtitle">${esc(switchName(p))}</h2></div><button type="button" class="iconbtn" id="soundclose" autofocus aria-label="Close sound preview">×</button></header>
-    <p id="soundcontext" class="note">${esc(context)} Case, plate, keycaps and mods change the sound; this is not a recording of your custom build. Recordings are not loudness-matched.</p>
-    ${recording?`<div class="soundlinks"><a class="store maker" href="${esc(url)}" target="_blank" rel="noopener noreferrer">Open original recording ↗</a>${soundSearchLink(p,'More '+switchName(p)+' sound tests')}</div>
-    <p class="note">If the player below does not load, open the original recording above.</p>
-    <div class="soundvideo"><iframe src="${esc(embed)}" title="${esc(recording.title+' by '+recording.creator)}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div>
-    <div class="soundmeta"><strong>${esc(recording.creator)}</strong><span>${esc(recording.title)}</span><p>${esc(recording.setup)}</p><p>${esc(recording.treatment)}</p></div>
-    <p class="note">If playback is blocked or the video is unavailable, open the original recording or browse more tests. Press play in the player if it does not start.</p>`
-    :`<p class="note">No curated recording for this exact model yet. Find real tests of ${esc(switchName(p))} on YouTube.</p><div class="soundlinks">${soundSearchLink(p)}</div>`}`;
+  d.innerHTML=`<div class="soundclose"><button type="button" class="iconbtn" id="soundclose" autofocus aria-label="Close sound preview">×</button></div>
+    ${recording?`<div class="soundvideo"><iframe src="${esc(embed)}" title="${esc(recording.title+' by '+recording.creator)}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div>`:''}
+    <div class="soundlinks">${soundSearchLink(p,'More sound tests')}</div>`;
   sndBtn=btn||null;
   if(sndBtn){sndBtn.classList.add('playing');sndBtn.setAttribute('aria-expanded','true')}
   d.querySelector('#soundclose').onclick=closeSoundPreview;
