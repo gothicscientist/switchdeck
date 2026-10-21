@@ -2054,7 +2054,8 @@ function place(id,{x,y,w,max=Infinity,flat=false,cls,r}){
   }
   el.style.left=x+'px'; el.style.top=y+'px'; el.style.width=Math.min(flat?w:w*LW[c.layout]*(cls==='feat'?FEAT_BOOST[id]||1:1),max)+'px';
   el.className='fitem '+cls;
-  if(r&&el.dataset.k!==r.b.keycaps){el.dataset.k=r.b.keycaps; el.querySelector('.art').innerHTML=fieldBoard(r.b)}
+  // dataset values are strings: an assembled board's null keycaps compare as "null", or every layout would redraw (and reload) its photo.
+  if(r&&el.dataset.k!==String(r.b.keycaps)){el.dataset.k=String(r.b.keycaps); el.querySelector('.art').innerHTML=fieldBoard(r.b)}
   el.querySelector('.cap').innerHTML=cls==='feat'?`${esc(partName(c))}<small>$${Math.round(r?r.t:c.price).toLocaleString('en-US')}${r?' build':''}</small>`:'';
   el.tabIndex=cls==='feat'?0:-1;
 }
