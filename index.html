@@ -2028,9 +2028,8 @@ function renderRDetail(){
       ${s?'':`<p class="note" style="margin:0">Sold assembled: its switches and keycaps come with it. Swap them in the builder to change the feel or look.</p>`}
       <textarea id="rcopyfb" hidden aria-label="Parts list" style="width:100%;min-height:80px;font-size:12px;background:var(--tile);border:0;border-radius:8px;padding:8px"></textarea>
     </div>
-    <div class="rparts swapin"><div class="phead"><h3>Parts in this build</h3><span>${nParts} parts, ${money(r.t)}</span></div>${affNote()}
-      ${rows.join('')}
-      <p class="note">Parts subtotal excludes shipping and tax. Stock and prices were checked at the linked retailer.</p></div>`;
+    <div class="rparts swapin"><div class="phead"><h3>Parts in this build</h3></div>${affNote()}
+      ${rows.join('')}</div>`;
   el.querySelector('#rclose').onclick=closeResults;
   el.querySelector('#rbuild').onclick=()=>{build={...b,extras:[...b.extras],name:`My ${partName(c)} build`}; persist(); closeResults(); go('build'); toast('Loaded into the builder')};
   el.querySelector('#rcopy').onclick=()=>copyText(partsText({...b,name:`${partName(c)} build`}),el.querySelector('#rcopyfb'));
