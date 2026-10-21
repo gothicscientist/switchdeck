@@ -460,12 +460,17 @@ export function keycapBase(variants) {
 }
 const KEYCAP_ACCESSORY=/display frame|\bframe\b|puller|remover|\btray\b|storage|\bonly box\b|\bbox only\b|clean|\bstand\b|holder|retainer|cable clip|\bcharm\b/i;
 const PROFILES=/\b(Cherry|OEM|XDA|DSA|SA|MT3|KAT|KAM|DSS|DCS|DCX|ASA|OSA|MDA|MOA)\b/;
+const ISO_KEYCAPS=/\bISO\b|spanish|german|nordic|french|azerty|qwertz|\b(?:DE|FR|ES)\b/i;
 function keycapsRule(p) {
   const s=p.specs, n=p.name;
   if(KEYCAP_ACCESSORY.test(n)) return {accessory:true};
   if(NOT_A_SET.test(n)) return {reason:'not a full set'};
   const k=keyCountOf(p); if(k!=null&&k<50) return {reason:'not a full set'};
-  const vs=pool(p); if(!vs.length) return {reason:'not a full set'};
+  // ISO and national layouts (Spanish, German, Nordic, AZERTY...) don't fit the ANSI boards the builder draws.
+  // Sublegend sets (Japanese, Korean, Hebrew) are ANSI sets with extra legends, so they stay.
+  const isoOnly=t=>ISO_KEYCAPS.test(t)&&!/\bANSI\b|\bUS\b/i.test(t);
+  if(isoOnly(n)) return {reason:'non-ANSI layout'};
+  const pooled=pool(p), vs=pooled.filter(v=>!isoOnly(v.name)); if(!vs.length) return {reason:pooled.length?'non-ANSI layout':'not a full set'};
   // A title that says "keycap" (not keycaps/set/kit), with one cheap variant, is a single key.
   if(/\bkeycap\b/i.test(n)&&!/keycaps|key ?sets?|\bsets?\b|\bkits?\b/i.test(n)&&vs.length===1&&vs[0].price<20) return {reason:'not a full set'};
   // The full set is picked among all variants when the listing is in stock only through add-ons: a sold-out Base kit beats an in-stock alphas kit.
