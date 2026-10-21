@@ -36,7 +36,7 @@ test('combination counter is large, real and narrows with every answer',async()=
 test('two-pointer budget count equals a brute-force nested loop for a board',async()=>{
   const ctx=await load();
   const r=run(ctx,`(()=>{
-    const c=CASES.find(c=>!c.assembled&&c.kit&&c.layout==='65'&&c.price<200);
+    const c=CASES.find(c=>!c.soldOut&&!c.assembled&&c.kit&&c.layout==='65'&&c.price<200);
     const out=[];
     for(const budget of [c.price+60,c.price+150,c.price+400]){
       const only=CASES.filter(x=>x!==c);

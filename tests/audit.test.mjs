@@ -47,6 +47,11 @@ test('finder recommendations stay purchasable and within whole-build budgets',as
   assert.equal(run(`evalAns({solder:'hotswap'}).list.some(r=>effPcb(r.b)?.hotswap!==true)`),false);
 });
 
+test('reviewed legacy parts inherit sold-out status from their current retailer snapshots',async()=>{
+  const run=await engine();
+  assert.equal(run('ALLPARTS.filter(p=>!p.soldOut&&p.retailers?.length&&p.retailers.every(r=>r.available===false)).length'),0);
+});
+
 test('kit listing with in-stock components and a sold-out full kit keeps kit price and stock',()=>{
   const p=normalize({id:100,title:'XD84 Pro Custom Mechanical Keyboard Kit 75%',handle:'xd84',vendor:'Example',product_type:'Keyboard',tags:[],body_html:'75% layout',images:[{src:'https://example.com/photo.jpg'}],options:[],variants:[{id:1,title:'XD84 Pro / Plate Only',price:'16.60',available:true},{id:2,title:'XD84 Pro / PCB only',price:'33.90',available:true},{id:3,title:'XD84 Pro / Kit 1',price:'64.30',available:false}]},SOURCES[0],new Date().toISOString());
   const r=admit(p);assert.equal(r.parts[0].price,64.3);assert.equal(r.parts[0].soldOut,true);assert.match(r.parts[0].retailers[0].url,/variant=3/);

@@ -850,7 +850,7 @@ const FINDER_CASES=[...CASES];
 const ALLPARTS = [...CASES,...PCBS,...PLATES,...SWITCHES,...KEYCAPS,...STABS,...EXTRAS,...PENDING_PARTS];
 for(const p of ALLPARTS) Object.assign(p,SwitchdeckNames.part(p));
 // Reviewed, version-specific matches enrich existing parts without replacing kit prices or fit rules.
-for(const [id,meta] of Object.entries(window.SWITCHDECK_CATALOG?.curated||{})){const p=ALLPARTS.find(p=>p.id===id);if(p&&meta.retailers){p.photo=meta.photo?{...meta.photo}:(p.photo&&{page:p.photo.page});p.retailers=meta.retailers}}
+for(const [id,meta] of Object.entries(window.SWITCHDECK_CATALOG?.curated||{})){const p=ALLPARTS.find(p=>p.id===id);if(p&&meta.retailers){p.photo=meta.photo?{...meta.photo}:(p.photo&&{page:p.photo.page});p.retailers=meta.retailers;if(meta.retailers.length&&meta.retailers.every(r=>r.available===false))p.soldOut=true}}
 const BYID = Object.fromEntries(ALLPARTS.map(p=>[p.id,p]));
 
 const SLOTS = [
