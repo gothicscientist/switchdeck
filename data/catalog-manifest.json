@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-21T05:19:23.802Z",
+  "generatedAt": "2026-10-21T05:23:05.662Z",
   "listingCount": 8914,
   "inStockCount": 4816,
   "builderSwitchCount": 2003,
@@ -155,7 +155,7 @@
       "url": "https://cannonkeys.com",
       "currency": "USD",
       "status": "fresh",
-      "checkedAt": "2026-10-21T05:18:33.792Z",
+      "checkedAt": "2026-10-21T05:22:32.027Z",
       "rawProducts": 1185,
       "listings": 917
     },
@@ -165,7 +165,7 @@
       "url": "https://divinikey.com",
       "currency": "USD",
       "status": "fresh",
-      "checkedAt": "2026-10-21T05:18:36.209Z",
+      "checkedAt": "2026-10-21T05:22:32.495Z",
       "rawProducts": 1482,
       "listings": 1353
     },
@@ -175,7 +175,7 @@
       "url": "https://novelkeys.com",
       "currency": "USD",
       "status": "fresh",
-      "checkedAt": "2026-10-21T05:18:31.607Z",
+      "checkedAt": "2026-10-21T05:22:26.221Z",
       "rawProducts": 410,
       "listings": 347
     },
@@ -185,7 +185,7 @@
       "url": "https://kbdfans.com",
       "currency": "USD",
       "status": "fresh",
-      "checkedAt": "2026-10-21T05:18:34.846Z",
+      "checkedAt": "2026-10-21T05:22:29.210Z",
       "rawProducts": 467,
       "listings": 382
     },
@@ -195,7 +195,7 @@
       "url": "https://www.keychron.com",
       "currency": "USD",
       "status": "fresh",
-      "checkedAt": "2026-10-21T05:18:37.727Z",
+      "checkedAt": "2026-10-21T05:22:33.245Z",
       "rawProducts": 712,
       "listings": 640
     },
@@ -205,7 +205,7 @@
       "url": "https://keebsforall.com",
       "currency": "USD",
       "status": "fresh",
-      "checkedAt": "2026-10-21T05:18:37.867Z",
+      "checkedAt": "2026-10-21T05:22:35.829Z",
       "rawProducts": 452,
       "listings": 412
     },
@@ -215,7 +215,7 @@
       "url": "https://modedesigns.com",
       "currency": "USD",
       "status": "fresh",
-      "checkedAt": "2026-10-21T05:18:37.012Z",
+      "checkedAt": "2026-10-21T05:22:33.009Z",
       "rawProducts": 73,
       "listings": 46
     },
@@ -226,7 +226,7 @@
       "currency": "USD",
       "optional": true,
       "status": "fresh",
-      "checkedAt": "2026-10-21T05:19:14.142Z",
+      "checkedAt": "2026-10-21T05:22:55.818Z",
       "rawProducts": 5738,
       "listings": 3076
     },
@@ -237,7 +237,7 @@
       "currency": "USD",
       "optional": true,
       "status": "fresh",
-      "checkedAt": "2026-10-21T05:18:50.357Z",
+      "checkedAt": "2026-10-21T05:22:44.868Z",
       "rawProducts": 1380,
       "listings": 1266
     },
@@ -248,7 +248,7 @@
       "currency": "USD",
       "optional": true,
       "status": "fresh",
-      "checkedAt": "2026-10-21T05:18:39.137Z",
+      "checkedAt": "2026-10-21T05:22:37.418Z",
       "rawProducts": 205,
       "listings": 103
     },
@@ -259,7 +259,7 @@
       "currency": "USD",
       "optional": true,
       "status": "fresh",
-      "checkedAt": "2026-10-21T05:18:40.181Z",
+      "checkedAt": "2026-10-21T05:22:38.019Z",
       "rawProducts": 110,
       "listings": 77
     },
@@ -270,7 +270,7 @@
       "currency": "USD",
       "optional": true,
       "status": "fresh",
-      "checkedAt": "2026-10-21T05:18:40.899Z",
+      "checkedAt": "2026-10-21T05:22:38.689Z",
       "rawProducts": 31,
       "listings": 23
     },
@@ -281,7 +281,7 @@
       "currency": "USD",
       "optional": true,
       "status": "fresh",
-      "checkedAt": "2026-10-21T05:18:42.440Z",
+      "checkedAt": "2026-10-21T05:22:39.434Z",
       "rawProducts": 123,
       "listings": 109
     },
@@ -303,7 +303,7 @@
       "currency": "USD",
       "optional": true,
       "status": "fresh",
-      "checkedAt": "2026-10-21T05:18:51.203Z",
+      "checkedAt": "2026-10-21T05:22:45.523Z",
       "rawProducts": 177,
       "listings": 155
     },
@@ -335,7 +335,7 @@
         "panda-he-switches"
       ],
       "status": "fresh",
-      "checkedAt": "2026-10-21T05:18:52.056Z",
+      "checkedAt": "2026-10-21T05:22:46.709Z",
       "rawProducts": 8,
       "listings": 8
     }
@@ -454,5 +454,5 @@
     "parts/0110.json",
     "parts/0111.json"
   ],
-  "fingerprint": "fb29b97c82d82edbb7c7cd81522e60779fa006a186533a04f1b0d9191a956545"
+  "fingerprint": "50bb40c0165c5ed113760417aadcadb2f7dffae4f0f0c16869235eb82ae4da10"
 }
