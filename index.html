@@ -123,6 +123,8 @@ h1,h2,h3{text-wrap:balance;margin:0;font-weight:700;letter-spacing:-.02em}
 .fitem.dim{opacity:.95}
 .fitem.out{opacity:.85;pointer-events:none}
 .fitem.hidden-slot{opacity:0;pointer-events:none}
+.fitem:not(.gone){will-change:translate,scale,opacity}
+.fitem.gone{visibility:hidden;content-visibility:hidden}
 .fitem svg{filter:drop-shadow(0 12px 16px rgba(41,37,36,.22)) drop-shadow(0 2px 4px rgba(41,37,36,.12))}
 .fitem.dim svg,.fitem.out svg{filter:drop-shadow(0 8px 12px rgba(41,37,36,.2))}
 
@@ -549,7 +551,8 @@ a.listen.watch:hover{background:rgba(68,64,60,.16)}
 .so-tags .chip{font-size:10.5px;padding:1px 6px}
 .so-d{display:flex;flex-direction:column;align-items:flex-end;gap:1px;white-space:nowrap}
 .so-d b{font-size:13px;font-weight:600;color:var(--ink-2)}
-.so-d b.down{color:var(--ok)}
+.so-d b.up{color:var(--ok)}
+.so-d b.down{color:var(--fail)}
 .so-d small{font-size:11px;color:var(--muted)}
 .swmore{margin-top:6px;border:0;background:none;padding:4px 0;font:inherit;font-size:12px;font-weight:500;color:var(--muted);cursor:pointer}
 .swmore:hover{color:var(--ink)}
@@ -1911,7 +1914,7 @@ const MSLOTS=[[12,.05,1],[88,.05,.95],[10,.25,.9],[90,.25,1],[12,.45,1],[88,.45,
 const MAX_BG=12, MAX_BG_MOBILE=6;
 // 0 keeps the default background order. An answer that leaves the background unchanged sets a seed (see choose_), and the
 // seed stays on, so later answers and resizes keep the shuffled order instead of snapping back to the default.
-let bgSeed=0, lastBg='';
+let bgSeed=0, lastBg='', featHold=null;
 function shuffledTail(list,seed){const a=[...list]; let s=seed>>>0; for(let i=a.length-1;i>0;i--){s=(Math.imul(s,1664525)+1013904223)>>>0; const j=s%(i+1); [a[i],a[j]]=[a[j],a[i]]} return a}
 const LW={'60':.64,'65':.72,'75':.78,'tkl':.9,'full':1};
 // The three centre boards are fixed, calm designs so the field always opens on the same look.
@@ -1931,9 +1934,9 @@ function fieldEl(id){
   if(fieldEls[id]) return fieldEls[id];
   const field=document.getElementById('field'), c=BYID[id];
   {
-    const el=document.createElement('button'); el.className='fitem'; el.type='button';
+    const el=document.createElement('button'); el.className='fitem hidden-slot gone'; el.type='button';
     const r=evalAns({}).byCase.get(c.id); const b=r?r.b:{case:c.id,color:0,keycaps:null,extras:[]};
-    el.innerHTML=`<span class="art">${fieldBoard(b)}</span><span class="cap"></span>`; el.dataset.k=b.keycaps||'';
+    el.innerHTML=`<span class="art">${fieldBoard(b)}</span><span class="cap"></span>`; el.dataset.k=String(b.keycaps);
     el.setAttribute('aria-label',partName(c));
     el.addEventListener('click',()=>{const res=evalAns(quizAns); if(res.byCase.has(c.id)) openResults(c.id); else toast(`${partName(c)} doesn't match your answers`)});
     field.appendChild(el); fieldEls[c.id]=el; return el;
@@ -1955,21 +1958,18 @@ function layoutField(){
   const othW=mobile?W*0.16:Math.max(80,Math.min(130,W*0.065));
   // Only cut-out boards (transparent photo) are ever drawn. Matches fill the slots first, best first; slots with no
   // transparent match are left empty rather than filled with anything else.
-  const cut=cutoutIds(), hit=res.list.map(r=>r.b.case).filter(id=>cut.has(id));
-  // Going back or narrowing answers can leave no match, so the field is never empty: other cut-out boards fill in faded.
-  // Before any answer the centre shows the three picks; once one is given, the best matches take the centre and the
-  // picks only fill in when fewer than three boards match.
-  const featured=FEATURED_IDS.filter(id=>cut.has(id)), answered=Object.keys(quizAns).some(k=>k!=='seed');
-  const pool=[...new Set(answered?[...hit,...featured,...cut]:[...featured,...hit,...cut])];
-  const top=pool.slice(0,3);
+  const {top,rest}=fieldPool(res,mobile);
+  // The two lower centre boards keep their sides: a board that stays in the pair is not sent across to the other one.
+  if(featHold&&(top[2]===featHold.top[1]||top[1]===featHold.top[2])) [top[1],top[2]]=[top[2],top[1]];
   const maxBg=mobile?MAX_BG_MOBILE:MAX_BG, slots=mobile?MSLOTS:FIELD_SLOTS;
-  const tail=pool.slice(3), rest=(bgSeed?shuffledTail(tail,bgSeed):tail).slice(0,maxBg+(mobile?12:0)); // spares so culled slots can be skipped
   // FLIP: note where each board is drawn now, jump it to its new place and size, then glide it there with transforms.
   const fieldBox=document.getElementById('field'), from=new Map();
-  for(const id in fieldEls){const r=fieldEls[id].getBoundingClientRect(); if(r.width) from.set(id,{x:r.left+r.width/2,y:r.top+r.height/2,w:r.width})}
+  // A board that has already faded out is not carried over from wherever it last was: it fades in at its new place.
+  const now=performance.now(), faded=el=>el.classList.contains('hidden-slot')&&!(now-(el._hiddenAt||-1e9)<650);
+  for(const id in fieldEls){const el=fieldEls[id]; if(faded(el)) continue; const r=el.getBoundingClientRect(); if(r.width) from.set(id,{x:r.left+r.width/2,y:r.top+r.height/2,w:r.width})}
   fieldBox.classList.add('flipping');
   for(const id in fieldEls){fieldEls[id].style.translate=''; fieldEls[id].style.scale=''}
-  for(const id in fieldEls) if(!top.includes(id)&&!rest.includes(id)) fieldEls[id].className='fitem hidden-slot';
+  for(const id in fieldEls) if(!top.includes(id)&&!rest.includes(id)) hideSlot(fieldEls[id]);
   // Board size and its estimated box (the picture plus a caption line for the centre three).
   const CAP=36, GX=mobile?10:24, GY=mobile?14:18, halfW=(W-24-GX)/2;
   const wOf=(id,w,max=Infinity)=>Math.min(w*LW[BYID[id].layout]*(FEAT_BOOST[id]||1),max);
@@ -1981,13 +1981,15 @@ function layoutField(){
   // Fixed screen-percentage centres can leave negative room on short laptops and collapse the pictures.
   const rowHeight=()=>Math.max(f.h[1]||0,f.h[2]||0);
   const pictureHeight=()=>Math.max(0,f.h[0]-CAP)+Math.max(0,rowHeight()-CAP);
-  const imageRoom=Math.max(0,avail-CAP*2-GY-16);
+  // On a phone the cards differ more in height, so the centre leaves a little spare room above the card: a slightly
+  // taller next card then fits without moving the boards.
+  const roomC=avail-(mobile?20:0), imageRoom=Math.max(0,roomC-CAP*2-GY-16);
   const widthRoom=W-(mobile?24:80);
   const rowWidth=(f.w[1]||0)+(f.w[2]||0)+GX;
   sc=Math.min(1,imageRoom/Math.max(1,pictureHeight()),widthRoom/Math.max(1,rowWidth),widthRoom/Math.max(1,f.w[0]||0));
   f=fit(sc);
   const usedHeight=(f.h[0]||0)+rowHeight()+GY;
-  const free=Math.max(0,avail-usedHeight);
+  const free=Math.max(0,roomC-usedHeight);
   const firstTop=topBar+free*.4;
   const rowTop=firstTop+(f.h[0]||0)+GY+free*.2;
   const separation=Math.max((f.w[1]||0)/2+(f.w[2]||0)/2+GX,mobile?0:W*.2);
@@ -1995,13 +1997,30 @@ function layoutField(){
   const pairLeft=(W-pairWidth)/2;
   fx=[W/2,pairLeft+(f.w[1]||0)/2,pairLeft+(f.w[1]||0)/2+separation];
   fy=[firstTop+(f.h[0]||0)/2,rowTop+rowHeight()/2,rowTop+rowHeight()/2];
+  // The centre three stay exactly where they are while they stay the same boards and the next card leaves them room:
+  // a card that is shorter or a little taller is no reason to nudge them. A card that would cover them, or a new board,
+  // lays them out again.
+  const holdKey=[top.join(),W,H].join('|'), cardRel=cardTop-fieldRect.top; let ws=top.map(()=>featBase*sc);
+  if(featHold&&featHold.key===holdKey&&Math.max(...featHold.fy.map((y,i)=>y+(featHold.f.h[i]||0)/2))<=cardRel-12)
+    ({fx,fy,f,ws}=featHold);
+  else {
+    // When the set changes, a board that keeps its slot stays where it is if it still clears the card and the boards
+    // around it; only the boards that changed move.
+    const prev=featHold&&featHold.W===W&&featHold.H===H?featHold:null; f={w:[...f.w],h:[...f.h]}; fx=[...fx]; fy=[...fy];
+    const box=i=>[fx[i]-f.w[i]/2,fy[i]-f.h[i]/2,fx[i]+f.w[i]/2,fy[i]+f.h[i]/2], clear=(a,b)=>a[2]+12<=b[0]||b[2]+12<=a[0]||a[3]+12<=b[1]||b[3]+12<=a[1];
+    top.forEach((id,i)=>{if(!prev||prev.top[i]!==id) return;
+      const was=[prev.fx[i]-prev.f.w[i]/2,prev.fy[i]-prev.f.h[i]/2,prev.fx[i]+prev.f.w[i]/2,prev.fy[i]+prev.f.h[i]/2];
+      if(was[3]<=cardRel-12&&was[0]>=4&&was[2]<=W-4&&top.every((o,j)=>j===i||clear(was,box(j))))
+        {fx[i]=prev.fx[i]; fy[i]=prev.fy[i]; f.w[i]=prev.f.w[i]; f.h[i]=prev.f.h[i]; ws[i]=prev.ws[i]}});
+    featHold={key:holdKey,top,W,H,cardRel,fx,fy,f,ws};
+  }
   // The area each board takes (with a margin), so a background board never lands on the header, the card or another board.
-  const cr=card.getBoundingClientRect(), taken=[[cr.left-4,cr.top-4,cr.right+4,H]]; lastCardRect={top:cr.top,width:cr.width};
+  const cr=card.getBoundingClientRect(), taken=[[cr.left-4,cr.top-4,cr.right+4,H]]; lastCardRect={top:cr.top,width:cr.width,vw:fieldRect.width,vh:fieldRect.height};
   if(mobile) taken.push([0,0,W,topBar+4]);
   else for(const q of ['.brand','.nav','.topright']){const e=document.querySelector(q); if(!e) continue; const r=e.getBoundingClientRect(); if(r.width>0) taken.push([r.left-8,r.top-8,r.right+8,r.bottom+8])}
   const hits=(a,b)=>a[0]<b[2]&&b[0]<a[2]&&a[1]<b[3]&&b[1]<a[3];
   top.forEach((id,i)=>{
-    place(id,{x:fx[i],y:fy[i],w:featBase*sc,max:mobile&&i>0?halfW:Infinity,cls:'feat',r:res.byCase.get(id)});
+    place(id,{x:fx[i],y:fy[i],w:ws[i],max:mobile&&i>0?halfW:Infinity,cls:'feat',r:res.byCase.get(id)});
     const m=12, hw=f.w[i]/2+m; taken.push([fx[i]-hw,fy[i]-f.h[i]/2-m,fx[i]+hw,fy[i]+f.h[i]/2+m]);
   });
   let used=0; const placedBg=[];
@@ -2026,7 +2045,7 @@ function layoutField(){
     taken.push(a); used++; placedBg.push(id);
     place(id,{x,y:yy,w:othW*k,flat:!mobile,cls:res.byCase.has(id)?'dim':'out',r:res.byCase.get(id)});
   }
-  for(const id of rest.slice(used)) if(fieldEls[id]) fieldEls[id].className='fitem hidden-slot';
+  for(const id of rest.slice(used)) if(fieldEls[id]) hideSlot(fieldEls[id]);
   lastBg=placedBg.join();
   const moves=[];
   for(const [id,a] of from){const el=fieldEls[id], r=el.getBoundingClientRect(); if(!r.width) continue;
@@ -2037,6 +2056,17 @@ function layoutField(){
   fieldBox.classList.remove('flipping');
   for(const [el] of moves){el.style.translate=''; el.style.scale=''}
 }
+// Which boards the field shows for a set of results: the centre three, then the background in slot order.
+function fieldPool(res,mobile){
+  const cut=cutoutIds(), hit=res.list.map(r=>r.b.case).filter(id=>cut.has(id));
+  // Going back or narrowing answers can leave no match, so the field is never empty: other cut-out boards fill in faded.
+  // Before any answer the centre shows the three picks; once one is given, the best matches take the centre and the
+  // picks only fill in when fewer than three boards match.
+  const featured=FEATURED_IDS.filter(id=>cut.has(id)), answered=Object.keys(quizAns).some(k=>k!=='seed');
+  const pool=[...new Set(answered?[...hit,...featured,...cut]:[...featured,...hit,...cut])];
+  const maxBg=mobile?MAX_BG_MOBILE:MAX_BG, tail=pool.slice(3);
+  return {top:pool.slice(0,3),rest:(bgSeed?shuffledTail(tail,bgSeed):tail).slice(0,maxBg+(mobile?12:0))}; // spares so culled slots can be skipped
+}
 let introOn=false, introN=0, introFeat=0, introDone=false;
 function place(id,{x,y,w,max=Infinity,flat=false,cls,r}){
   const el=fieldEl(id), c=BYID[id];
@@ -2046,16 +2076,31 @@ function place(id,{x,y,w,max=Infinity,flat=false,cls,r}){
     else{const dx=x-innerWidth/2, dy=y-innerHeight*.45, n=Math.hypot(dx,dy)||1;
       el.style.setProperty('--d',(introN++*25)+'ms'); el.style.setProperty('--fx',(dx/n*28).toFixed(1)+'px'); el.style.setProperty('--fy',(dy/n*28).toFixed(1)+'px')}
   }
-  el.style.left=x+'px'; el.style.top=y+'px'; el.style.width=Math.min(flat?w:w*LW[c.layout]*(cls==='feat'?FEAT_BOOST[id]||1:1),max)+'px';
-  el.className='fitem '+cls;
+  // Only what changed is written: rewriting identical styles, classes or captions still makes the browser restyle the board.
+  const st=el.style, L=x+'px', T=y+'px', Wd=Math.min(flat?w:w*LW[c.layout]*(cls==='feat'?FEAT_BOOST[id]||1:1),max)+'px';
+  if(st.left!==L) st.left=L; if(st.top!==T) st.top=T; if(st.width!==Wd) st.width=Wd;
+  setCls(el,'fitem '+cls);
   // dataset values are strings: an assembled board's null keycaps compare as "null", or every layout would redraw (and reload) its photo.
-  if(r&&el.dataset.k!==String(r.b.keycaps)){el.dataset.k=String(r.b.keycaps); el.querySelector('.art').innerHTML=fieldBoard(r.b)}
-  el.querySelector('.cap').innerHTML=cls==='feat'?`${esc(partName(c))}<small>$${Math.round(r?r.t:c.price).toLocaleString('en-US')}${r?' build':''}</small>`:'';
-  el.tabIndex=cls==='feat'?0:-1;
+  // A board's photo is the same whatever keycaps the build has; only the drawing kept for a failed photo changes.
+  // Rebuilding the photo too would hide it until it loads again, a blink on a board that has not moved.
+  if(r&&el.dataset.k!==String(r.b.keycaps)){el.dataset.k=String(r.b.keycaps); const alt=el.querySelector('.pf > .pf-alt');
+    if(alt) alt.innerHTML=buildBoard(r.b,{legends:false,u:20,cls:''})||''; else el.querySelector('.art').innerHTML=fieldBoard(r.b)}
+  const cap=cls==='feat'?`${esc(partName(c))}<small>$${Math.round(r?r.t:c.price).toLocaleString('en-US')}${r?' build':''}</small>`:'';
+  if(el.dataset.cap!==cap){el.dataset.cap=cap; el.querySelector('.cap').innerHTML=cap}
+  const ti=cls==='feat'?0:-1; if(el.tabIndex!==ti) el.tabIndex=ti;
 }
+function setCls(el,c){if(el.className!==c) el.className=c}
+// A board that has faded out stops being drawn at all, so the boards still on screen are the only ones each layout
+// restyles. It keeps its place and width, so if it comes back it fades in from where it was.
+function hideSlot(el){if(el.classList.contains('hidden-slot')) return; el.className='fitem hidden-slot'; el._hiddenAt=performance.now();
+  setTimeout(()=>{if(el.classList.contains('hidden-slot')) el.classList.add('gone')},700)}
 let fieldFrame=0;
 let fieldHold=false, lastCardRect={top:0,width:0}, answerFrame=0;
-function scheduleField(){if(fieldHold) return; cancelAnimationFrame(fieldFrame);fieldFrame=requestAnimationFrame(layoutField)}
+// Resize events also arrive when a card tween ends; the field is laid out again only if the card or the view really changed.
+function scheduleField(){if(fieldHold) return; cancelAnimationFrame(fieldFrame);fieldFrame=requestAnimationFrame(()=>{
+  const r=document.getElementById('qwrap').getBoundingClientRect(), v=document.getElementById('view-finder').getBoundingClientRect();
+  if(Math.abs(r.top-lastCardRect.top)<=1&&Math.abs(r.width-lastCardRect.width)<=1&&v.width===lastCardRect.vw&&v.height===lastCardRect.vh) return;
+  layoutField()})}
 addEventListener('resize',scheduleField);
 if(window.visualViewport) visualViewport.addEventListener('resize',scheduleField);
 if(window.ResizeObserver){
@@ -2066,7 +2111,9 @@ if(window.ResizeObserver){
 if(document.fonts) document.fonts.ready.then(scheduleField);
 
 /* question card */
-let qDir=1, hT, budgetCleanup=null, quizRender=0;
+let qDir=1, hT, budgetCleanup=null, quizRender=0, answerBg=null;
+// Lays the field out for the card about to show. An answer that leaves the background boards where they were shuffles them once.
+function layoutForAnswer(){const before=answerBg; answerBg=null; layoutField(); if(before!=null&&lastBg===before){bgSeed=1+Math.floor(Math.random()*1e6); layoutField()}}
 function saveQuizProgress(){store.set('sy.quiz',quizAns);store.set('sy.quizStep',quizStep)}
 function moveQuiz(step){
   clearTimeout(window.__adv); cancelAnimationFrame(answerFrame);
@@ -2091,6 +2138,8 @@ function renderQuiz(){
   const focusQuestion=card.contains(document.activeElement)&&window.ThockUI.keyboardUsed;
   const oldH=card.offsetHeight;
   const done=quizStep>=QUESTIONS.length, Q=done?null:QUESTIONS[quizStep];
+  // The budget step starts at $300. Set it before the field is laid out, or the boards would move again a moment later.
+  if(Q&&Q.budget&&quizAns.budget==null){quizAns.budget=300; saveQuizProgress()}
   const n=evalAns(quizAns).list.length, combos=comboCount(quizAns);
   let title, body;
   if(done){
@@ -2112,8 +2161,12 @@ function renderQuiz(){
     const optB=(o,i)=>`<button class="opt" style="--i:${i}" aria-pressed="${quizAns[Q.key]===o.v}" data-v="${o.v}">${o.art?`<span class="art">${o.art()}</span>`:''}<b>${esc(o.b)}</b>${o.s?`<span>${esc(o.s)}</span>`:''}<i class="tick">${icon('tick')}</i></button>`;
     body=`${Q.info?`<p class="qinfotext" id="qinfotext" hidden>${esc(Q.info)}</p>`:''}${Q.hint?`<p class="qhint">${esc(Q.hint)}</p>`:''}<div class="opts" style="--option-count:${Q.opts.length}">${Q.opts.map((o,i)=>o.clip?`<div class="optw" style="--i:${i}">${optB(o,i)}${clipBtn(o.clip,o.b)}</div>`:optB(o,i)).join('')}</div>${Q.key==='must'&&mustBlocked()?`<p class="qempty" role="status" style="margin:14px 0 0;text-align:center;color:var(--muted);font-size:13px">${mustEmptyMsg()}</p>`:''}${Q.key==='sound'?`<p class="qcredit" id="qcredit" aria-live="polite">Recordings from <a href="assets/sounds/CREDITS.md" target="_blank" rel="noopener">Freesound, CC0</a></p>`:''}`;
   }
-  const wasWide=wrapEl.classList.contains('wide');
+  // The card's width change is measured at its final size, then played from the old width, so the field is laid out once
+  // for where the card will end up instead of chasing it while it grows or shrinks.
+  const wasWide=wrapEl.classList.contains('wide'), oldW=wrapEl.getBoundingClientRect().width;
+  wrapEl.style.transition='none';
   wrapEl.classList.toggle('wide',!!(Q&&Q.opts&&Q.opts.length>5));
+  const widthMoves=wasWide!==wrapEl.classList.contains('wide')&&oldW>0&&!window.ThockUI.reducedMotion();
   card.innerHTML=`<div class="qhead"><div class="l"><button class="iconbtn" id="qback" aria-label="Previous question" ${quizStep===0?'disabled':''}>${icon('back')}</button><button class="iconbtn" id="qreset" aria-label="Start over" ${answered()?'':'disabled'}>${icon('reset')}</button></div>
     <h1 id="quiz-title" tabindex="-1">${esc(title)}${Q&&Q.info?`<button type="button" class="qinfo" aria-label="What does this mean?" aria-expanded="false" aria-controls="qinfotext">i</button>`:''}</h1><div class="r" id="qcount"><b>${fmtCombos(shownCombos==null?combos:shownCombos)}</b><span class="w">combinations</span></div></div>
     <div class="qbody ${qDir<0?'back':''}">${body}</div>`;
@@ -2121,11 +2174,12 @@ function renderQuiz(){
   // The field is laid out once for the card's final size; resize events during the height tween would re-run it every frame.
   // The card's width also tweens when the option count changes, so the hold lasts until both have settled.
   clearTimeout(hT); fieldHold=false; card.style.height='';
-  if(oldH&&!window.ThockUI.reducedMotion()){const newH=card.offsetHeight; layoutField(); fieldHold=true;
+  if(oldH&&!window.ThockUI.reducedMotion()){const newH=card.offsetHeight; layoutForAnswer(); fieldHold=true;
+    if(widthMoves){wrapEl.style.width=oldW+'px'; void wrapEl.offsetWidth} wrapEl.style.transition=''; if(widthMoves) wrapEl.style.width='';
     card.style.height=oldH+'px'; void card.offsetHeight; card.style.height=newH+'px';
     clearTimeout(hT); hT=setTimeout(()=>{card.style.height=''; fieldHold=false; const r=wrapEl.getBoundingClientRect();
-      if(Math.abs(r.top-lastCardRect.top)>1||Math.abs(r.width-lastCardRect.width)>1) layoutField()},wasWide!==wrapEl.classList.contains('wide')?520:470)}
-  else layoutField();
+      if(Math.abs(r.top-lastCardRect.top)>1||Math.abs(r.width-lastCardRect.width)>1) layoutField()},widthMoves?520:470)}
+  else {layoutForAnswer(); wrapEl.style.transition=''}
   card.setAttribute('role','group');card.setAttribute('aria-labelledby','quiz-title');
   card.querySelector('#qback').onclick=()=>{if(quizStep>0)moveQuiz(quizStep-1)};
   card.querySelector('#qreset').onclick=resetQuiz;
@@ -2136,22 +2190,35 @@ function renderQuiz(){
   if(Q&&Q.budget) wireBudget(card);
   if(focusQuestion) card.querySelector('#quiz-title').focus({preventScroll:true});
   paintCombos(combos,true);
-  // Checking which options would leave no match runs the finder once per option, so it waits for the card's
-  // entrance animation and then runs one option per idle moment.
-  if(Q&&Q.opts) setTimeout(()=>{if(quizRender===renderId)markDisabled(Q,card)},500);
+  // Checking which options would leave no match runs the finder once per option, so it waits until the boards have
+  // finished gliding and then runs one option per idle moment.
+  if(Q&&Q.opts) setTimeout(()=>{if(quizRender===renderId)markDisabled(Q,card)},window.ThockUI.reducedMotion()?0:950);
 }
 function setCount(){paintCombos(comboCount(quizAns),true)}
+// Scores the next step's answers while the pressed option shows, so the card and the field change on the same frame.
+// Boards about to join the field are built and styled now too, one per idle moment and still invisible, so the
+// answer's frame only has to move them.
+function prewarmNext(){
+  const N=QUESTIONS[quizStep+1], res=evalAns(N&&N.budget&&quizAns.budget==null?{...quizAns,budget:300}:quizAns);
+  const mobile=innerWidth<=760, n=lastBg?lastBg.split(',').length:0;
+  let {top,rest}=fieldPool(res,mobile);
+  // An answer that would leave the background as it is reshuffles it (layoutForAnswer); picking the new order now lets
+  // those boards be prepared too.
+  if(n&&rest.slice(0,n).join()===lastBg){bgSeed=1+Math.floor(Math.random()*1e6); ({top,rest}=fieldPool(res,mobile))}
+  const todo=[...top,...rest].filter(id=>!fieldEls[id]||fieldEls[id].classList.contains('gone'));
+  const idle=window.requestIdleCallback?f=>requestIdleCallback(f,{timeout:120}):f=>setTimeout(f,16);
+  const next=()=>{const id=todo.shift(); if(id) {fieldEl(id).classList.remove('gone'); if(todo.length) idle(next)}};
+  idle(next);
+}
 function choose_(Q,btn){
   if(btn.disabled||QUESTIONS[quizStep]!==Q) return;
   const changed=quizAns[Q.key]!==btn.dataset.v;
   quizAns[Q.key]=btn.dataset.v; if(changed&&btn.dataset.v==='surprise') quizAns.seed=Math.floor(Math.random()*1e6); saveQuizProgress();
   btn.closest('.opts').querySelectorAll('.opt').forEach(o=>o.setAttribute('aria-pressed',o===btn));
-  // The pressed option paints first; the counter and field update on the next frame.
-  cancelAnimationFrame(answerFrame); answerFrame=requestAnimationFrame(()=>{
-    setCount(); const bgBefore=lastBg; layoutField();
-    // An answer that leaves the background boards where they were shuffles them once.
-    if(lastBg===bgBefore){bgSeed=1+Math.floor(Math.random()*1e6); layoutField()}
-  });
+  // The pressed option paints first and the counter updates on the next frame. The field waits for the next card:
+  // laying it out now and again when the card changes size would send every board on two moves in a row.
+  cancelAnimationFrame(answerFrame); answerFrame=requestAnimationFrame(()=>{setCount(); setTimeout(prewarmNext,0)});
+  answerBg=lastBg;
   // A must-have that leaves no boards stays on this step so the message can say why.
   if(Q.key==='must'&&mustBlocked()){clearTimeout(window.__adv); window.__adv=setTimeout(renderQuiz,200); return}
   clearTimeout(window.__adv); window.__adv=setTimeout(()=>moveQuiz(quizStep+1),window.ThockUI.reducedMotion()?0:320);

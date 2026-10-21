@@ -15,7 +15,7 @@ test('featured keyboards remain visible and separated above the card across view
     const ctx={view:'finder',initField(){},introDone:true,shownCombos:null,evalAns:()=>({list:[],byCase:new Map()}),quizAns:{},
       document:{getElementById:id=>id==='qwrap'?card:{getBoundingClientRect:()=>rect,classList:{add(){},remove(){}},offsetWidth:W},querySelector:s=>s==='.top .bar'?{getBoundingClientRect:()=>({bottom:topBar})}:null},
       FEAT_SCALE:1,MFEAT_SCALE:2.2,LW:{'65':.72,'75':.78,tkl:.9},BYID:boards,FEAT_BOOST:{},FEATURED_IDS:['a','b','c'],
-      cutoutIds:()=>new Set(['a','b','c']),MAX_BG:12,MAX_BG_MOBILE:6,MSLOTS:[],FIELD_SLOTS:[],bgSeed:0,fieldEls:{},lastBg:'',
+      cutoutIds:()=>new Set(['a','b','c']),MAX_BG:12,MAX_BG_MOBILE:6,MSLOTS:[],FIELD_SLOTS:[],bgSeed:0,fieldEls:{},lastBg:'',featHold:null,performance,
       place:(id,p)=>placed.push({id,...p})};
     vm.createContext(ctx);vm.runInContext(layout+';layoutField()',ctx);
     assert.equal(placed.length,3);
