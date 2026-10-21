@@ -1238,6 +1238,9 @@ const SOUND_CLIPS={
   quiet:{by:'bonesawmgraw',what:'Cherry MX Silent switches',id:572978},
 };
 const CLIP_SECONDS=10;
+// Play icon, and the equalizer bars that replace it while a clip plays (also used by the Sound test links).
+const SPK='<svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M4 2.5v11L13 8z"/></svg>';
+const EQ='<span class="eq" aria-hidden="true"><i></i><i></i><i></i></span>';
 let clipAudio=null, clipKey=null, clipTimer=null;
 function clipBtn(key,label){
   return `<button type="button" class="play" data-clip="${esc(key)}" aria-pressed="false" aria-label="Play ${esc(label)} example" title="Play a 10-second ${esc(label.toLowerCase())} example">${SPK}${EQ}</button>`;
@@ -1299,7 +1302,6 @@ function soundTest(p){
   return SOUND_TESTS[p.id]||soundByKey[sameKey(p)]||null;
 }
 const soundHref=p=>{const t=soundTest(p); return t?`https://www.youtube.com/watch?v=${t.video}${t.start?'&t='+t.start:''}`:soundSearchUrl(p)};
-const SPK='<svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M4 2.5v11L13 8z"/></svg>';
 // The Sound test button: opens the recording, or a YouTube search, in a new tab.
 function soundLink(p,label='Sound test'){
   if(!p) return '';

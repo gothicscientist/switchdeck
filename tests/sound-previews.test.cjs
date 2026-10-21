@@ -5,7 +5,7 @@ const { test } = require('node:test');
 
 const html = fs.readFileSync(require('node:path').join(__dirname, '../index.html'), 'utf8');
 const script = html.match(/<script>([\s\S]*?)<\/script>/)[1];
-const sameKeyCode = script.match(/const sameKey=[^\n]+/)[0];
+const sameKeyCode = script.match(/const sameKey=[^\n]+/)[0] + '\n' + script.match(/const SPK=[^\n]+/)[0];
 const soundCode = script.slice(script.indexOf('const SOUND_TESTS='), script.indexOf('/* =========================================================\n   WHERE TO BUY:'));
 // Read the actual catalog literals, so adding a switch without a recording fails here.
 const switchRows = [...script.matchAll(/S\(\{id:'([^']+)',brand:'([^']+)',name:'([^']+)'/g)];
@@ -23,6 +23,12 @@ function harness(videos = {}) {
 test('the whole application parses; synthesizer has been removed', () => {
   new vm.Script(script);
   assert.doesNotMatch(script, /createOscillator|createBiquadFilter|noiseBuf|function keystroke/);
+});
+
+test('every constant used inside page templates is declared', () => {
+  // A removed constant only fails when its template renders (the quiz's sound step went blank this way).
+  for (const [, name] of script.matchAll(/\$\{([A-Z][A-Z0-9_]*)\}/g))
+    assert.match(script, new RegExp(`\\b(?:const|let|var)\\b[^;\\n]*?[\\s,{[]${name}\\s*[=,}\\]]|function\\s+${name}\\b|[(,]\\s*${name}\\s*[,)=]`), `${name} is used in a template but never declared`);
 });
 
 test('curated recordings are links with sourced metadata for a known switch', () => {
