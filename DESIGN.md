@@ -44,3 +44,9 @@ There is no brand blue. Status colours are muted so they sit next to product pho
 ## Image rule
 
 Every part image is a clean, front-on product photo cropped to its frame (keyboards top-down) or a drawn icon. Nothing overflows its frame. See `scripts/image-check.mjs`.
+
+## Results: share and swap
+
+- Share copies a link; the only confirmation is the button's label lifting into "Copied". No modal, no share sheet.
+- Swap is a quiet text action under each part's price. Alternatives open in place under that part, show only the change in price and match, and keep the panel open so several can be tried. Undo and Reset sit as text links under the total.
+- Fit wording never overclaims: "Fits" appears only where store data confirms it, anything unverified says "Check fit", and the build line says "No fit issues found in the store listings", never "compatible".

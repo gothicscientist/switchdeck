@@ -510,6 +510,58 @@ a.listen.watch:hover{background:rgba(68,64,60,.16)}
 .store svg{width:10px;height:10px;opacity:.6}
 .store.cmp{color:var(--muted)}
 .part.inc .pn b{color:var(--muted);font-weight:500}
+/* Swapping parts on the results screen: a quiet text action per part, alternatives open in place under it. */
+.part .pp{display:flex;flex-direction:column;align-items:flex-end}
+.swapbtn{display:inline-flex;align-items:center;gap:4px;margin-top:6px;padding:3px 0;border:0;background:none;font:inherit;font-size:12px;font-weight:500;color:var(--muted);cursor:pointer;transition:color .2s}
+.swapbtn svg{opacity:.7;transition:transform .35s var(--out)}
+.swapbtn:hover,.swapbtn[aria-expanded=true]{color:var(--ink)}
+.swapbtn[aria-expanded=true] svg{transform:rotate(180deg)}
+.part.swapped{animation:swapFlash 1.4s var(--ease) both}
+.part.swapped .pt>*{animation:fade .5s var(--ease) both}
+@keyframes swapFlash{from{background:var(--accent-soft)}to{background:transparent}}
+.rdetail.still .swapin,.rdetail.still .part:not(.swapped),.rdetail.still .rsf-w,.rdetail.still .rsf-pin{animation:none}
+.rdetail.still .rsf-fill{animation:none;transition:clip-path .8s var(--out)}
+.bump{animation:bump .5s var(--out)}
+@keyframes bump{from{opacity:.3;transform:translateY(3px)}}
+.rsum .total .over{color:var(--warn)}
+.rfit{display:flex;align-items:baseline;gap:8px;margin:-8px 0 0;font-size:12.5px;line-height:1.4;color:var(--muted)}
+.rfit i{flex:none;width:6px;height:6px;border-radius:50%;background:var(--faint);transform:translateY(-1px)}
+.rfit.ok i{background:var(--ok)}.rfit.info i{background:var(--info)}.rfit.warn i{background:var(--warn)}.rfit.fail i{background:var(--fail)}
+.rfit.fail{color:var(--fail)}
+.redit{display:flex;align-items:center;gap:14px;margin-top:-6px;font-size:12.5px;color:var(--muted);animation:fade .3s var(--ease) both}
+.redit span{margin-right:auto}
+.redit button{display:inline-flex;align-items:center;gap:4px;border:0;background:none;padding:2px 0;font:inherit;font-weight:500;color:var(--ink-2);cursor:pointer;text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:3px}
+.redit button:hover{text-decoration-color:currentColor}
+.redit button:disabled{color:var(--faint);cursor:default;text-decoration:none}
+.swaps{padding:4px 22px 16px 88px;border-bottom:1px solid var(--line);background:linear-gradient(var(--tile),transparent 70%);animation:swapsIn .35s var(--out) both}
+.swaps.still{animation:none}
+@keyframes swapsIn{from{opacity:0;transform:translateY(-4px)}}
+.swhead{display:flex;align-items:baseline;gap:14px;padding:10px 0 2px;font-size:12.5px;font-weight:600;color:var(--ink)}
+.swhead span{margin-right:auto}
+.swlink{border:0;background:none;padding:0;font:inherit;font-size:12px;font-weight:500;color:var(--muted);cursor:pointer}
+.swlink:hover{color:var(--ink)}
+.swsub{margin:0 0 6px;font-size:11.5px;color:var(--faint)}
+.swlist{display:grid;gap:2px}
+.swopt{display:grid;grid-template-columns:44px minmax(0,1fr) auto;align-items:center;gap:12px;width:100%;padding:8px 10px;margin:0 -10px;width:calc(100% + 20px);border:0;border-radius:10px;background:none;text-align:left;font:inherit;color:inherit;cursor:pointer;transition:background .2s;animation:fadeUp .35s var(--out) both;animation-delay:calc(var(--i,0)*30ms)}
+.swaps.still .swopt{animation:none}
+.swopt:hover{background:var(--surface);box-shadow:0 1px 2px rgba(41,37,36,.06)}
+.swopt:active{transform:scale(.995)}
+.swopt .pt{width:44px;height:34px;border-radius:7px;background:var(--surface);display:grid;place-items:center;padding:3px;overflow:hidden;box-shadow:inset 0 0 0 1px var(--line)}
+.swopt .pt svg{width:100%;height:100%}
+.so-n{display:flex;flex-direction:column;gap:1px;min-width:0}
+.so-n b{font-size:13px;font-weight:600;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.so-n em{font-style:normal;font-size:11.5px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.so-tags{display:flex;gap:4px;margin-top:3px;flex-wrap:wrap}
+.so-tags .chip{font-size:10.5px;padding:1px 6px}
+.so-d{display:flex;flex-direction:column;align-items:flex-end;gap:1px;white-space:nowrap}
+.so-d b{font-size:13px;font-weight:600;color:var(--ink-2)}
+.so-d b.down{color:var(--ok)}
+.so-d small{font-size:11px;color:var(--muted)}
+.swmore{margin-top:6px;border:0;background:none;padding:4px 0;font:inherit;font-size:12px;font-weight:500;color:var(--muted);cursor:pointer}
+.swmore:hover{color:var(--ink)}
+@media (max-width:760px){.swaps{padding:4px 16px 14px}.swopt{grid-template-columns:40px minmax(0,1fr) auto;gap:10px}.swopt .pt{width:40px;height:31px}}
+@media (prefers-reduced-motion:reduce){.part.swapped,.swaps,.swopt,.bump{animation:none}.rdetail.still .rsf-fill{transition:none}}
+
 .rdetail .rclose{left:auto;right:14px;top:14px}
 .rparts .phead{padding-right:58px}
 .rparts .affnote{margin:0;padding:8px 22px 0;font-size:11.5px}
@@ -2033,6 +2085,8 @@ function icon(name){return {
   reset:'<svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9a6 6 0 0 1 10.4-4.1L15 6.5M15 2.5v4h-4M15 9a6 6 0 0 1-10.4 4.1L3 11.5M3 15.5v-4h4"/></svg>',
   tick:'<svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 5.2l2 2L8 3"/></svg>',
   close:'<svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><path d="M2 2l10 10M12 2L2 12"/></svg>',
+  swap:'<svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 5.5h10M10 3l2.5 2.5L10 8M13.5 10.5h-10M6 8l-2.5 2.5L6 13"/></svg>',
+  undo:'<svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5.5 3 2.5 6l3 3"/><path d="M2.5 6h7a4 4 0 0 1 0 8H7"/></svg>',
   link:'<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6.8 9.2a3 3 0 0 0 4.2 0l2.3-2.3a3 3 0 0 0-4.2-4.2l-.9.9M9.2 6.8a3 3 0 0 0-4.2 0L2.7 9.1a3 3 0 0 0 4.2 4.2l.9-.9"/></svg>'}[name]}
 function renderQuiz(){
   stopClip();
@@ -2198,7 +2252,7 @@ let resultsCloseTimer;
 let resCustom=new Map(), resCustomFor='', resNotes=new Map();
 function openResults(caseId,opts={}){
   clearTimeout(resultsCloseTimer);
-  const key=JSON.stringify(quizAns); if(key!==resCustomFor){resCustom=new Map(); resCustomFor=key} resNotes=new Map();
+  const key=JSON.stringify(quizAns); if(key!==resCustomFor){resCustom=new Map(); resCustomFor=key} resNotes=new Map(); swapOpen=null;
   const base=evalAns(quizAns).list; resList=[...base]; rShown=60;
   const sh=opts.share;
   if(sh&&caseOf(sh.b)){
@@ -2206,7 +2260,7 @@ function openResults(caseId,opts={}){
     if(i<0){resList.unshift(sharedEntry(sh.b)); i=0}
     else if(buildKey(sh.b)!==buildKey(resList[i].b)) resCustom.set(sh.b.case,{b:sh.b,undo:[],share:true});
     else resCustom.delete(sh.b.case);
-    caseId=sh.b.case; resNotes.set(sh.b.case,shareNote(sh));
+    caseId=sh.b.case; resNotes.set(sh.b.case,{sh});
   }
   if(!resList.length){ if(sh) toast("That build's keyboard is no longer listed, and nothing else matches its answers."); return }
   resIdx=caseId?Math.max(0,resList.findIndex(r=>r.b.case===caseId)):0;
@@ -2294,17 +2348,19 @@ function sharedEntry(b){
 }
 // What the list entry shows now: the finder's build, or the changed one rescored.
 function resView(r){
-  const ed=resCustom.get(r.b.case); if(!ed) return r;
+  const ed=resCustom.get(r.b.case); if(!ed||buildKey(ed.b)===buildKey(r.b)) return r;
   const b=ed.b, sc=r.sc+buildScore(b)-buildScore(r.b);
   return {b,sc,t:total(b),e:estimate(b),pct:pctOf(sc),shared:r.shared||!!ed.share,custom:true,base:r};
 }
 // What a link named that the catalog no longer has. Nothing is put in a missing part's place.
-function shareNote(sh){
-  const SL=k=>SLOTS.find(x=>x.key===k).label.toLowerCase(), n=sh.missing.length+(sh.lostExtras?1:0);
+// The note only names slots that are still empty; once a missing part is chosen, it drops out.
+function shareNote(sh,b){
+  const missing=sh.missing.filter(k=>!b||!b[k]);
+  const SL=k=>k==='pcb'?'PCB':SLOTS.find(x=>x.key===k).label.toLowerCase(), n=missing.length+(sh.lostExtras?1:0);
   if(!n&&!sh.colorReset) return null;
-  const what=[...sh.missing.map(SL),...(sh.lostExtras?[sh.lostExtras===1?'one extra':`${sh.lostExtras} extras`]:[])];
-  const list=what.length>1?what.slice(0,-1).join(', ')+' and '+what.at(-1):what[0], many=what.length>1||sh.lostExtras>1;
-  return {text:'Opened from a shared link.'+(n?` The ${list} in it ${many?'are':'is'} no longer listed. Nothing was put in ${many?'their':'its'} place, and the total leaves ${many?'them':'it'} out.`:'')+(sh.colorReset?' Its case color is no longer offered, so the first color is shown.':''),missing:sh.missing};
+  const what=[...missing.map(SL),...(sh.lostExtras?[sh.lostExtras===1?'one extra':`${sh.lostExtras} extras`]:[])];
+  const list=what.length>1?what.slice(0,-1).join(', ')+' and '+what.at(-1):what[0], many=what.length>1||sh.lostExtras>1||/s$/.test(what[0]||'');
+  return {sh,text:'Opened from a shared link.'+(n?` The ${list} in it ${many?'are':'is'} no longer listed. Nothing was put in ${many?'their':'its'} place, and the total leaves ${many?'them':'it'} out.`:'')+(sh.colorReset?' Its case color is no longer offered, so the first color is shown.':''),missing};
 }
 let rShown=60;
 // Map each match’s actual score onto a continuous red → amber → green spectrum.
@@ -2320,24 +2376,125 @@ function matchColor(score){
 function renderRList(){
   const el=document.getElementById('rlist'); rShown=Math.max(rShown,resIdx+1);
   const shown=resList.slice(0,rShown);
-  el.innerHTML=shown.map((r0,i)=>{const r=resView(r0), c=caseOf(r.b), tag=r.shared?' · Shared':r.custom?' · Edited':'';return `<button style="--i:${i};--match-color:${matchColor(r.pct)}" data-ri="${i}" aria-current="${i===resIdx}"><span class="rthumb">${caseVisual(r.b,'thumb')}</span><span style="min-width:0"><b>${esc(partName(c))}</b><small>${money(r.t)}${c.soldOut?' · Sold out':''}${tag}</small></span>${i===0&&!r.custom&&!r.shared?'<span class="best match-score">Best match</span>':`<small class="pct match-score">${r.pct}%</small>`}</button>`}).join('')+(resList.length>rShown?`<button class="rmore" id="rmore" style="grid-template-columns:1fr;text-align:center"><small>Show more (${resList.length-rShown} left)</small></button>`:'');
+  el.innerHTML=shown.map((r0,i)=>rListRow(r0,i)).join('')+(resList.length>rShown?`<button class="rmore" id="rmore" style="grid-template-columns:1fr;text-align:center"><small>Show more (${resList.length-rShown} left)</small></button>`:'');
   const more=el.querySelector('#rmore'); if(more) more.onclick=()=>{rShown+=60; const st=el.scrollTop; renderRList(); el.scrollTop=st};
-  el.querySelectorAll('[data-ri]').forEach(b=>b.onclick=()=>{resIdx=+b.dataset.ri; el.querySelectorAll('[data-ri]').forEach(x=>x.setAttribute('aria-current',x===b)); renderRDetail()});
+  el.querySelectorAll('[data-ri]').forEach(b=>b.onclick=()=>pickResult(b));
 }
-function renderRDetail(){
-  const r0=resList[resIdx], r=resView(r0), b=r.b, c=caseOf(b), s=BYID[b.switches], note=resNotes.get(r0.b.case);
+function rListRow(r0,i){const r=resView(r0), c=caseOf(r.b), tag=r.shared?' · Shared':r.custom?' · Edited':'';
+  return `<button style="--i:${i};--match-color:${matchColor(r.pct)}" data-ri="${i}" aria-current="${i===resIdx}"><span class="rthumb">${caseVisual(r.b,'thumb')}</span><span style="min-width:0"><b>${esc(partName(c))}</b><small>${money(r.t)}${c.soldOut?' · Sold out':''}${tag}</small></span>${i===0&&!r.custom&&!r.shared?'<span class="best match-score">Best match</span>':`<small class="pct match-score">${r.pct}%</small>`}</button>`}
+function pickResult(b){resIdx=+b.dataset.ri; swapOpen=null; document.querySelectorAll('#rlist [data-ri]').forEach(x=>x.setAttribute('aria-current',x===b)); renderRDetail()}
+/* Part swapping on the results screen. Each part offers alternatives from the whole catalog that fit the rest of the
+   build: anything the compatibility check rejects is left out, and the rest are ranked by stock, then by how sure the
+   fit is, then by the same score the finder uses for the answers. A swap changes only that part; price, budget,
+   fit and match are worked out again from the new build. "Fits" appears only where the store data confirms it. */
+const SWAP_PAGE=6;
+let swapOpen=null; // {slot, id (null for an empty slot), n shown}
+const PART_SLOTS=['case','pcb','plate','switches','stabs','keycaps'];
+function budgetText(t){
+  const bud=typeof quizAns.budget==='number'&&quizAns.budget<B_MAX?quizAns.budget:null; if(!bud) return '';
+  const d=Math.round((bud-t)*100)/100;
+  return d>=0?`, ${d<1?'right at':money(d)+' under'} your ${money(bud)} budget`:`, <span class="over">${money(-d)} over your ${money(bud)} budget</span>`;
+}
+// One line on how sure the fit is. Only what the store listings confirm counts; anything they leave open is named.
+function buildFit(b){
+  const iss=compat(b), SL=k=>(SLOTS.find(x=>x.key===k)?.label||k).toLowerCase();
+  const fail=iss.find(i=>i.level==='fail'); if(fail) return {level:'fail',text:fail.msg};
+  const open=iss.filter(i=>i.level==='info'&&/^Check /.test(i.msg));
+  if(open.length){const sl=[...new Set(open.map(i=>i.slot==='pcb'?'PCB':SL(i.slot)))], list=sl.length>1?sl.slice(0,-1).join(', ')+' and '+sl.at(-1):sl[0];
+    return {level:'info',text:`Fit not confirmed for the ${list}. Check before buying.`,title:open.map(i=>i.msg).join('\n')}}
+  const warn=iss.find(i=>i.level==='warn'); if(warn) return {level:'warn',text:warn.msg,title:warn.sub||''};
+  return {level:'ok',text:'No fit issues found in the store listings'};
+}
+// How an alternative fits, from the compatibility notes on its own slot. Switches and cases get no "Fits" label:
+// unlabelled switches and boards are only assumed to be MX-style.
+function swapFit(b2,slot,p){
+  if(slot==='extras'){ if(!p.mod) return null; const f=modFit(p,caseOf(b2)); return f==='check'?{level:'info',text:'Check fit'}:modIndex().get(p.id)?.boards.has(b2.case)?{level:'ok',text:'Made for this board'}:null }
+  const rel=compat(b2).filter(i=>slot==='case'?PART_SLOTS.includes(i.slot):i.slot===slot);
+  if(rel.some(i=>i.level==='info'&&/^Check /.test(i.msg))) return {level:'info',text:'Check fit'};
+  const w=rel.find(i=>i.level==='warn'); if(w) return {level:'warn',text:'Works, with notes',title:w.msg};
+  if(['pcb','plate','keycaps','stabs'].includes(slot)&&rel.some(i=>i.level==='ok')) return {level:'ok',text:'Fits'};
+  return null;
+}
+function swapCands(r0,b,slot,curId){
+  const c=caseOf(b), cur=curId?BYID[curId]:null, base=buildScore(r0.b), e=estimate(b);
+  let pool;
+  if(slot==='case') pool=FINDER_CASES.filter(x=>!!x.assembled===!!c.assembled&&x.layoutLabel!=='70%');
+  else if(slot==='extras') pool=cur?EXTRAS.filter(x=>cur.mod?x.mod===cur.mod:!x.mod&&x.kind===cur.kind):[];
+  else pool={pcb:PCBS,plate:PLATES,switches:SWITCHES,stabs:STABS,keycaps:KEYCAPS}[slot]||[];
+  const best=new Map();
+  for(const p of pool){
+    if(p.id===curId) continue;
+    if(slot==='switches'&&swSystemOf(p)!==boardSystem(c)) continue;
+    if(slot==='keycaps'&&p.covers&&!p.covers.includes(c.layout)&&!(p.addon&&p.addon[c.layout])) continue;
+    if((slot==='pcb'||slot==='plate')&&c.fit&&p.fit!=null&&p.fit!==c.fit) continue;
+    if(slot==='extras'&&((b.extras||[]).includes(p.id)||(p.mod&&modFit(p,c)===false))) continue;
+    let b2;
+    if(slot==='extras') b2={...b,extras:b.extras.map(id=>id===curId?p.id:id)};
+    else if(slot==='case'){b2={...b,case:p.id,color:0}; if(p.kit){b2.pcb=null; b2.plate=null} if(stabsIncluded(b2)) b2.stabs=null;
+      if(SLOTS.some(x=>needed(b2,x.key)&&!b2[x.key])) continue}
+    else b2={...b,[slot]:p.id};
+    if(compat(b2).some(i=>i.level==='fail')) continue;
+    const sc=buildScore(b2), fit=swapFit(b2,slot,p), k=sameKey(p);
+    const rank=sc-(fit?.level==='info'?4:fit?.level==='warn'?3:0);
+    const prev=best.get(k); if(prev&&(prev.p.soldOut===!!p.soldOut?prev.rank>=rank:!prev.p.soldOut)) continue;
+    const t=total(b2), e2=estimate(b2);
+    best.set(k,{p,b2,rank,fit,t,pct:pctOf(r0.sc+sc-base),sound:pitchWord(e2.pitch)!==pitchWord(e.pitch)?pitchWord(e2.pitch):null});
+  }
+  return [...best.values()].sort((a,b)=>(!!a.p.soldOut-!!b.p.soldOut)||b.rank-a.rank);
+}
+function closeSwap(el){swapOpen=null; el.querySelectorAll('.swaps').forEach(x=>x.remove()); el.querySelectorAll('[data-swap]').forEach(x=>x.setAttribute('aria-expanded','false'))}
+function showSwap(el,r0,still){
+  const row=el.querySelector(`.part[data-slot="${swapOpen.slot}"][data-id="${CSS.escape(swapOpen.id||'')}"]`); if(!row){swapOpen=null; return}
+  const r=resView(r0), b=r.b, slot=swapOpen.slot, SL=SLOTS.find(x=>x.key===slot).label.toLowerCase();
+  const t0=performance.now(), all=swapCands(r0,b,slot,swapOpen.id), list=all.slice(0,swapOpen.n);
+  const delta=(n,unit)=>n>0?'+'+unit(n):n<0?'−'+unit(-n):'';
+  const opt=(x,i)=>{const dt=Math.round((x.t-r.t)*100)/100, dp=x.pct-r.pct;
+    return `<button type="button" class="swopt" data-alt="${esc(x.p.id)}" style="--i:${i}"><span class="pt">${slot==='case'?caseVisual({case:x.p.id,color:0,keycaps:null,extras:[]},'thumb'):thumbFor(x.p)}</span>
+      <span class="so-n"><b>${esc(partName(x.p))}</b><em>${esc([partDesc(x.p),x.sound&&'sounds '+x.sound.toLowerCase()].filter(Boolean).join(', '))}</em>${x.fit||x.p.soldOut?`<span class="so-tags">${x.fit?`<span class="chip ${x.fit.level}"${x.fit.title?` title="${esc(x.fit.title)}"`:''}>${esc(x.fit.text)}</span>`:''}${x.p.soldOut?'<span class="chip warn">Sold out</span>':''}</span>`:''}</span>
+      <span class="so-d"><b class="${dt>0?'up':dt<0?'down':''}">${dt?delta(dt,money):'Same price'}</b><small>${dp?delta(dp,n=>n+'%')+' match':'Same match'}</small></span></button>`};
+  const panel=`<div class="swaps${still?' still':''}" role="group" aria-label="Alternatives for the ${esc(SL)}"><div class="swhead"><span>${list.length?`${swapOpen.id?'Swap':'Choose'} the ${esc(SL)}`:`No other ${esc(SL)} fit this build`}</span>${slot==='extras'&&swapOpen.id?'<button type="button" class="swlink" data-rm>Remove</button>':''}<button type="button" class="swlink" data-x>Close</button></div>
+    ${list.length?`<p class="swsub">Best fit for your answers first. Price and match show the change to this build.</p>`:''}
+    <div class="swlist">${list.map(opt).join('')}</div>${all.length>list.length?`<button type="button" class="swmore" data-more>Show more (${all.length-list.length} left)</button>`:''}</div>`;
+  el.querySelectorAll('.swaps').forEach(x=>x.remove());
+  row.insertAdjacentHTML('afterend',panel); row.querySelector('[data-swap]').setAttribute('aria-expanded','true');
+  const pn=row.nextElementSibling;
+  pn.querySelector('[data-x]').onclick=()=>{closeSwap(el); row.querySelector('[data-swap]').focus()};
+  const more=pn.querySelector('[data-more]'); if(more) more.onclick=()=>{swapOpen.n+=SWAP_PAGE; showSwap(el,r0,true)};
+  const rm=pn.querySelector('[data-rm]'); if(rm) rm.onclick=()=>{const p=BYID[swapOpen.id]; applySwap(r0,{...b,extras:b.extras.filter(id=>id!==swapOpen.id)},null,`Removed ${partName(p)}`)};
+  pn.querySelectorAll('[data-alt]').forEach(btn=>btn.onclick=()=>{const x=all.find(y=>y.p.id===btn.dataset.alt); if(x) applySwap(r0,x.b2,{slot,id:x.p.id},`Swapped in ${partName(x.p)}`)});
+  if(!still) pn.scrollIntoView({block:'nearest',behavior:'smooth'});
+  window.__swapMs=performance.now()-t0;
+}
+function applySwap(r0,b2,to,said){
+  const key=r0.b.case, was=resView(r0), e=resCustom.get(key)||{b:was.b,undo:[]};
+  e.undo.push(e.b); e.b=b2; resCustom.set(key,e);
+  swapOpen=to?{...to,n:swapOpen?swapOpen.n:SWAP_PAGE}:null;
+  redrawSwap(r0,was,said,to);
+}
+function redrawSwap(r0,was,said,to){
+  const now=resView(r0);
+  renderRDetail({still:true,bump:{t:was.t,pct:was.pct},swapped:to,say:`${said}. Total ${money(now.t)}, ${now.pct}% match.`});
+  const li=document.querySelector(`#rlist [data-ri="${resIdx}"]`); if(li) li.outerHTML=rListRow(r0,resIdx);
+  const nli=document.querySelector(`#rlist [data-ri="${resIdx}"]`); if(nli){nli.style.animation='none'; nli.onclick=()=>pickResult(nli)}
+  // The control that was used is redrawn, so focus moves to the next useful one inside the dialog.
+  const d=document.getElementById('rdetail');
+  (d.querySelector('.swaps .swopt')||d.querySelector('#rundo:not(:disabled)')||d.querySelector('#rreset')||d.querySelector('#rbuild'))?.focus({preventScroll:true});
+}
+const partDesc=p=>p.cat==='case'?[LAYOUT_NAMES[p.layout],p.material,p.mount&&p.mount+' mount',p.assembled?'sold assembled':p.kit&&'kit'].filter(Boolean).join(', '):p.cat==='switches'?[p.type,p.force&&`${p.force} g`,p.pins&&`${p.pins}-pin`].filter(Boolean).join(', '):p.cat==='keycaps'?[p.profile&&`${p.profile} profile`,p.material,p.legends].filter(Boolean).join(', '):p.cat==='pcb'?[p.hotswap===true?'Hot-swap':p.hotswap===false?'Solder':null,p.pins&&`${p.pins}-pin`].filter(Boolean).join(', '):p.cat==='plate'?p.material||'':p.blurb||'';
+function renderRDetail(opts={}){
+  const r0=resList[resIdx], r=resView(r0), b=r.b, c=caseOf(b), s=BYID[b.switches], note=(n=>n&&n.sh?shareNote(n.sh,b):n)(resNotes.get(r0.b.case)), ed=resCustom.get(r0.b.case), fit=buildFit(b);
   const items=lineItems(b), SL=k=>SLOTS.find(x=>x.key===k).label;
   const sub=i=>i.slot==='switches'?`${i.qty} × ${money(i.part.price)}`:i.slot==='keycaps'&&i.addon?`incl. ${money(i.addon)} numpad kit`:i.slot==='stabs'?`${layoutOf(b)==='full'?7:5}-stab set`:'';
-  const desc=p=>p.cat==='case'?[LAYOUT_NAMES[p.layout],p.material,p.mount&&p.mount+' mount',p.assembled?'sold assembled':p.kit&&'kit'].filter(Boolean).join(', '):p.cat==='switches'?[p.type,p.force&&`${p.force} g`,p.pins&&`${p.pins}-pin`].filter(Boolean).join(', '):p.cat==='keycaps'?[p.profile&&`${p.profile} profile`,p.material,p.legends].filter(Boolean).join(', '):p.cat==='pcb'?[p.hotswap===true?'Hot-swap':p.hotswap===false?'Solder':null,p.pins&&`${p.pins}-pin`].filter(Boolean).join(', '):p.cat==='plate'?p.material||'':p.blurb||'';
-  let rows=items.map((i,n)=>`<div class="part" data-pi="${n}" style="--i:${n}"><span class="pt">${i.slot==='case'?caseVisual({case:c.id,color:b.color||0,keycaps:null,extras:[]},'thumb'):thumbFor(i.part)}</span>
+  const desc=partDesc;
+  let rows=items.map((i,n)=>`<div class="part" data-pi="${n}" data-slot="${i.slot}" data-id="${esc(i.part.id)}" style="--i:${n}"><span class="pt">${i.slot==='case'?caseVisual({case:c.id,color:b.color||0,keycaps:null,extras:[]},'thumb'):thumbFor(i.part)}</span>
       <div class="pn"><small>${esc(SL(i.slot))}</small><b>${esc(partName(i.part))}</b><em>${esc(desc(i.part))}</em>${i.part.soldOut?'<span class="chip warn" style="align-self:flex-start;margin-top:4px">Sold out</span>':''}</div>
-      <div class="pp">${money(i.price)}${sub(i)?`<small>${esc(sub(i))}</small>`:''}</div>
+      <div class="pp">${money(i.price)}${sub(i)?`<small>${esc(sub(i))}</small>`:''}<button type="button" class="swapbtn" data-swap aria-expanded="false" aria-label="Swap ${esc(SL(i.slot).toLowerCase())}: see alternatives">${icon('swap')}Swap</button></div>
       <div class="stores">${i.slot==='switches'?`<span class="watchrow">${soundLink(i.part)}${moreSoundTests(i.part)}</span>`:''}${i.slot==='keycaps'&&quizAns.look==='surprise'?'<button type="button" class="listen" id="reroll">↻ Shuffle</button>':''}${storeChips(i.part)}</div></div>`);
   if(c.assembled) rows.splice(1,0,`<div class="part inc" style="--i:1"><span class="pt">${pcbSVG(c.kit.pcb)}</span><div class="pn"><small>Included</small><b>Switches and keycaps, per the listing</b><em>Listed as a complete keyboard. Check ${esc(storeOf(c))} for which switches and keycaps it ships with.</em></div><div class="pp"><span class="chip ok">Included</span></div></div>`);
   else if(c.kit&&c.catalogId) rows.splice(1,0,`<div class="part inc" style="--i:1"><span class="pt">${pcbSVG(c.kit.pcb)}</span><div class="pn"><small>Kit</small><b>PCB and plate, per the listing</b><em>Check ${esc(storeOf(c))} for exactly what the ${esc(partName(c))} kit includes.</em></div><div class="pp"><span class="chip ok">Kit</span></div></div>`);
   else if(c.kit) rows.splice(1,0,`<div class="part inc" style="--i:1"><span class="pt">${pcbSVG(c.kit.pcb)}</span><div class="pn"><small>Included</small><b>PCB, ${esc(c.kit.plate)} plate${c.kit.stabs?' and stabilizers':''}</b><em>Comes with the ${esc(partName(c))}</em></div><div class="pp"><span class="chip ok">Included</span></div></div>`);
   // Slots a shared link named but the catalog no longer has: shown empty, never filled with another part.
-  for(const k of note?.missing||[]) if(!b[k]&&needed(b,k)) rows.push(`<div class="part gone" style="--i:${rows.length}"><span class="pt"></span><div class="pn"><small>${esc(SL(k))}</small><b>No longer listed</b><em>The part in this link has left the catalog. Nothing was put in its place.</em></div><div class="pp">—</div></div>`);
+  for(const k of note?.missing||[]) if(!b[k]&&needed(b,k)) rows.push(`<div class="part gone" data-slot="${k}" data-id="" style="--i:${rows.length}"><span class="pt"></span><div class="pn"><small>${esc(SL(k))}</small><b>No longer listed</b><em>The part in this link has left the catalog. Nothing was put in its place.</em></div><div class="pp">—<button type="button" class="swapbtn" data-swap aria-expanded="false" aria-label="Choose ${esc(SL(k).toLowerCase())}">${icon('swap')}Choose</button></div></div>`);
   const nParts=items.length+(c.kit?1:0);
   // Sound and feel for this build, with a pin where the quiz's sound answer sits on pitch and volume.
   const T=SOUND_T[quizAns.sound], e=r.e;
@@ -2349,15 +2506,22 @@ function renderRDetail(){
       ${sfRow(1,'Volume',e.vol,volWord(e.vol),'#F2B98A','#E0453A',T&&T.v,quizAns.sound)}
       ${sfRow(2,'Bounce',e.flex,flexWord(e.flex),'#9AD3B4','#1F8A66')}
       ${sfRow(3,'Key weight',fPct,force==null?'As shipped':`${force} g, ${forceWord(force).toLowerCase()}`,'#CFC9C2','#57534E')}</div>`;
-  const el=document.getElementById('rdetail');
+  const el=document.getElementById('rdetail'), still=!!opts.still;
+  // A swap redraws in place: entrance animations stay off, scroll positions and the open panel are kept, and the
+  // sound and feel bars move from their old values.
+  const keep=still?{grid:el.closest('.rgrid')?.scrollTop||0,parts:el.querySelector('.rparts')?.scrollTop||0,sum:el.querySelector('.rsum')?.scrollTop||0,
+    bars:[...el.querySelectorAll('.rsf-row')].map(x=>x.querySelector('.rsf-fill')?.style.getPropertyValue('--v')??null)}:null;
+  el.classList.toggle('still',still);
   el.innerHTML=`<button class="iconbtn rclose" id="rclose" aria-label="Close">${icon('close')}</button>
     <div class="rsum swapin">
       ${note?`<p class="rnote" role="status">${esc(note.text)}</p>`:''}
       <div class="board">${caseVisual(b,'detail')}</div>
       <div><h2>${esc(partName(c))}</h2></div>
-      <div class="total"><b>${money(r.t)}</b><span>approx. total</span></div>
+      <div class="total"><b class="${opts.bump&&opts.bump.t!==r.t?'bump':''}">${money(r.t)}</b><span>approx. total${budgetText(r.t)}</span></div>
+      <p class="rfit ${fit.level}"${fit.title?` title="${esc(fit.title)}"`:''}><i aria-hidden="true"></i>${esc(fit.text)}</p>
+      ${ed&&(ed.undo.length||r.custom)?`<div class="redit"><span>${r.custom?(r0.shared?'Changed from the shared build':'Changed from the recommended build'):'Back to the '+(r0.shared?'shared':'recommended')+' build'}</span><button type="button" id="rundo" ${ed.undo.length?'':'disabled'}>${icon('undo')}Undo</button>${r.custom?`<button type="button" id="rreset">Reset</button>`:''}</div>`:''}
       <p class="rcap"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 8h11M9 4l4 4-4 4"/></svg>Made of the ${nParts} parts listed <span class="rcap-w">on the right</span><span class="rcap-n">below</span></p>
-      <div class="stats3"><div><span>Match</span><b class="match-score" style="--match-color:${matchColor(r.pct)}">${r.pct}%</b></div><div><span>Sound</span><b>${pitchWord(r.e.pitch)}</b></div><div><span>Feel</span><b>${esc(s?s.type:'As shipped')}</b></div></div>
+      <div class="stats3"><div><span>Match</span><b class="match-score${opts.bump&&opts.bump.pct!==r.pct?' bump':''}" style="--match-color:${matchColor(r.pct)}">${r.pct}%</b></div><div><span>Sound</span><b>${pitchWord(r.e.pitch)}</b></div><div><span>Feel</span><b>${esc(s?s.type:'As shipped')}</b></div></div>
       ${sf}
       <div class="ractions"><button class="btn primary" id="rbuild">Customize this build</button><button class="btn" id="rcopy">Copy parts list</button><button class="btn rshare" id="rshare" aria-label="Share build: copy a link to it"><span class="rs-a">${icon('link')}Share</span><span class="rs-b" aria-hidden="true">${icon('tick')}Copied</span></button></div>
       <span class="vh" role="status" id="rsharemsg"></span>
@@ -2366,6 +2530,16 @@ function renderRDetail(){
     </div>
     <div class="rparts swapin"><div class="phead"><h3>Parts in this build</h3></div>${affNote()}
       ${rows.join('')}</div>`;
+  if(keep){const g=el.closest('.rgrid'); if(g) g.scrollTop=keep.grid; el.querySelector('.rparts').scrollTop=keep.parts; el.querySelector('.rsum').scrollTop=keep.sum;
+    const fills=[...el.querySelectorAll('.rsf-row')].map(x=>x.querySelector('.rsf-fill'));
+    fills.forEach((f,i)=>{const was=keep.bars[i], now=f&&f.style.getPropertyValue('--v'); if(f&&was&&was!==now){f.style.setProperty('--v',was); void f.offsetWidth; f.style.setProperty('--v',now)}})}
+  el.querySelectorAll('.part [data-swap]').forEach(btn=>btn.onclick=()=>{const row=btn.closest('.part'), k={slot:row.dataset.slot,id:row.dataset.id||null};
+    const same=swapOpen&&swapOpen.slot===k.slot&&swapOpen.id===k.id; closeSwap(el); if(!same){swapOpen={...k,n:SWAP_PAGE}; showSwap(el,r0); if(window.ThockUI?.keyboardUsed) el.querySelector('.swaps .swopt')?.focus({preventScroll:true})}});
+  if(swapOpen) showSwap(el,r0,true);
+  if(opts.swapped){const row=el.querySelector(`.part[data-slot="${opts.swapped.slot}"][data-id="${CSS.escape(opts.swapped.id||'')}"]`); if(row) row.classList.add('swapped')}
+  if(opts.say) el.querySelector('#rsharemsg').textContent=opts.say;
+  const ru=el.querySelector('#rundo'); if(ru) ru.onclick=()=>{const e=resCustom.get(r0.b.case); if(!e||!e.undo.length) return; const was=resView(r0); e.b=e.undo.pop(); swapOpen=null; redrawSwap(r0,was,'Undone')};
+  const rs=el.querySelector('#rreset'); if(rs) rs.onclick=()=>{const e=resCustom.get(r0.b.case); if(!e) return; const was=resView(r0); e.undo.push(e.b); e.b=r0.b; swapOpen=null; redrawSwap(r0,was,`Reset to the ${r0.shared?'shared':'recommended'} build`)};
   el.querySelector('#rclose').onclick=closeResults;
   el.querySelector('#rbuild').onclick=()=>{build={...b,extras:[...b.extras],name:`My ${partName(c)} build`}; persist(); closeResults(); go('build'); toast('Loaded into the builder')};
   el.querySelector('#rcopy').onclick=e=>copyText(partsText({...b,name:`${partName(c)} build`}),el.querySelector('#rcopyfb'),e.currentTarget);
