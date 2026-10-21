@@ -6,6 +6,28 @@ import '../assets/part-names.js';
 import {normalize,builderPart,SOURCES} from '../scripts/catalog-lib.mjs';
 const {name,part}=globalThis.SwitchdeckNames;
 
+test('extras show the product identity without synonym lists or package options',()=>{
+  const title='lubricating grease oil lube lubricant mechanical keyboard stabilizer krytox NLGI Grade2 · G205 5g';
+  const p=part({name:title,brand:'KPrepublic',cat:'extras',price:8,retailers:[{url:'https://example.com/products/lubricant?variant=205'}]});
+  assert.equal(`${p.brand} ${p.name}`,'KPrepublic Lubricant');
+  assert.equal(p.sourceName,title);
+  assert.equal(p.price,8);
+  assert.match(p.retailers[0].url,/variant=205$/);
+  assert.equal(name('Krytox 205g0 Lubricant · 5g / 10g / 20g','extras','Krytox'),'205g0 Lubricant');
+  assert.equal(name('TX Switch Films 0.15mm thin PC material for mechanical keyboards · 110pcs','extras','TX'),'Switch Films');
+  assert.equal(name('Gateron Switch Opener with aluminum housing · Red','extras','Gateron'),'Switch Opener');
+});
+
+test('the entire title stays compact across categories, including future imports',()=>{
+  for(const cat of ['case','pcbs','plates','switches','keycaps','stabs','extras']){
+    const title='A Very Long Product Name With Many Words · A Very Long Selected Variant · More Marketing Words';
+    assert.ok(name(title,cat).length<=48,cat);
+    assert.ok(name('X'.repeat(100),cat).length<=48,cat+' unbroken title');
+  }
+  assert.equal(name('DZ60 RGB V2 PCB with USB C and programmable lighting','pcbs'),'DZ60 RGB V2 PCB');
+  assert.equal(name('Tofu65 Brass Plate compatible with multiple layouts','plates'),'Tofu65 Brass Plate');
+});
+
 test('store control labels never become truncated product names',()=>{
   assert.equal(name('[Only Keycap] Pudding doubleshot keycap V2 pbt oem backlit for keyboard','keycaps'),'Pudding V2');
   assert.equal(name('[GBEXTRAS] Domikey Silent Sea Keycaps','keycaps'),'Domikey Silent Sea');
@@ -45,7 +67,7 @@ test('existing catalog names stay nonempty and normalization preserves purchase 
   vm.runInNewContext(await readFile(new URL('../data/builder-catalog.js',import.meta.url),'utf8'),ctx);
   const parts=Object.values(ctx.window.SWITCHDECK_CATALOG).filter(Array.isArray).flat();
   assert.ok(parts.length>1000);
-  for(const p of parts){const n=part(p);assert.ok(n.name.trim(),p.id);assert.deepEqual(part(n),n,'idempotent '+p.id);for(const key of Object.keys(p).filter(k=>k!=='name'))assert.deepEqual(n[key],p[key],p.id+' '+key)}
+  for(const p of parts){const n=part(p);assert.ok(n.name.trim(),p.id);assert.ok(n.name.length<=48,p.id+' compact title');assert.deepEqual(part(n),n,'idempotent '+p.id);for(const key of Object.keys(p).filter(k=>k!=='name'))assert.deepEqual(n[key],p[key],p.id+' '+key)}
   const lake=parts.find(p=>/Taihao Blue Glacial Lake/.test(p.name));
   assert.equal(part(lake).name,'Taihao Blue Glacial Lake');
 });
@@ -56,3 +78,4 @@ test('future imports use the same names without changing source titles or specs'
   assert.equal(listing.name,raw.title);assert.equal(listing.displayName,'Oil King');
   const builder=builderPart(listing);assert.equal(builder.name,'Oil King');assert.equal(builder.pins,5);assert.equal(builder.force,55);assert.match(builder.retailers[0].url,/variant=456$/);
 });
+
