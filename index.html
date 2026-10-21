@@ -258,7 +258,7 @@ h1,h2,h3{text-wrap:balance;margin:0;font-weight:700;letter-spacing:-.02em}
 .rlist .rthumb svg,.rlist .rthumb img{width:100%;height:auto}
 .rlist b{display:block;font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .rlist small{font-size:12.5px;color:var(--muted)}
-.rlist .best{font-size:11.5px;background:var(--surface);border-radius:6px;padding:4px 8px;box-shadow:inset 0 0 0 1px var(--line);white-space:nowrap}
+.rlist .best{font-size:11.5px;border-radius:6px;padding:4px 8px;box-shadow:inset 0 0 0 1px var(--line);white-space:nowrap}
 .rdetail .swapin{animation:fade .35s var(--ease) both}
 
 /* BUILDER */
@@ -438,8 +438,22 @@ h1,h2,h3{text-wrap:balance;margin:0;font-weight:700;letter-spacing:-.02em}
 .stats3 span{font-size:11.5px;line-height:1.2;color:var(--muted)}
 .stats3 b{font-size:14px;line-height:1.25;font-weight:500;color:var(--ink-2);letter-spacing:-.005em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .stats3 div:first-child b{font-size:19px;line-height:1.1;font-weight:600;color:var(--ink);letter-spacing:-.025em}
-.rsum .ractions{grid-template-columns:1fr auto}
+.rsum .ractions{grid-template-columns:1fr auto auto}
 .rsum .ractions .btn.primary{grid-column:auto}
+/* Share: the label lifts away and "Copied" settles in its place; both share one cell so the button keeps its width. */
+.rshare{display:inline-grid;place-items:center}
+.rshare>span{grid-area:1/1;display:inline-flex;align-items:center;gap:6px;transition:opacity .22s var(--ease),transform .45s var(--out)}
+.rshare svg{flex:none;width:13px;height:13px}
+.rshare .rs-b{opacity:0;transform:translateY(7px)}
+.rshare .rs-b svg{color:var(--ok)}
+.rshare.copied .rs-a{opacity:0;transform:translateY(-7px)}
+.rshare.copied .rs-b{opacity:1;transform:none}
+@media (max-width:480px){.rsum .ractions{grid-template-columns:1fr 1fr}.rsum .ractions .btn.primary{grid-column:1 / -1}}
+.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.rnote{margin:0;padding:10px 12px;border-radius:10px;background:var(--info-soft);color:var(--ink-2);font-size:12.5px;line-height:1.45}
+.part.gone .pt{background:repeating-linear-gradient(135deg,var(--tile) 0 6px,transparent 6px 12px);box-shadow:inset 0 0 0 1px var(--line)}
+.part.gone .pn b{color:var(--muted);font-weight:500}
+.part.gone .pp{color:var(--faint);font-weight:500}
 .rsum .rcap{margin:-8px 0 0;font-size:12.5px;color:var(--muted);line-height:1.3}
 .rsum .rcap svg{width:12px;height:12px;margin-right:6px;vertical-align:-1px;color:var(--faint)}
 .rcap-n{display:none}
@@ -654,6 +668,7 @@ a.listen.watch:hover{background:rgba(68,64,60,.16)}
 <div class="toast" id="toast" hidden role="status"></div>
 
 <script src="assets/part-names.js"></script>
+<script src="assets/share-code.js"></script>
 <script src="assets/affiliates.js"></script>
 <script src="data/sound-videos.js"></script>
 <script src="assets/product-links.js"></script>
@@ -1353,7 +1368,10 @@ function go(v,push=true){
   if(push&&location.hash!=='#'+v){try{history.pushState(null,'','#'+v)}catch(e){}}
   window.scrollTo({top:0}); onScroll();
 }
-window.addEventListener('hashchange',()=>{const v=location.hash.slice(1);if(v!==view)go(v,false)});
+window.addEventListener('hashchange',()=>{
+  if(location.hash.startsWith(SHARE_HASH)){openShare(location.hash.slice(SHARE_HASH.length));return}
+  if(!document.getElementById('results').hidden) closeResults();
+  const v=location.hash.slice(1);if(v!==view)go(v,false)});
 function onScroll(){document.body.classList.toggle('has-scroll',view!=='finder'&&window.scrollY>8)}
 window.addEventListener('scroll',onScroll,{passive:true});
 document.addEventListener('click',e=>{const g=e.target.closest('[data-go]'); if(g){e.preventDefault(); go(g.dataset.go)}});
@@ -1995,7 +2013,8 @@ function icon(name){return {
   back:'<svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 9H3M8 4L3 9l5 5"/></svg>',
   reset:'<svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9a6 6 0 0 1 10.4-4.1L15 6.5M15 2.5v4h-4M15 9a6 6 0 0 1-10.4 4.1L3 11.5M3 15.5v-4h4"/></svg>',
   tick:'<svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 5.2l2 2L8 3"/></svg>',
-  close:'<svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><path d="M2 2l10 10M12 2L2 12"/></svg>'}[name]}
+  close:'<svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><path d="M2 2l10 10M12 2L2 12"/></svg>',
+  link:'<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6.8 9.2a3 3 0 0 0 4.2 0l2.3-2.3a3 3 0 0 0-4.2-4.2l-.9.9M9.2 6.8a3 3 0 0 0-4.2 0L2.7 9.1a3 3 0 0 0 4.2 4.2l.9-.9"/></svg>'}[name]}
 function renderQuiz(){
   stopClip();
   const card=document.getElementById('qcard'), wrapEl=document.getElementById('qwrap');
@@ -2135,9 +2154,23 @@ document.addEventListener('keydown',e=>{
    RESULTS
    ========================================================= */
 let resList=[], resIdx=0;
-function openResults(caseId){
-  resList=evalAns(quizAns).list; if(!resList.length) return; rShown=60;
+// Builds changed on the results screen (opened from a link, or swapped), by the board each list entry started with.
+// They last until the answers change.
+let resCustom=new Map(), resCustomFor='', resNotes=new Map();
+function openResults(caseId,opts={}){
+  const key=JSON.stringify(quizAns); if(key!==resCustomFor){resCustom=new Map(); resCustomFor=key} resNotes=new Map();
+  const base=evalAns(quizAns).list; resList=[...base]; rShown=60;
+  const sh=opts.share;
+  if(sh&&caseOf(sh.b)){
+    let i=resList.findIndex(r=>r.b.case===sh.b.case);
+    if(i<0){resList.unshift(sharedEntry(sh.b)); i=0}
+    else if(buildKey(sh.b)!==buildKey(resList[i].b)) resCustom.set(sh.b.case,{b:sh.b,undo:[],share:true});
+    else resCustom.delete(sh.b.case);
+    caseId=sh.b.case; resNotes.set(sh.b.case,shareNote(sh));
+  }
+  if(!resList.length){ if(sh) toast("That build's keyboard is no longer listed, and nothing else matches its answers."); return }
   resIdx=caseId?Math.max(0,resList.findIndex(r=>r.b.case===caseId)):0;
+  if(sh&&!caseOf(sh.b)) resNotes.set(resList[resIdx].b.case,{text:'The keyboard in this link is no longer listed. These are the current matches for the same answers.'});
   const el=document.getElementById('results'); el.hidden=false; document.body.classList.add('lock');
   el.innerHTML=`<div class="rscrim" id="rscrim"><div class="rgrid" role="dialog" aria-modal="true" aria-label="Your matches"><div class="card rdetail" id="rdetail"></div><div class="card rlist" id="rlist"></div></div></div>`;
   el.querySelector('#rscrim').addEventListener('click',e=>{if(e.target.id==='rscrim') closeResults()});
@@ -2145,7 +2178,88 @@ function openResults(caseId){
 }
 function closeResults(){
   const el=document.getElementById('results'), s=el.querySelector('.rscrim'); if(!s) return;
+  if(location.hash.startsWith(SHARE_HASH)){try{history.replaceState(null,'','#finder')}catch(e){}}
   s.classList.add('closing'); setTimeout(()=>{el.hidden=true; el.innerHTML=''; document.body.classList.remove('lock')},220);
+}
+/* Share links: #b=<code> (format in assets/share-code.js). Opening one restores the answers and shows that exact
+   build on the results screen; parts the catalog no longer has stay empty with a note, never replaced. */
+const SHARE_HASH='#b=';
+const shareUrl=b=>location.origin+location.pathname+SHARE_HASH+SwitchdeckShare.encode(b,quizAns,QUESTIONS);
+function readShare(code){
+  let d; try{d=SwitchdeckShare.decode(code,QUESTIONS)}catch(e){return null}
+  const missing=['case','pcb','plate','switches','stabs','keycaps'].filter(k=>d.b[k]&&BYID[d.b[k]]?.cat!==k);
+  const lostExtras=d.b.extras.filter(id=>BYID[id]?.cat!=='extras').length;
+  const b=cleanBuild({...d.b,name:''}), colorReset=!missing.includes('case')&&b.color!==d.b.color;
+  return {b,ans:cleanAnswers(d.ans),missing,lostExtras,colorReset};
+}
+function openShare(code){
+  const sh=readShare(code);
+  if(!sh){toast("That build link couldn't be read. Check it was copied in full."); try{history.replaceState(null,'','#finder')}catch(e){} if(view!=='finder') go('finder',false); return}
+  quizAns=sh.ans; store.set('sy.quiz',quizAns); quizStep=QUESTIONS.length; qDir=1;
+  const res=document.getElementById('results'); if(!res.hidden){res.hidden=true; res.innerHTML=''}
+  if(view!=='finder') go('finder',false); else renderQuiz();
+  openResults(null,{share:sh});
+}
+async function copyLink(url){
+  try{await navigator.clipboard.writeText(url); return true}catch(e){}
+  try{const t=document.createElement('textarea'); t.value=url; t.setAttribute('readonly',''); t.style.cssText='position:fixed;top:0;left:0;opacity:0;pointer-events:none';
+    document.body.appendChild(t); t.select(); t.setSelectionRange(0,url.length); const ok=document.execCommand('copy'); t.remove(); if(ok) return true}catch(e){}
+  return false;
+}
+/* Scores. buildScore rates any build against the answers with the finder's own terms (sound target, part quality,
+   use, budget, compatibility notes, mods) and adds penalties for what the finder filters out instead of scoring, such
+   as a switch of another feel. A changed build keeps its entry's finder score and moves by the difference in
+   buildScore, so an unchanged build shows exactly the finder's match. */
+function buildScore(b,ans=quizAns){
+  const c=caseOf(b); if(!c) return 0;
+  const T=SOUND_T[ans.sound]||{p:45,v:50}, budget=typeof ans.budget==='number'&&ans.budget<B_MAX?ans.budget:null;
+  const feel=ans.feel&&ans.feel!=='any'?ans.feel:null, look=ans.look&&ans.look!=='any'&&ans.look!=='surprise'?ans.look:null;
+  const L=ans.layout&&ans.layout!=='any'?ans.layout:null;
+  const sw=BYID[b.switches], kc=BYID[b.keycaps], t=total(b), e=estimate({...b,extras:[]});
+  let sc=100-Math.abs(e.pitch-T.p)*.7-Math.abs(e.vol-T.v)*.45;
+  if(c.assembled){sc-=6; if(feel) sc-=4; if(look) sc-=4}
+  else{
+    if(sw) sc+=swQuality(sw,ans);
+    if(kc){sc+=kcQuality(kc,look); if(!kc.covers) sc-=3; else if(!kc.covers.includes(c.layout)) sc-=4}
+    const pcb=effPcb(b); if(pcb&&(pcb.hotswap===false||(pcb.hotswap==null&&!c.catalogId))) sc-=8;
+    if(c.catalogId) sc-=3;
+  }
+  if(c.soldOut) sc-=10;
+  if(ans.use==='gaming'&&(c.layout==='60'||c.layout==='65')) sc+=3;
+  if(ans.use==='work'&&(c.layout==='75'||c.layout==='tkl'||c.layout==='full')) sc+=3;
+  sc-=budget?Math.max(0,(budget*.5-t)/budget)*20:t/60;
+  if(budget&&t>budget) sc-=10+(t-budget)/budget*40;
+  if(feel&&sw&&!feelOk(sw,feel)) sc-=12;
+  if(look&&kc&&!(kc.mood||[]).includes(look)) sc-=6;
+  if(L&&c.layout!==L) sc-=15;
+  const wl=/tri|blue|2\.4|wireless/i.test(c.conn); if((ans.wireless==='yes'&&!wl)||(ans.wireless==='wired'&&wl)) sc-=12;
+  if(ans.solder==='hotswap'&&effPcb(b)?.hotswap!==true) sc-=10;
+  const iss=compat(b); sc-=iss.filter(i=>i.level==='warn').length*5+iss.filter(i=>i.level==='fail').length*25;
+  const mods=(b.extras||[]).map(id=>BYID[id]).filter(m=>m&&m.mod);
+  if(mods.length){const T0=SOUND_T[ans.sound], gain=(T0?soundGap(e,T0)-soundGap(estimate(b),T0):0)+(mods.some(m=>m.fx?.rattle)&&!c.assembled?1.6:0);
+    sc+=Math.max(-12,Math.min(gain,6*mods.length))*.5}
+  return sc;
+}
+const pctOf=sc=>{const top=evalAns(quizAns).list[0]; return Math.max(40,Math.min(99,Math.round(99-((top?top.sc:sc)-sc)*0.9)))};
+const buildKey=b=>JSON.stringify([b.case,b.color||0,b.pcb,b.plate,b.switches,b.stabs,b.keycaps,[...(b.extras||[])].sort()]);
+// A shared build whose board the finder doesn't list for these answers: scored against the top match.
+function sharedEntry(b){
+  const top=evalAns(quizAns).list[0], sc=top?top.sc+buildScore(b)-buildScore(top.b):buildScore(b);
+  return {b,sc,t:total(b),e:estimate(b),pct:pctOf(sc),shared:true};
+}
+// What the list entry shows now: the finder's build, or the changed one rescored.
+function resView(r){
+  const ed=resCustom.get(r.b.case); if(!ed) return r;
+  const b=ed.b, sc=r.sc+buildScore(b)-buildScore(r.b);
+  return {b,sc,t:total(b),e:estimate(b),pct:pctOf(sc),shared:r.shared||!!ed.share,custom:true,base:r};
+}
+// What a link named that the catalog no longer has. Nothing is put in a missing part's place.
+function shareNote(sh){
+  const SL=k=>SLOTS.find(x=>x.key===k).label.toLowerCase(), n=sh.missing.length+(sh.lostExtras?1:0);
+  if(!n&&!sh.colorReset) return null;
+  const what=[...sh.missing.map(SL),...(sh.lostExtras?[sh.lostExtras===1?'one extra':`${sh.lostExtras} extras`]:[])];
+  const list=what.length>1?what.slice(0,-1).join(', ')+' and '+what.at(-1):what[0], many=what.length>1||sh.lostExtras>1;
+  return {text:'Opened from a shared link.'+(n?` The ${list} in it ${many?'are':'is'} no longer listed. Nothing was put in ${many?'their':'its'} place, and the total leaves ${many?'them':'it'} out.`:'')+(sh.colorReset?' Its case color is no longer offered, so the first color is shown.':''),missing:sh.missing};
 }
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!document.getElementById('results').hidden) closeResults()});
 let rShown=60;
@@ -2162,12 +2276,12 @@ function matchColor(score){
 function renderRList(){
   const el=document.getElementById('rlist'); rShown=Math.max(rShown,resIdx+1);
   const shown=resList.slice(0,rShown);
-  el.innerHTML=shown.map((r,i)=>{const c=caseOf(r.b);return `<button style="--i:${i};--match-color:${matchColor(r.pct)}" data-ri="${i}" aria-current="${i===resIdx}"><span class="rthumb">${caseVisual(r.b,'thumb')}</span><span style="min-width:0"><b>${esc(partName(c))}</b><small>${money(r.t)}${c.soldOut?' · Sold out':''}</small></span>${i===0?'<span class="best match-score">Best match</span>':`<small class="pct match-score">${r.pct}%</small>`}</button>`}).join('')+(resList.length>rShown?`<button class="rmore" id="rmore" style="grid-template-columns:1fr;text-align:center"><small>Show more (${resList.length-rShown} left)</small></button>`:'');
+  el.innerHTML=shown.map((r0,i)=>{const r=resView(r0), c=caseOf(r.b), tag=r.shared?' · Shared':r.custom?' · Edited':'';return `<button style="--i:${i};--match-color:${matchColor(r.pct)}" data-ri="${i}" aria-current="${i===resIdx}"><span class="rthumb">${caseVisual(r.b,'thumb')}</span><span style="min-width:0"><b>${esc(partName(c))}</b><small>${money(r.t)}${c.soldOut?' · Sold out':''}${tag}</small></span>${i===0&&!r.custom&&!r.shared?'<span class="best match-score">Best match</span>':`<small class="pct match-score">${r.pct}%</small>`}</button>`}).join('')+(resList.length>rShown?`<button class="rmore" id="rmore" style="grid-template-columns:1fr;text-align:center"><small>Show more (${resList.length-rShown} left)</small></button>`:'');
   const more=el.querySelector('#rmore'); if(more) more.onclick=()=>{rShown+=60; const st=el.scrollTop; renderRList(); el.scrollTop=st};
   el.querySelectorAll('[data-ri]').forEach(b=>b.onclick=()=>{resIdx=+b.dataset.ri; el.querySelectorAll('[data-ri]').forEach(x=>x.setAttribute('aria-current',x===b)); renderRDetail()});
 }
 function renderRDetail(){
-  const r=resList[resIdx], b=r.b, c=caseOf(b), s=BYID[b.switches];
+  const r0=resList[resIdx], r=resView(r0), b=r.b, c=caseOf(b), s=BYID[b.switches], note=resNotes.get(r0.b.case);
   const items=lineItems(b), SL=k=>SLOTS.find(x=>x.key===k).label;
   const sub=i=>i.slot==='switches'?`${i.qty} × ${money(i.part.price)}`:i.slot==='keycaps'&&i.addon?`incl. ${money(i.addon)} numpad kit`:i.slot==='stabs'?`${layoutOf(b)==='full'?7:5}-stab set`:'';
   const desc=p=>p.cat==='case'?[LAYOUT_NAMES[p.layout],p.material,p.mount&&p.mount+' mount',p.assembled?'sold assembled':p.kit&&'kit'].filter(Boolean).join(', '):p.cat==='switches'?[p.type,p.force&&`${p.force} g`,p.pins&&`${p.pins}-pin`].filter(Boolean).join(', '):p.cat==='keycaps'?[p.profile&&`${p.profile} profile`,p.material,p.legends].filter(Boolean).join(', '):p.cat==='pcb'?[p.hotswap===true?'Hot-swap':p.hotswap===false?'Solder':null,p.pins&&`${p.pins}-pin`].filter(Boolean).join(', '):p.cat==='plate'?p.material||'':p.blurb||'';
@@ -2178,6 +2292,8 @@ function renderRDetail(){
   if(c.assembled) rows.splice(1,0,`<div class="part inc" style="--i:1"><span class="pt">${pcbSVG(c.kit.pcb)}</span><div class="pn"><small>Included</small><b>Switches and keycaps, per the listing</b><em>Listed as a complete keyboard. Check ${esc(storeOf(c))} for which switches and keycaps it ships with.</em></div><div class="pp"><span class="chip ok">Included</span></div></div>`);
   else if(c.kit&&c.catalogId) rows.splice(1,0,`<div class="part inc" style="--i:1"><span class="pt">${pcbSVG(c.kit.pcb)}</span><div class="pn"><small>Kit</small><b>PCB and plate, per the listing</b><em>Check ${esc(storeOf(c))} for exactly what the ${esc(partName(c))} kit includes.</em></div><div class="pp"><span class="chip ok">Kit</span></div></div>`);
   else if(c.kit) rows.splice(1,0,`<div class="part inc" style="--i:1"><span class="pt">${pcbSVG(c.kit.pcb)}</span><div class="pn"><small>Included</small><b>PCB, ${esc(c.kit.plate)} plate${c.kit.stabs?' and stabilizers':''}</b><em>Comes with the ${esc(partName(c))}</em></div><div class="pp"><span class="chip ok">Included</span></div></div>`);
+  // Slots a shared link named but the catalog no longer has: shown empty, never filled with another part.
+  for(const k of note?.missing||[]) if(!b[k]&&needed(b,k)) rows.push(`<div class="part gone" style="--i:${rows.length}"><span class="pt"></span><div class="pn"><small>${esc(SL(k))}</small><b>No longer listed</b><em>The part in this link has left the catalog. Nothing was put in its place.</em></div><div class="pp">—</div></div>`);
   const nParts=items.length+(c.kit?1:0);
   // Sound and feel for this build, with a pin where the quiz's sound answer sits on pitch and volume.
   const T=SOUND_T[quizAns.sound], e=r.e;
@@ -2192,13 +2308,15 @@ function renderRDetail(){
   const el=document.getElementById('rdetail');
   el.innerHTML=`<button class="iconbtn rclose" id="rclose" aria-label="Close">${icon('close')}</button>
     <div class="rsum swapin">
+      ${note?`<p class="rnote" role="status">${esc(note.text)}</p>`:''}
       <div class="board">${caseVisual(b,'detail')}</div>
       <div><h2>${esc(partName(c))}</h2></div>
       <div class="total"><b>${money(r.t)}</b><span>approx. total</span></div>
       <p class="rcap"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 8h11M9 4l4 4-4 4"/></svg>Made of the ${nParts} parts listed <span class="rcap-w">on the right</span><span class="rcap-n">below</span></p>
       <div class="stats3"><div><span>Match</span><b class="match-score" style="--match-color:${matchColor(r.pct)}">${r.pct}%</b></div><div><span>Sound</span><b>${pitchWord(r.e.pitch)}</b></div><div><span>Feel</span><b>${esc(s?s.type:'As shipped')}</b></div></div>
       ${sf}
-      <div class="ractions"><button class="btn primary" id="rbuild">Customize this build</button><button class="btn" id="rcopy">Copy parts list</button></div>
+      <div class="ractions"><button class="btn primary" id="rbuild">Customize this build</button><button class="btn" id="rcopy">Copy parts list</button><button class="btn rshare" id="rshare" aria-label="Share build: copy a link to it"><span class="rs-a">${icon('link')}Share</span><span class="rs-b" aria-hidden="true">${icon('tick')}Copied</span></button></div>
+      <span class="vh" role="status" id="rsharemsg"></span>
       ${s?'':`<p class="note" style="margin:0">Sold assembled: its switches and keycaps come with it. Swap them in the builder to change the feel or look.</p>`}
       <textarea id="rcopyfb" hidden aria-label="Parts list" style="width:100%;min-height:80px;font-size:12px;background:var(--tile);border:0;border-radius:8px;padding:8px"></textarea>
     </div>
@@ -2207,9 +2325,16 @@ function renderRDetail(){
   el.querySelector('#rclose').onclick=closeResults;
   el.querySelector('#rbuild').onclick=()=>{build={...b,extras:[...b.extras],name:`My ${partName(c)} build`}; persist(); closeResults(); go('build'); toast('Loaded into the builder')};
   el.querySelector('#rcopy').onclick=()=>copyText(partsText({...b,name:`${partName(c)} build`}),el.querySelector('#rcopyfb'));
+  const sb=el.querySelector('#rshare'); let shareT;
+  sb.onclick=async()=>{
+    const url=shareUrl(b), msg=el.querySelector('#rsharemsg');
+    if(await copyLink(url)){clearTimeout(shareT); sb.classList.remove('copied'); void sb.offsetWidth; sb.classList.add('copied'); msg.textContent='Link copied';
+      shareT=setTimeout(()=>{sb.classList.remove('copied'); msg.textContent=''},1900)}
+    else{const fb=el.querySelector('#rcopyfb'); fb.hidden=false; fb.value=url; fb.focus(); fb.select(); toast('Select the link and copy it')}
+  };
   const rr=el.querySelector('#reroll'); if(rr) rr.onclick=()=>{
     quizAns.seed=Math.floor(Math.random()*1e6); store.set('sy.quiz',quizAns);
-    const id=c.id; resList=evalAns(quizAns).list; resIdx=Math.max(0,resList.findIndex(x=>x.b.case===id)); renderRList(); renderRDetail(); layoutField();
+    const id=c.id; resCustom.delete(r0.b.case); resList=evalAns(quizAns).list; resIdx=Math.max(0,resList.findIndex(x=>x.b.case===id)); renderRList(); renderRDetail(); layoutField();
   };
 }
 
@@ -2481,13 +2606,18 @@ window.SwitchdeckBuilder={
   add:(id,url)=>{const parts=window.SwitchdeckBuilder.parts(id,url);if(!parts.length){toast('This variant is not available in the builder');return}const p=parts.find(p=>!p.soldOut)||parts[0];go('build');choose(p.cat,p)}
 };
 // Discard obsolete or malformed quiz answers while retaining valid choices across refreshes.
-for(const key of Object.keys(quizAns)){
-  const q=QUESTIONS.find(q=>q.key===key);
-  if(key==='seed'){if(!Number.isFinite(quizAns[key]))delete quizAns[key];continue}
-  if(!q||(q.budget?!((Number.isFinite(quizAns[key])&&quizAns[key]>=B_MIN&&quizAns[key]<=B_MAX)||quizAns[key]==='any'):!q.opts.some(o=>o.v===quizAns[key])))delete quizAns[key];
+function cleanAnswers(a){
+  for(const key of Object.keys(a)){
+    const q=QUESTIONS.find(q=>q.key===key);
+    if(key==='seed'){if(!Number.isFinite(a[key]))delete a[key];continue}
+    if(!q||(q.budget?!((Number.isFinite(a[key])&&a[key]>=B_MIN&&a[key]<=B_MAX)||a[key]==='any'):!q.opts.some(o=>o.v===a[key])))delete a[key];
+  }
+  return a;
 }
+cleanAnswers(quizAns);
 {const n=document.getElementById('affnote'); if(globalThis.SwitchdeckLinks.hasAffiliates()){n.textContent=AFF_NOTE; n.hidden=false}}
 go(['finder','build','saved','directory'].includes(start)?start:'finder',false);
+if(location.hash.startsWith(SHARE_HASH)) openShare(location.hash.slice(SHARE_HASH.length));
 renderPill();
 </script>
 </html>
