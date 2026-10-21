@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
-import {normalize,packQuantity,layoutFromName,admit,builderPart,catalogParts,admissionReport,keycapBase,extraKind,EXTRA_KINDS,SOURCES} from '../scripts/catalog-lib.mjs';
+import {normalize,packQuantity,layoutFromName,admit,builderPart,catalogParts,admissionReport,keycapBase,extraKind,EXTRA_KINDS,SOURCES,modOf,MOD_TYPES} from '../scripts/catalog-lib.mjs';
 
 const source=SOURCES[1];
 const when='2026-10-19T00:00:00Z';
@@ -126,7 +126,7 @@ test('every listing is admitted or excluded for a named reason, and the report a
     assert.ok(r.parts?.length||(typeof r.reason==='string'&&r.reason.length>3),p.id+' has neither a part nor a reason');
     if(r.parts) for(const part of r.parts) {
       assert.equal(!!part.soldOut,part.retailers[0].available===false,p.id);
-      if(part.cat==='extras'){assert.ok(EXTRA_KINDS.includes(part.kind),p.id);assert.deepEqual(part.fx,{})}
+      if(part.cat==='extras'){assert.ok(EXTRA_KINDS.includes(part.kind),p.id);const m=modOf(part.kind,part.name);assert.equal(part.mod,m??undefined,p.id);assert.deepEqual(part.fx,m?MOD_TYPES[m].fx:{},p.id+' fx only from its mod type')}
     }
   }
   for(const [cat,r] of Object.entries(rep)) {

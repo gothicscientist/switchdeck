@@ -492,12 +492,48 @@ function stabsRule(p) {
   return {parts:{...base(p,v),cat:'stabs',mount,fullPrice:full?full.price:v.price,blurb:'Published retailer listing.'+(full?'':' Check the set has enough stabilizers for a full-size board.')}};
 }
 
-// ---- extras ----
+// ---- extras: sound mods ----
+// The mod type comes from the listing name. Its effect is the usual community result for that kind of mod
+// (sources in docs/mod-sounds.md), on the builder's sound-estimate scale: pitch and vol move the meters, rattle
+// marks stabilizer fixes, poppy marks the marbly PE sound. Anything else is not a sound mod and has no effect.
+export const MOD_TYPES={
+  'case-foam':{label:'Case foam',fx:{pitch:-5,vol:-8},why:'Fills the empty case. Less hollow echo, quieter and deeper.'},
+  'plate-foam':{label:'Plate foam',fx:{pitch:-3,vol:-4},why:'Sits between plate and PCB. Softens the ring of the plate.'},
+  'switch-pad':{label:'PE switch pads',fx:{pitch:5,vol:-1,poppy:true},why:'Thin PE under the switches. A higher, poppier, marbly sound.'},
+  'o-ring':{label:'O-rings',fx:{pitch:-2,vol:-6},why:'Cushion each key at the bottom. Much quieter, with a softer landing.'},
+  'switch-film':{label:'Switch films',fx:{pitch:-1,vol:-1},why:'Tighten loose switch housings. Less wobble and rattle, slightly fuller.'},
+  'switch-lube':{label:'Switch lube',fx:{pitch:-3,vol:-3},why:'Smooths each stroke. Less scratch, a deeper, more muted sound.'},
+  'spring-oil':{label:'Spring oil',fx:{vol:-1},why:'For the springs. Removes spring ping.'},
+  'stab-lube':{label:'Stabilizer lube',fx:{vol:-1,rattle:true},why:'For the stabilizer wires. Stops the rattle on the long keys.'},
+};
+export function modOf(kind,name){
+  const n=String(name||'');
+  if(kind==='Lube'){
+    if(/stabili[sz]er|dielectric|xht-?bdz/i.test(n)) return 'stab-lube';
+    if(/205\s?g0|g205|206\s?g|320[34]|tribosys/i.test(n)) return 'switch-lube';
+    if(/gpl\s?10[0-7]|\boil\b/i.test(n)) return 'spring-oil';
+    if(/krytox/i.test(n)) return 'switch-lube';
+    return null;
+  }
+  if(kind==='Switch films') return /\bPE\b|pe-white|0\.5\s?mm|ixpe/i.test(n)?'switch-pad':'switch-film';
+  if(kind==='Foam'){
+    if(/o-?rings?|pro rings|dampening rings?/i.test(n)) return 'o-ring';
+    if(/switch pads?|tripods?|ixpe|\bPE\b(?! film)|pe foam|switch film/i.test(n)) return 'switch-pad';
+    if(/spacebar|stabili[sz]er|stem foam|rubber strip/i.test(n)) return null; // no published sound effect found
+    if(/plate foam|pcb.?plate|plate.?pcb|between (?:the )?plate/i.test(n)) return 'plate-foam';
+    if(/gasket|mount dampener|\bno foam\b/i.test(n)) return null;
+    if(/pcb foam/i.test(n)) return 'plate-foam';
+    if(/case foam|bottom (?:pad|foam)|\bEPT\b|sound dampening|noise absorption|silicone (?:dampener|bottom)|dampener|foam kit|foams?\b/i.test(n)) return 'case-foam';
+  }
+  return null;
+}
+
+// ---- extras: listing rule ----
 function extrasRule(p) {
   if(JUNK.test(p.name)) return {reason:'not a keyboard part'};
   const vs=pool(p); if(!vs.length) return {reason:'not a keyboard part'};
-  const v=cheapest(vs), kind=extraKind(p.name,v.name);
-  return {parts:{...base(p,v),cat:'extras',name:p.name+(v.name==='Default Title'?'':' · '+v.name),kind,fx:{},blurb:'Retailer listing for the named variant. No sound effect is assumed.'}};
+  const v=cheapest(vs), kind=extraKind(p.name,v.name), name=p.name+(v.name==='Default Title'?'':' · '+v.name), mod=modOf(kind,name);
+  return {parts:{...base(p,v),cat:'extras',name,kind,...(mod?{mod}:{}),fx:mod?{...MOD_TYPES[mod].fx}:{},blurb:mod?MOD_TYPES[mod].why:'Retailer listing for the named variant. No sound effect is assumed.'}};
 }
 
 // ---- keyboards (assembled boards and kits) ----

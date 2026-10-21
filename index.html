@@ -321,6 +321,13 @@ h1,h2,h3{text-wrap:balance;margin:0;font-weight:700;letter-spacing:-.02em}
 .meter .bar i{position:absolute;top:50%;width:14px;height:14px;border-radius:50%;background:var(--surface);box-shadow:0 1px 3px rgba(0,0,0,.25),inset 0 0 0 4px var(--accent);transform:translate(-50%,-50%);transition:left .7s var(--out)}
 .meter .ends{display:flex;justify-content:space-between;font-size:11px;color:var(--faint)}
 .railacts{display:flex;gap:8px;flex-wrap:wrap}
+.modcard .note{margin:-4px 0 4px}
+.modrow{display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
+.modrow .thumb{width:44px;height:33px;display:grid;place-items:center;border-radius:6px;background:var(--tile);overflow:hidden}
+.modrow small{display:block;font-size:11.5px;color:var(--faint)}
+.modrow b{display:block;font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.modrow em{display:block;font-style:normal;font-size:12px;color:var(--muted);line-height:1.35}
+.modbuy{display:flex;flex-direction:column;align-items:flex-end;gap:4px;font-size:13px}
 .note{font-size:12px;color:var(--muted)}
 
 /* picker sheet */
@@ -803,10 +810,10 @@ const STABS = [
 ];
 
 const EXTRAS = [
-  {id:'casefoam',cat:'extras',brand:'Various',name:'Poron case foam',kind:'Foam',price:12,fx:{pitch:-6,vol:-10},blurb:'Fills the case cavity. Cuts hollow ping.'},
-  {id:'pefoam',cat:'extras',brand:'Various',name:'PE foam sheet (switch pad mod)',kind:'Foam',price:8,fx:{pitch:5,vol:-2,poppy:true},blurb:'Thin layer under the switches for a poppier, marbly sound.'},
-  {id:'tapemod',cat:'extras',brand:'Various',name:'Tape mod (painter\'s tape)',kind:'Mod',price:5,fx:{pitch:-5,vol:-4},blurb:'Two or three layers on the back of the PCB. Deepens the sound.'},
-  {id:'krytox',cat:'extras',brand:'Krytox',name:'205g0 switch lube, 5 ml',kind:'Lube',price:10,fx:{pitch:-3,vol:-3},blurb:'Standard grease for linear switches. Plan an evening to lube a set.'},
+  {id:'casefoam',mod:'case-foam',cat:'extras',brand:'Various',name:'Poron case foam',kind:'Foam',price:12,fx:{pitch:-6,vol:-10},blurb:'Fills the case cavity. Cuts hollow ping.'},
+  {id:'pefoam',mod:'switch-pad',cat:'extras',brand:'Various',name:'PE foam sheet (switch pad mod)',kind:'Foam',price:8,fx:{pitch:5,vol:-2,poppy:true},blurb:'Thin layer under the switches for a poppier, marbly sound.'},
+  {id:'tapemod',mod:'tape',cat:'extras',brand:'Various',name:'Tape mod (painter\'s tape)',kind:'Mod',price:5,fx:{pitch:-5,vol:-4},blurb:'Two or three layers on the back of the PCB. Deepens the sound.'},
+  {id:'krytox',mod:'switch-lube',cat:'extras',brand:'Krytox',name:'205g0 switch lube, 5 ml',kind:'Lube',price:10,fx:{pitch:-3,vol:-3},blurb:'Standard grease for linear switches. Plan an evening to lube a set.'},
   {id:'opener',cat:'extras',brand:'Various',name:'Switch opener',kind:'Tool',price:9,fx:{},blurb:'Opens switches for lubing or spring swaps.'},
   {id:'puller',cat:'extras',brand:'Various',name:'Switch + keycap puller',kind:'Tool',price:6,fx:{},blurb:'You need one to swap switches on a hot-swap board.'},
   {id:'coiled',cat:'extras',brand:'Various',name:'Coiled USB-C cable with aviator',kind:'Cable',price:35,fx:{},blurb:'Coiled cable with a detachable aviator connector.'},
@@ -969,6 +976,9 @@ function compat(b){
     if(sw.factory) add('info','extras',`${sw.name} come factory lubed`,'Extra lube is optional.');
     if(!(b.extras||[]).includes('opener')) add('info','extras','Lubing needs a switch opener','Add one from Extras.');
   }
+  for(const id of b.extras||[]){const m=BYID[id]; if(!m||!m.mod) continue; const fit=modFit(m,c);
+    if(fit==='check') add('info','extras',`Check that ${partName(m)} fits the ${partName(c)}`,'The store lists it by layout, not for this board.');
+    else if(fit===false&&m.catalogId) add('warn','extras',`${partName(m)} is made for a different board`,'Pick a mod listed for this board or layout.');}
   if(pcb && pcb.hotswap && !(b.extras||[]).includes('puller')) add('info','extras','Get a switch puller','Swapping switches on a hot-swap board needs one.');
   if(/Tri-mode|Bluetooth/.test(c.conn)) add('ok','case',`${c.conn} wireless`, 'Use the cable for the lowest latency.');
   const missing=SLOTS.filter(s=>needed(b,s.key)&&!b[s.key]).map(s=>s.label.toLowerCase());
@@ -1590,6 +1600,70 @@ function kcQuality(k,look){
   if(k.soldOut) q-=6;
   return q;
 }
+/* Sound mods. Each extra with a mod type carries that type's sound effect (fx), set by the catalog refresh from the
+   listing name (scripts/catalog-lib.mjs MOD_TYPES; sources in docs/mod-sounds.md). A mod that names a board fits only
+   that board. Foam and pads that name only a layout get a "check it fits" note. Lube, films and O-rings fit any board. The finder adds mods that move a build's sound toward the quiz answer when the budget has room. */
+const MOD_LABELS={'case-foam':'Case foam','plate-foam':'Plate foam','switch-pad':'PE switch pads','o-ring':'O-rings','switch-film':'Switch films',
+  'switch-lube':'Switch lube','spring-oil':'Spring oil','stab-lube':'Stabilizer lube','tape':'Tape mod'};
+const SHAPED_MODS=new Set(['case-foam','plate-foam','switch-pad']);
+const MODS_MAX_SPEND=40; // with no budget answer, suggested mods stay under this
+let MOD_FIT=null;
+function modIndex(){
+  if(MOD_FIT) return MOD_FIT;
+  MOD_FIT=new Map();
+  const mods=EXTRAS.filter(e=>e.mod&&MOD_LABELS[e.mod]);
+  const keys=[]; // [case id, model name lowercased] for names long enough to be specific
+  for(const c of CASES){const n=String(c.name||'').toLowerCase().trim(), short=n.replace(/\s+(?:v\d+(?:\.\d+)?|rev\.?\s?\w+|mk\s?\w+|pro|se|r\d)$/,'');
+    for(const k of new Set([n,short])) if(k.length>=4) keys.push([c.id,k])}
+  const LAY=[['60',/\b60%|\b60\b(?!\s?(?:pcs|g\b))/i],['65',/\b65%|\b6[5-8]\b(?!\s?(?:pcs|g\b))/i],['75',/\b75%|\b84\b/i],['tkl',/\btkl\b|\bf1[23]\b|\b80%|\b87\b/i],['full',/\b1800\b|\b96%|\bfull[- ]?size\b|\b100%|\b104\b/i]];
+  for(const m of mods){
+    const n=String(m.name).toLowerCase(), boards=new Set();
+    for(const [id,k] of keys){const i=n.indexOf(k); if(i>=0&&!/[a-z0-9]/.test(n[i-1]||' ')&&!/[a-z0-9]/.test(n[i+k.length]||' ')) boards.add(id)}
+    MOD_FIT.set(m.id,{boards,layouts:new Set(LAY.filter(([,r])=>r.test(m.name)).map(([l])=>l))});
+  }
+  return MOD_FIT;
+}
+// 'yes', 'check' (fits only by layout), or false.
+function modFit(m,c){
+  if(!m||!m.mod||!c) return false;
+  if(!m.catalogId&&!m.retailers?.length) return 'yes'; // a generic sheet or tape you cut to size
+  const f=modIndex().get(m.id); if(!f) return 'yes';
+  if(f.boards.size) return f.boards.has(c.id)?'yes':false;
+  if(f.layouts.size&&!f.layouts.has(c.layout)) return false;
+  if(SHAPED_MODS.has(m.mod)) return f.layouts.size?'check':false;
+  return 'yes';
+}
+// How far a sound is from the target. For "quiet", loudness is what matters, so it weighs more than pitch.
+const soundGap=(e,T)=>Math.abs(e.pitch-T.p)*(T.v<25?0.3:0.7)+Math.abs(e.vol-T.v)*(T.v<25?0.9:0.45);
+// Best in-stock pick of each mod type for a board: an exact fit first, then a photo, then the lower price.
+function modChoices(c,useMod){
+  const best=new Map();
+  for(const m of EXTRAS){ if(!m.mod||m.soldOut||!MOD_LABELS[m.mod]) continue; const fit=modFit(m,c); if(!fit) continue;
+    const r=(fit==='yes'?6:0)+(m.photo?2:0)-m.price/10-(useMod?repeatCost(1.5,useMod.get(sameKey(m))||0):0);
+    const cur=best.get(m.mod); if(!cur||r>cur.r) best.set(m.mod,{m,r});
+  }
+  return [...best.values()].map(x=>x.m);
+}
+// Up to three mods, most helpful first, that bring the build's sound closer to T (or fix stabilizer rattle) within room dollars.
+function suggestMods(b,T,room,useMod){
+  const c=caseOf(b); if(!c||room<=0) return [];
+  const have=new Set((b.extras||[]).map(id=>BYID[id]?.mod).filter(Boolean)), picks=[];
+  let cur={...b,extras:[...(b.extras||[])]}, spent=0;
+  const stabsHere=!c.assembled; // every layout has stabilized keys; an assembled board ships closed
+  for(let k=0;k<3;k++){
+    const e0=estimate(cur); let top=null;
+    for(const m of modChoices(c,useMod)){
+      if(have.has(m.mod)||spent+m.price>room) continue;
+      if(c.assembled&&(m.mod==='switch-lube'||m.mod==='spring-oil'||m.mod==='switch-film'||SHAPED_MODS.has(m.mod)||m.mod==='tape')) continue; // needs the board opened up
+      const e1=estimate({...cur,extras:[...cur.extras,m.id]});
+      const gain=(T?soundGap(e0,T)-soundGap(e1,T):0)+(m.fx?.rattle&&stabsHere?1.6:0);
+      if(gain>=1&&(!top||gain-m.price/40>top.gain-top.m.price/40)) top={m,gain};
+    }
+    if(!top) break;
+    picks.push(top); have.add(top.m.mod); spent+=top.m.price; cur.extras.push(top.m.id);
+  }
+  return picks;
+}
 function evalAns(ans){
   const key=JSON.stringify(ans); if(evalCache.has(key)) return evalCache.get(key);
   const L=ans.layout&&ans.layout!=='any'?ans.layout:null;
@@ -1690,6 +1764,16 @@ function evalAns(ans){
       useSw.set(p.sk,(useSw.get(p.sk)||0)+1); useKc.set(p.kk,(useKc.get(p.kk)||0)+1);
       break;
     }
+  }
+  // Mods: each build gets the ones that pull its sound toward the answer, if the budget leaves room.
+  const T0=SOUND_T[ans.sound]||null, useMod=new Map();
+  list.sort((a,b)=>b.sc-a.sc);
+  for(const r of list){
+    const room=budget?budget-r.t:MODS_MAX_SPEND; if(room<=0) continue;
+    const picks=suggestMods(r.b,T0,room,useMod); if(!picks.length) continue;
+    r.b={...r.b,extras:[...r.b.extras,...picks.map(x=>x.m.id)]}; r.t=total(r.b); r.e=estimate(r.b);
+    r.sc+=picks.reduce((s,x)=>s+Math.min(x.gain,6),0)*0.5;
+    for(const x of picks) useMod.set(sameKey(x.m),(useMod.get(sameKey(x.m))||0)+1);
   }
   list.sort((a,b)=>b.sc-a.sc);
   const top=list[0]?list[0].sc:100;
@@ -2200,6 +2284,14 @@ function renderParts(){
 }
 document.addEventListener('click',e=>{const p=e.target.closest('[data-pick]'); if(p&&!p.disabled) openPicker(p.dataset.pick)});
 
+// Mods for the build on the bench, aimed at the quiz's sound answer and kept inside what the budget answer leaves.
+function modCard(){
+  const c=caseOf(build); if(!c) return '';
+  const T=SOUND_T[quizAns.sound]||null, budget=typeof quizAns.budget==='number'&&quizAns.budget<B_MAX?quizAns.budget:null;
+  const picks=suggestMods(build,T,budget?budget-total(build):MODS_MAX_SPEND); if(!picks.length) return '';
+  return `<section class="card modcard"><h3>Suggested mods</h3><p class="note">${T?`Picked to move this build toward the ${esc(quizAns.sound)} sound you chose`:'Fixes most boards benefit from'}${budget?', within your budget':''}.</p>
+    ${picks.map(({m})=>`<div class="modrow"><span class="thumb">${thumbFor(m)}</span><div><small>${esc(MOD_LABELS[m.mod])}</small><b>${esc(partName(m))}</b><em>${esc(m.blurb||'')}</em></div><div class="modbuy"><span class="mono">${money(m.price)}</span><button class="btn small" data-addmod="${esc(m.id)}">Add</button></div></div>`).join('')}</section>`;
+}
 function renderRail(){
   const iss=compat(build), v=verdict(iss), e=estimate(build), items=lineItems(build), t=total(build);
   const order={fail:0,warn:1,info:2,ok:3};
@@ -2218,8 +2310,10 @@ function renderRail(){
     ${meter('Typing feel',e.flex,flexWord(e.flex),'Stiff','Bouncy')}
     <div class="totals"><div><span>Actuation force</span><span class="mono">${e.force?e.force+' g':'—'}</span></div></div>
     <p class="note" style="margin:0">A rough guide from plate, mount, switches, keycaps and mods. Real boards vary.</p></section>
+  ${modCard()}
   <section class="card"><h3>Share</h3><div class="railacts"><button class="btn small" id="copylist">Copy parts list</button><button class="btn small" id="copycode">Copy build code</button></div>
     <textarea id="copyfallback" hidden aria-label="Copy text" style="width:100%;min-height:80px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:6px"></textarea></section>`;
+  rail.querySelectorAll('[data-addmod]').forEach(btn=>btn.onclick=()=>{build.extras=[...new Set([...(build.extras||[]),btn.dataset.addmod])]; commit(); toast(`Added ${partName(BYID[btn.dataset.addmod])}`)});
   rail.querySelector('#copylist').onclick=()=>copyText(partsText(build),rail.querySelector('#copyfallback'));
   rail.querySelector('#copycode').onclick=()=>copyText(encodeBuild(build),rail.querySelector('#copyfallback'));
 }
