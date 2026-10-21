@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
-import {matchVideo,switchKey,parseVideosFile,videosFileText} from '../scripts/sound-videos.mjs';
+import {matchVideo,decodeEntities,switchKey,parseVideosFile,videosFileText} from '../scripts/sound-videos.mjs';
 
 const hit=(id,title,channel='Someone')=>({id:{videoId:id},snippet:{title,channelTitle:channel}});
 
@@ -17,6 +17,16 @@ test('a one-word switch name also needs its brand in the title', () => {
   const p={brand:'Gateron',name:'Melodic'};
   assert.equal(matchVideo(p,[hit('aaaaaaaaaaa','Melodic keycaps sound test')]),null);
   assert.equal(matchVideo(p,[hit('bbbbbbbbbbb','Gateron Melodic switch review')]).video,'bbbbbbbbbbb');
+});
+
+test('titles are stored as plain text, and comparisons, Shorts and bare brand names are rejected', () => {
+  assert.equal(decodeEntities('Tom &amp; Jerry&#39;s &quot;test&quot; &#x41;'),'Tom & Jerry\'s "test" A');
+  const p={brand:'Tecsee',name:'Purple Panda'};
+  assert.equal(matchVideo(p,[hit('aaaaaaaaaaa','Tecsee Purple Panda &amp; friends sound test')]).title,'Tecsee Purple Panda & friends sound test');
+  assert.equal(matchVideo(p,[hit('bbbbbbbbbbb','Tecsee Purple Panda vs Holy Panda sound test')]),null);
+  assert.equal(matchVideo(p,[hit('ccccccccccc','Tecsee Purple Panda sound test #shorts')]),null);
+  assert.equal(matchVideo({brand:'Gateron',name:'Gateron'},[hit('ddddddddddd','The Gateron switches sound test')]),null);
+  assert.equal(matchVideo({brand:'Domikey',name:'Cherry MX'},[hit('eeeeeeeeeee','Cherry MX Black sound test')]),null,'brand must appear for a short name');
 });
 
 test('the switch key matches index.html and ignores store wording', async () => {
