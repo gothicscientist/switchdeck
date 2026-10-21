@@ -45,6 +45,14 @@ There is no brand blue. Status colours are muted so they sit next to product pho
 
 Every part image is a clean, front-on product photo cropped to its frame (keyboards top-down) or a drawn icon. Nothing overflows its frame. See `scripts/image-check.mjs`.
 
+## Quiz photos
+
+The "What is it for?" and "How should it connect?" options show real product photos cut out to a transparent
+background (assets/quiz), not drawn icons: a controller, a briefcase, a coiled USB cable and a wireless receiver.
+They sit small in the option's art frame with plenty of space around them and a soft shadow, and lift slightly on
+hover. Only openly licensed photos (CC0, CC BY, CC BY-SA) are used, each credited in assets/quiz/CREDITS.md, which
+those cards link to. Never use store or press photos here.
+
 ## Results: share and swap
 
 - Share copies a link; the only confirmation is the button's label lifting into "Copied". No modal, no share sheet.
