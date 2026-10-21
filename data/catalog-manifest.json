@@ -1,16 +1,16 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-21T03:48:26.017Z",
-  "listingCount": 8906,
-  "inStockCount": 4819,
-  "builderSwitchCount": 1998,
+  "generatedAt": "2026-10-21T04:03:56.332Z",
+  "listingCount": 8914,
+  "inStockCount": 4826,
+  "builderSwitchCount": 2003,
   "builderExtraCount": 1322,
-  "builderCaseCount": 1881,
+  "builderCaseCount": 1892,
   "builderKeycapCount": 1802,
   "builderStabCount": 130,
   "builderPcbCount": 408,
   "builderPlateCount": 814,
-  "builderSoldOutCount": 4251,
+  "builderSoldOutCount": 4257,
   "builderAdmission": {
     "keycaps": {
       "total": 2765,
@@ -31,12 +31,12 @@
       }
     },
     "keyboards": {
-      "total": 2340,
-      "admitted": 742,
-      "soldOutAdmitted": 887,
+      "total": 2345,
+      "admitted": 745,
+      "soldOutAdmitted": 888,
       "excluded": {
         "layout the builder can't draw": 149,
-        "no layout": 311,
+        "no layout": 312,
         "not a keyboard part": 9,
         "unsupported switch system (Topre/EC/Alps)": 112,
         "non-ANSI layout": 111,
@@ -45,11 +45,11 @@
       }
     },
     "switches": {
-      "total": 1322,
+      "total": 1325,
       "admitted": 718,
       "soldOutAdmitted": 447,
       "excluded": {
-        "no pack size": 50,
+        "no pack size": 53,
         "unsupported switch system (Topre/EC/Alps)": 3,
         "no switch type": 79,
         "too many variants (more than 24 switches in one listing)": 6,
@@ -113,7 +113,7 @@
   "categories": {
     "keyboards": {
       "label": "Keyboards & kits",
-      "count": 2340
+      "count": 2345
     },
     "cases": {
       "label": "Cases",
@@ -129,7 +129,7 @@
     },
     "switches": {
       "label": "Switches",
-      "count": 1322
+      "count": 1325
     },
     "keycaps": {
       "label": "Keycaps",
@@ -154,9 +154,9 @@
       "name": "CannonKeys",
       "url": "https://cannonkeys.com",
       "currency": "USD",
-      "status": "replayed",
-      "checkedAt": "2026-10-21T03:39:48.092Z",
-      "rawProducts": 917,
+      "status": "fresh",
+      "checkedAt": "2026-10-21T04:03:00.214Z",
+      "rawProducts": 1185,
       "listings": 917
     },
     {
@@ -164,9 +164,9 @@
       "name": "Divinikey",
       "url": "https://divinikey.com",
       "currency": "USD",
-      "status": "replayed",
-      "checkedAt": "2026-10-21T03:39:51.983Z",
-      "rawProducts": 1353,
+      "status": "fresh",
+      "checkedAt": "2026-10-21T04:03:04.520Z",
+      "rawProducts": 1482,
       "listings": 1353
     },
     {
@@ -174,9 +174,9 @@
       "name": "NovelKeys",
       "url": "https://novelkeys.com",
       "currency": "USD",
-      "status": "replayed",
-      "checkedAt": "2026-10-21T03:39:46.569Z",
-      "rawProducts": 347,
+      "status": "fresh",
+      "checkedAt": "2026-10-21T04:02:57.245Z",
+      "rawProducts": 410,
       "listings": 347
     },
     {
@@ -184,9 +184,9 @@
       "name": "KBDfans",
       "url": "https://kbdfans.com",
       "currency": "USD",
-      "status": "replayed",
-      "checkedAt": "2026-10-21T03:39:49.791Z",
-      "rawProducts": 382,
+      "status": "fresh",
+      "checkedAt": "2026-10-21T04:03:00.841Z",
+      "rawProducts": 467,
       "listings": 382
     },
     {
@@ -194,9 +194,9 @@
       "name": "Keychron",
       "url": "https://www.keychron.com",
       "currency": "USD",
-      "status": "replayed",
-      "checkedAt": "2026-10-21T03:39:52.285Z",
-      "rawProducts": 640,
+      "status": "fresh",
+      "checkedAt": "2026-10-21T04:03:04.342Z",
+      "rawProducts": 712,
       "listings": 640
     },
     {
@@ -204,9 +204,9 @@
       "name": "KeebsForAll",
       "url": "https://keebsforall.com",
       "currency": "USD",
-      "status": "replayed",
-      "checkedAt": "2026-10-21T03:39:53.281Z",
-      "rawProducts": 412,
+      "status": "fresh",
+      "checkedAt": "2026-10-21T04:03:04.387Z",
+      "rawProducts": 452,
       "listings": 412
     },
     {
@@ -214,9 +214,9 @@
       "name": "Mode Designs",
       "url": "https://modedesigns.com",
       "currency": "USD",
-      "status": "replayed",
-      "checkedAt": "2026-10-21T03:39:52.567Z",
-      "rawProducts": 46,
+      "status": "fresh",
+      "checkedAt": "2026-10-21T04:03:04.707Z",
+      "rawProducts": 73,
       "listings": 46
     },
     {
@@ -225,9 +225,9 @@
       "url": "https://mechanicalkeyboards.com",
       "currency": "USD",
       "optional": true,
-      "status": "replayed",
-      "checkedAt": "2026-10-21T03:40:26.260Z",
-      "rawProducts": 3076,
+      "status": "fresh",
+      "checkedAt": "2026-10-21T04:03:43.024Z",
+      "rawProducts": 5738,
       "listings": 3076
     },
     {
@@ -236,9 +236,9 @@
       "url": "https://kprepublic.com",
       "currency": "USD",
       "optional": true,
-      "status": "replayed",
-      "checkedAt": "2026-10-21T03:40:02.724Z",
-      "rawProducts": 1266,
+      "status": "fresh",
+      "checkedAt": "2026-10-21T04:03:17.848Z",
+      "rawProducts": 1380,
       "listings": 1266
     },
     {
@@ -247,9 +247,9 @@
       "url": "https://meletrix.com",
       "currency": "USD",
       "optional": true,
-      "status": "replayed",
-      "checkedAt": "2026-10-21T03:39:54.313Z",
-      "rawProducts": 103,
+      "status": "fresh",
+      "checkedAt": "2026-10-21T04:03:06.613Z",
+      "rawProducts": 205,
       "listings": 103
     },
     {
@@ -258,9 +258,9 @@
       "url": "https://qwertykeys.com",
       "currency": "USD",
       "optional": true,
-      "status": "replayed",
-      "checkedAt": "2026-10-21T03:39:55.748Z",
-      "rawProducts": 77,
+      "status": "fresh",
+      "checkedAt": "2026-10-21T04:03:07.837Z",
+      "rawProducts": 110,
       "listings": 77
     },
     {
@@ -269,9 +269,9 @@
       "url": "https://www.wobkey.com",
       "currency": "USD",
       "optional": true,
-      "status": "replayed",
-      "checkedAt": "2026-10-21T03:39:56.785Z",
-      "rawProducts": 23,
+      "status": "fresh",
+      "checkedAt": "2026-10-21T04:03:10.069Z",
+      "rawProducts": 31,
       "listings": 23
     },
     {
@@ -280,9 +280,9 @@
       "url": "https://epomaker.com",
       "currency": "USD",
       "optional": true,
-      "status": "replayed",
-      "checkedAt": "2026-10-21T03:39:57.757Z",
-      "rawProducts": 109,
+      "status": "fresh",
+      "checkedAt": "2026-10-21T04:03:12.821Z",
+      "rawProducts": 123,
       "listings": 109
     },
     {
@@ -291,9 +291,10 @@
       "url": "https://kineticlabs.com",
       "currency": "USD",
       "optional": true,
-      "status": "replayed",
+      "status": "skipped",
       "rawProducts": 0,
-      "listings": 0
+      "listings": 0,
+      "error": "Unexpected token '<', \"\n   <!DOCTYPE \"... is not valid JSON"
     },
     {
       "id": "dangkeebs",
@@ -301,9 +302,9 @@
       "url": "https://dangkeebs.com",
       "currency": "USD",
       "optional": true,
-      "status": "replayed",
-      "checkedAt": "2026-10-21T03:40:04.917Z",
-      "rawProducts": 155,
+      "status": "fresh",
+      "checkedAt": "2026-10-21T04:03:21.333Z",
+      "rawProducts": 177,
       "listings": 155
     },
     {
@@ -312,9 +313,10 @@
       "url": "https://milktooth.com",
       "currency": "USD",
       "optional": true,
-      "status": "replayed",
+      "status": "skipped",
       "rawProducts": 0,
-      "listings": 0
+      "listings": 0,
+      "error": "https://milktooth.com/cart.js: HTTP 404"
     },
     {
       "id": "glorious",
@@ -332,9 +334,10 @@
         "lynx-he-switches",
         "panda-he-switches"
       ],
-      "status": "replayed",
-      "rawProducts": 0,
-      "listings": 0
+      "status": "fresh",
+      "checkedAt": "2026-10-21T04:03:21.317Z",
+      "rawProducts": 8,
+      "listings": 8
     }
   ],
   "shards": [
@@ -451,5 +454,5 @@
     "parts/0110.json",
     "parts/0111.json"
   ],
-  "fingerprint": "9b9bad32af38b58724825525c810ac60a70d9e9fcda695d9b673bfe923a510e5"
+  "fingerprint": "cc70a771b6eb14001ef467e492655b6b2cfac130a9a8a77313c8773b3743f345"
 }
