@@ -523,11 +523,6 @@ a.listen.watch:hover{background:rgba(68,64,60,.16)}
 .rdetail.still .rsf-fill{animation:none;transition:clip-path .8s var(--out)}
 .bump{animation:bump .5s var(--out)}
 @keyframes bump{from{opacity:.3;transform:translateY(3px)}}
-.rsum .total .over{color:var(--warn)}
-.rfit{display:flex;align-items:baseline;gap:8px;margin:-8px 0 0;font-size:12.5px;line-height:1.4;color:var(--muted)}
-.rfit i{flex:none;width:6px;height:6px;border-radius:50%;background:var(--faint);transform:translateY(-1px)}
-.rfit.ok i{background:var(--ok)}.rfit.info i{background:var(--info)}.rfit.warn i{background:var(--warn)}.rfit.fail i{background:var(--fail)}
-.rfit.fail{color:var(--fail)}
 .redit{display:flex;align-items:center;gap:14px;margin-top:-6px;font-size:12.5px;color:var(--muted);animation:fade .3s var(--ease) both}
 .redit span{margin-right:auto}
 .redit button{display:inline-flex;align-items:center;gap:4px;border:0;background:none;padding:2px 0;font:inherit;font-weight:500;color:var(--ink-2);cursor:pointer;text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:3px}
@@ -540,7 +535,6 @@ a.listen.watch:hover{background:rgba(68,64,60,.16)}
 .swhead span{margin-right:auto}
 .swlink{border:0;background:none;padding:0;font:inherit;font-size:12px;font-weight:500;color:var(--muted);cursor:pointer}
 .swlink:hover{color:var(--ink)}
-.swsub{margin:0 0 6px;font-size:11.5px;color:var(--faint)}
 .swlist{display:grid;gap:2px}
 .swopt{display:grid;grid-template-columns:44px minmax(0,1fr) auto;align-items:center;gap:12px;width:100%;padding:8px 10px;margin:0 -10px;width:calc(100% + 20px);border:0;border-radius:10px;background:none;text-align:left;font:inherit;color:inherit;cursor:pointer;transition:background .2s;animation:fadeUp .35s var(--out) both;animation-delay:calc(var(--i,0)*30ms)}
 .swaps.still .swopt{animation:none}
@@ -2391,27 +2385,12 @@ function pickResult(b){resIdx=+b.dataset.ri; swapOpen=null; document.querySelect
 const SWAP_PAGE=6;
 let swapOpen=null; // {slot, id (null for an empty slot), n shown}
 const PART_SLOTS=['case','pcb','plate','switches','stabs','keycaps'];
-function budgetText(t){
-  const bud=typeof quizAns.budget==='number'&&quizAns.budget<B_MAX?quizAns.budget:null; if(!bud) return '';
-  const d=Math.round((bud-t)*100)/100;
-  return d>=0?`, ${d<1?'right at':money(d)+' under'} your ${money(bud)} budget`:`, <span class="over">${money(-d)} over your ${money(bud)} budget</span>`;
-}
-// One line on how sure the fit is. Only what the store listings confirm counts; anything they leave open is named.
-function buildFit(b){
-  const iss=compat(b), SL=k=>(SLOTS.find(x=>x.key===k)?.label||k).toLowerCase();
-  const fail=iss.find(i=>i.level==='fail'); if(fail) return {level:'fail',text:fail.msg};
-  const open=iss.filter(i=>i.level==='info'&&/^Check /.test(i.msg));
-  if(open.length){const sl=[...new Set(open.map(i=>i.slot==='pcb'?'PCB':SL(i.slot)))], list=sl.length>1?sl.slice(0,-1).join(', ')+' and '+sl.at(-1):sl[0];
-    return {level:'info',text:`Fit not confirmed for the ${list}. Check before buying.`,title:open.map(i=>i.msg).join('\n')}}
-  const warn=iss.find(i=>i.level==='warn'); if(warn) return {level:'warn',text:warn.msg,title:warn.sub||''};
-  return {level:'ok',text:'No fit issues found in the store listings'};
-}
 // How an alternative fits, from the compatibility notes on its own slot. Switches and cases get no "Fits" label:
 // unlabelled switches and boards are only assumed to be MX-style.
 function swapFit(b2,slot,p){
-  if(slot==='extras'){ if(!p.mod) return null; const f=modFit(p,caseOf(b2)); return f==='check'?{level:'info',text:'Check fit'}:modIndex().get(p.id)?.boards.has(b2.case)?{level:'ok',text:'Made for this board'}:null }
+  if(slot==='extras'){ if(!p.mod) return null; const f=modFit(p,caseOf(b2)); return f==='check'?{level:'info'}:modIndex().get(p.id)?.boards.has(b2.case)?{level:'ok',text:'Made for this board'}:null }
   const rel=compat(b2).filter(i=>slot==='case'?PART_SLOTS.includes(i.slot):i.slot===slot);
-  if(rel.some(i=>i.level==='info'&&/^Check /.test(i.msg))) return {level:'info',text:'Check fit'};
+  if(rel.some(i=>i.level==='info'&&/^Check /.test(i.msg))) return {level:'info'}; // unconfirmed: ranked lower, no label
   const w=rel.find(i=>i.level==='warn'); if(w) return {level:'warn',text:'Works, with notes',title:w.msg};
   if(['pcb','plate','keycaps','stabs'].includes(slot)&&rel.some(i=>i.level==='ok')) return {level:'ok',text:'Fits'};
   return null;
@@ -2449,12 +2428,11 @@ function showSwap(el,r0,still){
   const r=resView(r0), b=r.b, slot=swapOpen.slot, SL=SLOTS.find(x=>x.key===slot).label.toLowerCase();
   const t0=performance.now(), all=swapCands(r0,b,slot,swapOpen.id), list=all.slice(0,swapOpen.n);
   const delta=(n,unit)=>n>0?'+'+unit(n):n<0?'−'+unit(-n):'';
-  const opt=(x,i)=>{const dt=Math.round((x.t-r.t)*100)/100, dp=x.pct-r.pct;
+  const opt=(x,i)=>{const dt=Math.round(x.t-r.t), dp=x.pct-r.pct; // price changes in whole dollars
     return `<button type="button" class="swopt" data-alt="${esc(x.p.id)}" style="--i:${i}"><span class="pt">${slot==='case'?caseVisual({case:x.p.id,color:0,keycaps:null,extras:[]},'thumb'):thumbFor(x.p)}</span>
-      <span class="so-n"><b>${esc(partName(x.p))}</b><em>${esc([partDesc(x.p),x.sound&&'sounds '+x.sound.toLowerCase()].filter(Boolean).join(', '))}</em>${x.fit||x.p.soldOut?`<span class="so-tags">${x.fit?`<span class="chip ${x.fit.level}"${x.fit.title?` title="${esc(x.fit.title)}"`:''}>${esc(x.fit.text)}</span>`:''}${x.p.soldOut?'<span class="chip warn">Sold out</span>':''}</span>`:''}</span>
-      <span class="so-d"><b class="${dt>0?'up':dt<0?'down':''}">${dt?delta(dt,money):'Same price'}</b><small>${dp?delta(dp,n=>n+'%')+' match':'Same match'}</small></span></button>`};
+      <span class="so-n"><b>${esc(partName(x.p))}</b><em>${esc([partDesc(x.p),x.sound&&'sounds '+x.sound.toLowerCase()].filter(Boolean).join(', '))}</em>${x.fit?.text||x.p.soldOut?`<span class="so-tags">${x.fit?.text?`<span class="chip ${x.fit.level}"${x.fit.title?` title="${esc(x.fit.title)}"`:''}>${esc(x.fit.text)}</span>`:''}${x.p.soldOut?'<span class="chip warn">Sold out</span>':''}</span>`:''}</span>
+      <span class="so-d"><b class="${dt>0?'up':dt<0?'down':''}">${dt?delta(dt,n=>'$'+n.toLocaleString('en-US')):'Same price'}</b><small>${dp?delta(dp,n=>n+'%')+' match':'Same match'}</small></span></button>`};
   const panel=`<div class="swaps${still?' still':''}" role="group" aria-label="Alternatives for the ${esc(SL)}"><div class="swhead"><span>${list.length?`${swapOpen.id?'Swap':'Choose'} the ${esc(SL)}`:`No other ${esc(SL)} fit this build`}</span>${slot==='extras'&&swapOpen.id?'<button type="button" class="swlink" data-rm>Remove</button>':''}<button type="button" class="swlink" data-x>Close</button></div>
-    ${list.length?`<p class="swsub">Best fit for your answers first. Price and match show the change to this build.</p>`:''}
     <div class="swlist">${list.map(opt).join('')}</div>${all.length>list.length?`<button type="button" class="swmore" data-more>Show more (${all.length-list.length} left)</button>`:''}</div>`;
   el.querySelectorAll('.swaps').forEach(x=>x.remove());
   row.insertAdjacentHTML('afterend',panel); row.querySelector('[data-swap]').setAttribute('aria-expanded','true');
@@ -2483,7 +2461,7 @@ function redrawSwap(r0,was,said,to){
 }
 const partDesc=p=>p.cat==='case'?[LAYOUT_NAMES[p.layout],p.material,p.mount&&p.mount+' mount',p.assembled?'sold assembled':p.kit&&'kit'].filter(Boolean).join(', '):p.cat==='switches'?[p.type,p.force&&`${p.force} g`,p.pins&&`${p.pins}-pin`].filter(Boolean).join(', '):p.cat==='keycaps'?[p.profile&&`${p.profile} profile`,p.material,p.legends].filter(Boolean).join(', '):p.cat==='pcb'?[p.hotswap===true?'Hot-swap':p.hotswap===false?'Solder':null,p.pins&&`${p.pins}-pin`].filter(Boolean).join(', '):p.cat==='plate'?p.material||'':p.blurb||'';
 function renderRDetail(opts={}){
-  const r0=resList[resIdx], r=resView(r0), b=r.b, c=caseOf(b), s=BYID[b.switches], note=(n=>n&&n.sh?shareNote(n.sh,b):n)(resNotes.get(r0.b.case)), ed=resCustom.get(r0.b.case), fit=buildFit(b);
+  const r0=resList[resIdx], r=resView(r0), b=r.b, c=caseOf(b), s=BYID[b.switches], note=(n=>n&&n.sh?shareNote(n.sh,b):n)(resNotes.get(r0.b.case)), ed=resCustom.get(r0.b.case);
   const items=lineItems(b), SL=k=>SLOTS.find(x=>x.key===k).label;
   const sub=i=>i.slot==='switches'?`${i.qty} × ${money(i.part.price)}`:i.slot==='keycaps'&&i.addon?`incl. ${money(i.addon)} numpad kit`:i.slot==='stabs'?`${layoutOf(b)==='full'?7:5}-stab set`:'';
   const desc=partDesc;
@@ -2518,8 +2496,7 @@ function renderRDetail(opts={}){
       ${note?`<p class="rnote" role="status">${esc(note.text)}</p>`:''}
       <div class="board">${caseVisual(b,'detail')}</div>
       <div><h2>${esc(partName(c))}</h2></div>
-      <div class="total"><b class="${opts.bump&&opts.bump.t!==r.t?'bump':''}">${money(r.t)}</b><span>approx. total${budgetText(r.t)}</span></div>
-      <p class="rfit ${fit.level}"${fit.title?` title="${esc(fit.title)}"`:''}><i aria-hidden="true"></i>${esc(fit.text)}</p>
+      <div class="total"><b class="${opts.bump&&opts.bump.t!==r.t?'bump':''}">${money(r.t)}</b><span>approx. total</span></div>
       ${ed&&(ed.undo.length||r.custom)?`<div class="redit"><span>${r.custom?(r0.shared?'Changed from the shared build':'Changed from the recommended build'):'Back to the '+(r0.shared?'shared':'recommended')+' build'}</span><button type="button" id="rundo" ${ed.undo.length?'':'disabled'}>${icon('undo')}Undo</button>${r.custom?`<button type="button" id="rreset">Reset</button>`:''}</div>`:''}
       <p class="rcap"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 8h11M9 4l4 4-4 4"/></svg>Made of the ${nParts} parts listed <span class="rcap-w">on the right</span><span class="rcap-n">below</span></p>
       <div class="stats3"><div><span>Match</span><b class="match-score${opts.bump&&opts.bump.pct!==r.pct?' bump':''}" style="--match-color:${matchColor(r.pct)}">${r.pct}%</b></div><div><span>Sound</span><b>${pitchWord(r.e.pitch)}</b></div><div><span>Feel</span><b>${esc(s?s.type:'As shipped')}</b></div></div>

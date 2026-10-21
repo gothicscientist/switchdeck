@@ -49,4 +49,4 @@ Every part image is a clean, front-on product photo cropped to its frame (keyboa
 
 - Share copies a link; the only confirmation is the button's label lifting into "Copied". No modal, no share sheet.
 - Swap is a quiet text action under each part's price. Alternatives open in place under that part, show only the change in price and match, and keep the panel open so several can be tried. Undo and Reset sit as text links under the total.
-- Fit wording never overclaims: "Fits" appears only where store data confirms it, anything unverified says "Check fit", and the build line says "No fit issues found in the store listings", never "compatible".
+- Fit wording never overclaims: "Fits" appears only where store data confirms it. Unconfirmed alternatives carry no tag and rank lower. Price changes in the swap list are whole dollars. No budget line, fit line or explanatory subtitle on the results screen (Bharat removed them).

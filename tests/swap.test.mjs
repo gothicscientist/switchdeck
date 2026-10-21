@@ -12,8 +12,8 @@ test('"Fits" is shown only where store data confirms it',()=>{
   const f=fn('swapFit');
   // Switches and cases are only assumed MX-style when unlabelled, so they never get a positive label.
   assert.match(f,/\['pcb','plate','keycaps','stabs'\]\.includes\(slot\)&&rel\.some\(i=>i\.level==='ok'\)\) return \{level:'ok',text:'Fits'\}/);
-  assert.ok(f.indexOf("text:'Check fit'")<f.indexOf("text:'Fits'"),'an open check wins over a fit');
-  assert.doesNotMatch(fn('buildFit'),/compatible'|confirmed'\}/,'the build line never claims confirmed compatibility');
+  assert.ok(f.indexOf("return {level:'info'}")<f.indexOf("text:'Fits'"),'an open check wins over a fit');
+  assert.doesNotMatch(f,/text:'Check fit'/,'unconfirmed fits carry no tag');
 });
 test('in-stock alternatives come before sold-out ones',()=>{
   assert.match(fn('swapCands'),/sort\(\(a,b\)=>\(!!a\.p\.soldOut-!!b\.p\.soldOut\)\|\|b\.rank-a\.rank\)/);
@@ -28,4 +28,7 @@ test('undo and reset keep a history instead of discarding it',()=>{
   const r=fn('renderRDetail');
   assert.match(r,/e\.b=e\.undo\.pop\(\)/);
   assert.match(r,/e\.undo\.push\(e\.b\); e\.b=r0\.b/);
+});
+test('swap price changes are whole dollars',()=>{
+  assert.match(fn('showSwap'),/const dt=Math\.round\(x\.t-r\.t\)/);
 });
