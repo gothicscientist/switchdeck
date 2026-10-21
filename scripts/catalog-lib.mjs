@@ -677,6 +677,11 @@ export function catalogParts(products) {
     const f=['cases','pcb','plate'].includes(r.cat)?familyOf(p):null;
     for(const part of r.parts) {
       Object.assign(part,SwitchdeckNames.part(part));
+      // Sound effects must always match the authoritative mod type after every catalog transform.
+      if(part.cat==='extras') {
+        if(part.mod&&MOD_TYPES[part.mod]) part.fx={...MOD_TYPES[part.mod].fx};
+        else {delete part.mod;part.fx={}}
+      }
       out.push(part);
       if(f&&((part.cat==='case'&&!part.kit)||part.cat==='pcb'||part.cat==='plate')) {
         const k=`${p.sourceId}:${f.token}${f.rev.length?'-'+f.rev.join('-'):''}`; if(!fam.has(k)) fam.set(k,{base:`${p.sourceId}:${f.token}`,case:[],pcb:[],plate:[]});
