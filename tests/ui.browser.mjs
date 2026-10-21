@@ -56,6 +56,7 @@ const choose = async (value, next) => {
 const sameBox = (a,b) => {
   for (const key of ['x','y','width','height']) assert.ok(Math.abs(a[key]-b[key]) < 1, `${key}: ${a[key]} -> ${b[key]}`);
 };
+const layoutBox = locator => locator.evaluate(el=>({x:el.offsetLeft,y:el.offsetTop,width:el.offsetWidth,height:el.offsetHeight}));
 
 try {
   await page.goto(origin, {waitUntil:'domcontentloaded'});
@@ -137,10 +138,10 @@ try {
   await page.keyboard.press('Tab');
   assert.equal(await page.evaluate(() => !!document.activeElement.closest('#results')),true);
   await page.evaluate(() => Object.defineProperty(navigator,'clipboard',{configurable:true,value:{writeText:async text=>{window.copiedText=text}}}));
-  const copyBox=await page.locator('#rcopy').boundingBox();
+  const copyBox=await layoutBox(page.locator('#rcopy'));
   await page.locator('#rcopy').click();
   await page.waitForFunction(() => document.querySelector('#rcopy').textContent==='Copied');
-  sameBox(copyBox,await page.locator('#rcopy').boundingBox());
+  sameBox(copyBox,await layoutBox(page.locator('#rcopy')));
   assert.ok((await page.evaluate(() => window.copiedText)).includes('https://'));
   const exactBuild=await page.evaluate(()=>buildKey(resView(resList[resIdx]).b));
   await page.locator('#rshare').click();
@@ -167,6 +168,11 @@ try {
   // Open a picker from its real trigger, then type digits and Backspace without changing the quiz.
   const trigger = page.locator('[data-pick="switches"]').first();
   await trigger.click();
+  const framedThumbs=await page.locator('#picker .thumb .pf-photo').evaluateAll(items=>items.every(el=>{
+    const frame=el.closest('.thumb').getBoundingClientRect(),photo=el.getBoundingClientRect();
+    return photo.height<=frame.height+1&&photo.width<=frame.width+1;
+  }));
+  assert.equal(framedThumbs,true,'portrait product photos stay inside their thumbnail frames');
   const beforeTyping = await state();
   await page.locator('#pkq').fill('oilking 123');
   await page.keyboard.press('Backspace');
@@ -250,6 +256,11 @@ try {
   await touchPage.locator('#pkq').fill('linear 123');
   await touchPage.keyboard.press('Escape');
   assert.equal(await touchPage.locator('#picker').getAttribute('hidden'),'');
+  await touchPage.locator('#nav-finder').tap();
+  await touchPage.evaluate(()=>openResults());
+  assert.equal(await touchPage.locator('#rclose').evaluate(el=>getComputedStyle(el).position),'absolute');
+  await touchPage.locator('#rclose').tap();
+  assert.equal(await touchPage.locator('#results').getAttribute('hidden'),'');
   await touchContext.close();
   assert.deepEqual(errors,[]);
   console.log('PASS: touch quiz choices and mobile picker filters');

@@ -1292,7 +1292,7 @@ function encodeBuild(b){const o={n:b.name,c:b.case,k:b.color||0,p:b.pcb,l:b.plat
 function decodeBuild(code){const raw=code.trim().replace(/^SY1:/,''); if(raw.length>50000)throw Error('Build code too long'); const o=JSON.parse(decodeURIComponent(escape(atob(raw)))); if(!o||typeof o!=='object'||Array.isArray(o))throw Error('Invalid build code'); return cleanBuild({name:o.n||'Imported build',case:o.c,color:o.k,pcb:o.p,plate:o.l,switches:o.s,stabs:o.t,keycaps:o.y,extras:o.e})}
 async function copyText(txt,fallbackEl,button){
   if(button?.getAttribute('aria-busy')==='true') return;
-  if(button){clearTimeout(button.copyTimer);button.copyLabel??=button.textContent;button.copyMinWidth??=button.style.minWidth;button.style.minWidth=Math.ceil(button.getBoundingClientRect().width)+'px';button.setAttribute('aria-busy','true')}
+  if(button){clearTimeout(button.copyTimer);button.copyLabel??=button.textContent;button.copyMinWidth??=button.style.minWidth;button.style.minWidth=getComputedStyle(button).width;button.setAttribute('aria-busy','true')}
   try{
     await navigator.clipboard.writeText(txt); toast('Copied to clipboard');
     if(button?.isConnected){button.textContent='Copied';button.copyTimer=setTimeout(()=>{if(button.isConnected){button.textContent=button.copyLabel;button.style.minWidth=button.copyMinWidth}},1800)}

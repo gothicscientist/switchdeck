@@ -6,6 +6,8 @@
 .pf.pending>.pf-alt,.pf.err>.pf-alt{position:absolute;inset:0;display:grid;place-items:center;overflow:hidden}
 .pf.pending>.pf-alt{opacity:.12}
 .pf>.pf-alt>svg{display:block;width:100%;height:100%;max-height:100%}
+:is(.thumb,.pt,.rthumb,.fp-th)>.pf{height:100%;aspect-ratio:auto}
+:is(.thumb,.pt,.rthumb,.fp-th)>.pf>.pf-photo{height:100%;aspect-ratio:auto}
 .pf.pending::before{content:"";position:absolute;inset:8%;border-radius:8px;background:linear-gradient(110deg,var(--tile),var(--tile-hover),var(--tile));opacity:.65}
 .product-image{position:relative;display:block;overflow:hidden;flex-shrink:0;border-radius:12px;background:var(--tile)}
 .directory-photo-frame{height:170px;width:100%}
@@ -26,6 +28,6 @@
 .iconbtn,.play,.qinfo{touch-action:manipulation}
 .btn,.opt,.nolimit{touch-action:manipulation}
 @media(hover:none){.fitem:hover svg,.fitem:hover img{transform:none}.play:hover{transform:none}.btn:hover{transform:none}}
-@media(pointer:coarse){.iconbtn::before,.play::before,.qinfo::before{content:"";position:absolute;inset:-6px}.iconbtn,.play,.qinfo{position:relative}.optw>.play{position:absolute}}
+@media(pointer:coarse){.iconbtn::before,.play::before,.qinfo::before{content:"";position:absolute;inset:-6px}.iconbtn:not(.rclose),.qinfo{position:relative}}
 @media(max-width:600px){.directory-photo-frame{height:200px}.directory-main-photo-frame{height:220px}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
