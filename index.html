@@ -1839,7 +1839,7 @@ let bgSeed=0, lastBg='';
 function shuffledTail(list,seed){const a=[...list]; let s=seed>>>0; for(let i=a.length-1;i>0;i--){s=(Math.imul(s,1664525)+1013904223)>>>0; const j=s%(i+1); [a[i],a[j]]=[a[j],a[i]]} return a}
 const LW={'60':.64,'65':.72,'75':.78,'tkl':.9,'full':1};
 // The three centre boards are fixed, calm designs so the field always opens on the same look.
-const FEATURED_IDS=['epomaker-9144581390644','mechanicalkeyboards-8930667331884','epomaker-9319480721716'];
+const FEATURED_IDS=['epomaker-9144581390644','mechanicalkeyboards-8930667331884','mechanicalkeyboards-8941009928492'];
 const FEAT_SCALE=1, MFEAT_SCALE=2.2;
 // The 65% board is drawn narrower than the 75% and TKL ones at the same scale, so it gets a small boost to fill its share of the centre.
 const FEAT_BOOST={'epomaker-9144581390644':1.2}; // a desktop 75% board is FEAT_SCALE x 18% of the width (a touch bigger than the reference's 14.7%); the phone has its own scale
