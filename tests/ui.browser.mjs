@@ -14,7 +14,8 @@ const types = {'.html':'text/html; charset=utf-8','.js':'text/javascript; charse
 const server = createServer(async (req, res) => {
   try {
     const pathname = decodeURIComponent(new URL(req.url, 'http://localhost').pathname);
-    const file = path.resolve(root, '.' + (pathname === '/' ? '/index.html' : pathname));
+    // Like the deployed site, an extensionless view path (/build) serves a copy of the page.
+    const file = path.resolve(root, '.' + (pathname === '/' || !path.extname(pathname) ? '/index.html' : pathname));
     if (!file.startsWith(root + path.sep)) {res.writeHead(403).end(); return}
     res.setHeader('Content-Type', types[path.extname(file)] || 'application/octet-stream');
     res.end(await readFile(file));
@@ -34,7 +35,8 @@ const routeHandler = async route => {
   if (route.request().url().startsWith(origin)) {
     // Fulfill from disk as well: this also works in browser sandboxes that block loopback networking.
     const pathname = decodeURIComponent(new URL(route.request().url()).pathname);
-    const file = path.resolve(root, '.' + (pathname === '/' ? '/index.html' : pathname));
+    // Like the deployed site, an extensionless view path (/build) serves a copy of the page.
+    const file = path.resolve(root, '.' + (pathname === '/' || !path.extname(pathname) ? '/index.html' : pathname));
     if (!file.startsWith(root + path.sep)) return route.fulfill({status:403,body:''});
     try {return await route.fulfill({contentType:types[path.extname(file)]||'application/octet-stream',body:await readFile(file)})}
     catch {return route.fulfill({status:404,body:'Not found'})}
@@ -147,6 +149,7 @@ try {
   await page.locator('#rshare').click();
   await page.waitForFunction(()=>document.getElementById('rshare').classList.contains('copied'));
   const shareURL=await page.evaluate(()=>window.copiedText);
+  assert.match(shareURL,/^http:\/\/127\.0\.0\.1:\d+\/\?b=1\.[^#]+$/);
   const sharePage=await context.newPage();
   sharePage.on('pageerror',error=>errors.push(error.message));
   await sharePage.goto(shareURL,{waitUntil:'domcontentloaded'});
@@ -208,7 +211,31 @@ try {
 
   // Browser history and small screens keep the same UI and cannot leak overlays.
   await page.goBack();await page.waitForFunction(()=>!document.getElementById('view-build').hidden);
+  assert.equal(new URL(page.url()).pathname,'/build');
   await page.goForward();await page.waitForFunction(()=>!document.getElementById('view-directory').hidden);
+  assert.equal(new URL(page.url()).pathname,'/directory');
+  // URLs carry no # fragment, a view path opens that view directly, and links shared in the old #view / #b= form still open.
+  {
+    const linkPage=await context.newPage();
+    linkPage.on('pageerror',error=>errors.push(error.message));
+    await linkPage.goto(origin+'/saved',{waitUntil:'domcontentloaded'});
+    await linkPage.waitForFunction(()=>!document.getElementById('view-saved').hidden);
+    await linkPage.goto(origin+'/#build',{waitUntil:'domcontentloaded'});
+    await linkPage.waitForFunction(()=>!document.getElementById('view-build').hidden);
+    assert.equal(linkPage.url(),origin+'/build');
+    await linkPage.locator('#brandlink').click();
+    await linkPage.waitForFunction(()=>!document.getElementById('view-finder').hidden);
+    assert.equal(linkPage.url(),origin+'/');
+    const code=new URL(shareURL).searchParams.get('b');
+    await linkPage.goto(origin+'/#b='+code,{waitUntil:'domcontentloaded'});
+    await linkPage.waitForFunction(()=>!document.getElementById('results').hidden);
+    assert.equal(linkPage.url(),origin+'/?b='+code);
+    assert.equal(await linkPage.evaluate(()=>buildKey(resView(resList[resIdx]).b)),exactBuild);
+    await linkPage.keyboard.press('Escape');
+    await linkPage.waitForFunction(()=>document.getElementById('results').hidden);
+    assert.equal(linkPage.url(),origin+'/');
+    await linkPage.close();
+  }
   await page.locator('#nav-finder').click();
   for(const [width,height] of [[1440,900],[1280,631],[768,800],[390,844],[390,667]]){
     await page.setViewportSize({width,height});

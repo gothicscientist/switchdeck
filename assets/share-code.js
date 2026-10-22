@@ -1,7 +1,7 @@
-/* Shareable build links. A build and the finder answers travel in the URL fragment, so a link works on any static
-   host (GitHub Pages included) with no server, account or storage, and the fragment never reaches a server log.
+/* Shareable build links. A build and the finder answers travel in the URL's query string (?b=), so a link works on
+   any static host (GitHub Pages included) with no server, account or storage. Older links used #b= and still open.
 
-   Version 1:  #b=1.<case>.<color>.<pcb>.<plate>.<switches>.<stabs>.<keycaps>.<extras>.<answers>
+   Version 1:  ?b=1.<case>.<color>.<pcb>.<plate>.<switches>.<stabs>.<keycaps>.<extras>.<answers>
    - Parts use the catalog's stable IDs. A store listing ID ("store-<product>" or "store-<product>~<variant>") is
      shortened to the store's letter plus base-36 numbers; any other ID is written as it is. Extras are joined with "_".
    - Empty fields stay blank and trailing blanks are dropped. Color 0 is blank.

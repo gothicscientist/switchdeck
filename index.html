@@ -621,7 +621,7 @@ a.listen.watch:hover{background:rgba(68,64,60,.16)}
 
 <header class="top">
   <div class="bar">
-    <a class="brand" href="#finder" id="brandlink" aria-label="Thock home">
+    <a class="brand" href="./" id="brandlink" aria-label="Thock home">
       <svg width="34" height="28" viewBox="0 0 34 28" aria-hidden="true"><path d="M5 4h24a3 3 0 0 1 3 3v14a3 3 0 0 1-3 3H5a3 3 0 0 1-3-3V7a3 3 0 0 1 3-3z" fill="none" stroke="currentColor" stroke-width="2.4"/><path d="M8 10h3M14 10h3M20 10h3M26 10h0M8 15h18M11 20h12" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
     <span class="wordmark" aria-hidden="true">thock</span>
     </a>
@@ -1319,7 +1319,7 @@ function playClip(key,btn){
   clipTimer=setTimeout(stopClip,CLIP_SECONDS*3*1000);
 }
 document.addEventListener('click',e=>{const b=e.target.closest('[data-clip]');if(b){e.preventDefault();e.stopPropagation();playClip(b.dataset.clip,b)}},true);
-window.addEventListener('hashchange',stopClip);
+window.addEventListener('popstate',stopClip);
 document.addEventListener('visibilitychange',()=>{if(document.hidden) stopClip()});
 const SOUND_TESTS={
   milkyyp:{video:'rAw8qIYDc5A',creator:'Jur1cek',title:'Gateron Milky Yellow Pro | GMK67 | sound test',setup:'GMK67; Cherry-profile PBT keycaps; three layers of tape and extra case foam.',treatment:'Factory prelubed switches.'},
@@ -1386,9 +1386,21 @@ const storeChips=p=>buyLinks(p).length?buyLinks(p).map(l=>`<a class="store ${l.m
 /* =========================================================
    ROUTING
    ========================================================= */
+/* Each view has a clean path beside the site root (/, /build, /saved, /directory). The deploy stages a copy of this
+   page at each path (scripts/stage-site.mjs), so a direct link or reload opens the same view. Old #view and #b= links
+   are rewritten to the new form on load. */
+const VIEWS=['finder','build','saved','directory'];
+const SITE_ROOT=new URL('./',location.href).pathname;
+const viewPath=v=>SITE_ROOT+(v==='finder'?'':v);
+const pathView=()=>{const seg=location.pathname.slice(SITE_ROOT.length).replace(/\.html$/,'');return VIEWS.includes(seg)?seg:'finder'};
+function upgradeLegacyHash(){
+  const h=location.hash.slice(1); if(!h) return;
+  const url=h.startsWith('b=')?SITE_ROOT+'?'+SHARE_PARAM+'='+h.slice(2):VIEWS.includes(h)?viewPath(h):null;
+  if(url){try{history.replaceState(null,'',url)}catch(e){}}
+}
 let view='finder';
 function go(v,push=true){
-  if(!['finder','build','saved','directory'].includes(v))v='finder';
+  if(!VIEWS.includes(v))v='finder';
   stopClip();
   if(!document.getElementById('results').hidden) closeResults(true);
   if(!document.getElementById('picker').hidden) closePicker();
@@ -1403,13 +1415,15 @@ function go(v,push=true){
   }
   if(v==='build') renderBuilder(); if(v==='saved') renderSaved(); if(v==='finder') renderFinder();
   if(v==='directory') window.SwitchdeckDirectory.open();
-  if(push&&location.hash!=='#'+v){try{history.pushState(null,'','#'+v)}catch(e){}}
+  if(push&&(location.pathname!==viewPath(v)||location.search||location.hash)){try{history.pushState(null,'',viewPath(v))}catch(e){}}
   window.scrollTo({top:0}); onScroll();
 }
-window.addEventListener('hashchange',()=>{
-  if(location.hash.startsWith(SHARE_HASH)){openShare(location.hash.slice(SHARE_HASH.length));return}
+function route(){
+  upgradeLegacyHash();
+  const code=shareCode(); if(code!=null){openShare(code);return}
   if(!document.getElementById('results').hidden) closeResults();
-  const v=location.hash.slice(1);if(v!==view)go(v,false)});
+  const v=pathView();if(v!==view)go(v,false)}
+window.addEventListener('popstate',route);
 function onScroll(){document.body.classList.toggle('has-scroll',view!=='finder'&&window.scrollY>8)}
 window.addEventListener('scroll',onScroll,{passive:true});
 document.addEventListener('click',e=>{const g=e.target.closest('[data-go]'); if(g){e.preventDefault(); go(g.dataset.go)}});
@@ -2276,16 +2290,17 @@ function openResults(caseId,opts={}){
 }
 function closeResults(immediate=false){
   const el=document.getElementById('results'), s=el.querySelector('.rscrim'); if(!s) return;
-  if(location.hash.startsWith(SHARE_HASH)){try{history.replaceState(null,'','#finder')}catch(e){}}
+  if(shareCode()!=null){try{history.replaceState(null,'',viewPath('finder'))}catch(e){}}
   clearTimeout(resultsCloseTimer);
   const finish=()=>{el.hidden=true;el.innerHTML='';window.ThockUI.closeModal(el)};
   if(immediate===true||window.ThockUI.reducedMotion()){finish();return}
   s.classList.add('closing'); resultsCloseTimer=setTimeout(finish,220);
 }
-/* Share links: #b=<code> (format in assets/share-code.js). Opening one restores the answers and shows that exact
+/* Share links: ?b=<code> (format in assets/share-code.js). Opening one restores the answers and shows that exact
    build on the results screen; parts the catalog no longer has stay empty with a note, never replaced. */
-const SHARE_HASH='#b=';
-const shareUrl=b=>location.origin+location.pathname+SHARE_HASH+SwitchdeckShare.encode(b,quizAns,QUESTIONS);
+const SHARE_PARAM='b';
+const shareUrl=b=>location.origin+SITE_ROOT+'?'+SHARE_PARAM+'='+SwitchdeckShare.encode(b,quizAns,QUESTIONS);
+const shareCode=()=>new URLSearchParams(location.search).get(SHARE_PARAM);
 function readShare(code){
   let d; try{d=SwitchdeckShare.decode(code,QUESTIONS)}catch(e){return null}
   const missing=['case','pcb','plate','switches','stabs','keycaps'].filter(k=>d.b[k]&&BYID[d.b[k]]?.cat!==k);
@@ -2295,7 +2310,7 @@ function readShare(code){
 }
 function openShare(code){
   const sh=readShare(code);
-  if(!sh){toast("That build link couldn't be read. Check it was copied in full."); try{history.replaceState(null,'','#finder')}catch(e){} if(view!=='finder') go('finder',false); return}
+  if(!sh){toast("That build link couldn't be read. Check it was copied in full."); try{history.replaceState(null,'',viewPath('finder'))}catch(e){} if(view!=='finder') go('finder',false); return}
   quizAns=sh.ans; quizStep=QUESTIONS.length; qDir=1; saveQuizProgress();
   clearTimeout(resultsCloseTimer);
   const res=document.getElementById('results'); if(!res.hidden){res.hidden=true; res.innerHTML='';window.ThockUI.closeModal(res)}
@@ -2801,7 +2816,6 @@ document.getElementById('importbtn').onclick=()=>{
 /* =========================================================
    BOOT
    ========================================================= */
-const start=(location.hash||'').replace('#','');
 // The directory lists retailer listings; one listing can hold several builder parts (one per spring weight or type).
 const BY_LISTING=new Map();for(const p of ALLPARTS)if(p.catalogId){if(!BY_LISTING.has(p.catalogId))BY_LISTING.set(p.catalogId,[]);BY_LISTING.get(p.catalogId).push(p)}
 window.SwitchdeckBuilder={
@@ -2822,8 +2836,10 @@ cleanAnswers(quizAns);
 {const step=store.get('sy.quizStep',0);quizStep=Number.isInteger(step)&&step>=0&&step<=QUESTIONS.length?step:0;
   const firstMissing=QUESTIONS.findIndex(q=>quizAns[q.key]==null);if(firstMissing>=0)quizStep=Math.min(quizStep,firstMissing)}
 {const n=document.getElementById('affnote'); if(globalThis.SwitchdeckLinks.hasAffiliates()){n.textContent=AFF_NOTE; n.hidden=false}}
-go(['finder','build','saved','directory'].includes(start)?start:'finder',false);
-if(location.hash.startsWith(SHARE_HASH)) openShare(location.hash.slice(SHARE_HASH.length));
+upgradeLegacyHash();
+if(/\.html$/.test(location.pathname)){try{history.replaceState(null,'',viewPath(pathView())+location.search)}catch(e){}}
+go(pathView(),false);
+if(shareCode()!=null) openShare(shareCode());
 renderPill();
 </script>
 </html>

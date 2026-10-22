@@ -19,5 +19,20 @@ for(const file of new Set(refs)){
 }
 html=html.replace('<meta charset="utf-8">','<meta charset="utf-8">\n<meta name="thock-catalog-version" content="'+manifest.fingerprint+'">');
 await writeFile(path.join(dist,'index.html'),html);
+// Clean view URLs: GitHub Pages serves /build from build.html, so each view gets a copy of the page and a direct link
+// or reload opens it with a 200. Any other path falls back to 404.html, which sends it to the nearest real page.
+for(const view of ['build','saved','directory'])await writeFile(path.join(dist,view+'.html'),html);
+await writeFile(path.join(dist,'404.html'),`<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="robots" content="noindex"><title>Thock</title>
+<script>
+(()=>{
+  // The site is at / on thock.cc and at /<repo>/ on a github.io address.
+  const parts=location.pathname.split('/').filter(Boolean);
+  const root=location.hostname.endsWith('.github.io')&&parts.length?'/'+parts.shift()+'/':'/';
+  const view=(parts[0]||'').replace(/\\.html$/,'');
+  location.replace(root+(['build','saved','directory'].includes(view)?view:'')+location.search+location.hash);
+})();
+</script></head><body></body></html>
+`);
 await writeFile(path.join(dist,'.nojekyll'),'');
 console.log('Staged Thock browser assets in dist/');

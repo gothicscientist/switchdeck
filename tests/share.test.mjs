@@ -15,9 +15,9 @@ const qsrc=html.slice(html.indexOf('const QUESTIONS = ['),html.indexOf('\n];',ht
 const QUESTIONS=[...qsrc.matchAll(/\{key:'(\w+)'([\s\S]*?)(?=\{key:'|\n\];)/g)].map(([,key,body])=>
   /budget:true/.test(body)?{key,budget:true}:{key,opts:[...body.matchAll(/\{v:'([^']+)'/g)].map(m=>({v:m[1]}))});
 
-test('the page loads the share code and links to #b=',()=>{
+test('the page loads the share code and links to ?b=',()=>{
   assert.match(html,/<script src="assets\/share-code.js"><\/script>/);
-  assert.match(html,/const SHARE_HASH='#b=';/);
+  assert.match(html,/const SHARE_PARAM='b';/);
 });
 test('every catalog part ID survives a share link unchanged',()=>{
   assert.ok(parts.length>5000);

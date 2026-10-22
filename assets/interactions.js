@@ -30,7 +30,7 @@
     const [modal] = stack.splice(index, 1);
     sync();
     if (modal.previous?.isConnected && visible(modal.previous)) modal.previous.focus({preventScroll:true});
-    else if (!stack.length) document.querySelector('#nav-' + location.hash.slice(1))?.focus({preventScroll:true});
+    else if (!stack.length) document.querySelector('[id^="nav-"][aria-current="page"]')?.focus({preventScroll:true});
   }
 
   document.addEventListener('pointerdown', () => {keyboardUsed = false}, true);
