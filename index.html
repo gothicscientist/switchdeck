@@ -574,7 +574,6 @@ a.listen.watch:hover{background:rgba(68,64,60,.16)}
 
 .rdetail .rclose{left:auto;right:14px;top:14px}
 .rparts .phead{padding-right:58px}
-.rparts .affnote{margin:0;padding:8px 22px 0;font-size:11.5px}
 
 @media (max-width:1000px){
   .bgrid{grid-template-columns:minmax(0,1fr);gap:28px}
@@ -1410,7 +1409,6 @@ const moreSoundTests=p=>p&&soundTest(p)?`<a class="textlink" href="${esc(soundSe
    ========================================================= */
 const ARROW='<svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M3 2h5v5M8 2L2.5 7.5"/></svg>';
 const AFF_NOTE='Some store links are affiliate links. We may earn a commission when you buy through them, at no extra cost to you.'+(globalThis.SWITCHDECK_AFFILIATES?.['amazon.com']?.code?' As an Amazon Associate we earn from qualifying purchases.':'');
-const affNote=()=>globalThis.SwitchdeckLinks.hasAffiliates()?`<p class="note affnote">${AFF_NOTE}</p>`:'';
 function buyLinks(p){return globalThis.SwitchdeckLinks.linksFor(p).map(r=>({n:r.name,u:r.href||r.url,maker:true,available:r.available}))}
 // Each store's own favicon (https://<store domain>/favicon.ico), drawn as an SVG <image> so the page has no raw image tag.
 // If it fails to load, the capturing error listener below flips .fav to .bad and a letter badge shows instead.
@@ -2597,7 +2595,7 @@ function renderRDetail(opts={}){
       ${s?'':`<p class="note" style="margin:0">Sold assembled: its switches and keycaps come with it. Swap them in the builder to change the feel or look.</p>`}
       <textarea id="rcopyfb" hidden aria-label="Parts list" style="width:100%;min-height:80px;font-size:12px;background:var(--tile);border:0;border-radius:8px;padding:8px"></textarea>
     </div>
-    <div class="rparts swapin"><div class="phead"><h3>Parts in this build</h3></div>${affNote()}
+    <div class="rparts swapin"><div class="phead"><h3>Parts in this build</h3></div>
       ${rows.join('')}</div>`;
   if(keep){const g=el.closest('.rgrid'); if(g) g.scrollTop=keep.grid; el.querySelector('.rparts').scrollTop=keep.parts; el.querySelector('.rsum').scrollTop=keep.sum;
     const fills=[...el.querySelectorAll('.rsf-row')].map(x=>x.querySelector('.rsf-fill'));
