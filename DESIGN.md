@@ -76,3 +76,10 @@ licence is recorded in assets/quiz/CREDITS.md: openly licensed Commons photos, o
 - One summary rail, one surface split by hairlines: parts subtotal, compatibility, sound and feel scales (same hairlines as results, which only sweep when a change moves them), suggested mods, then copy actions.
 - Compatibility is a list of one-line items with a status dot. No verdict banner and no grey sub-notes; the detail lives in each item's tooltip. Items never claim a fit the data doesn't confirm.
 - The affiliate disclosure and price terms live in the page's footer note.
+
+## Search and link previews
+
+- Each view's title and description live in assets/view-meta.js; the deploy writes them into each staged page's head (scripts/stage-site.mjs). /saved is noindex. Titles name the page plainly, no slogans.
+- The link preview (assets/og.png, 1200x630) is drawn from the site's own boards by scripts/og-image.mjs, in the stone palette with Host Grotesk. Rerun it after a palette or wordmark change rather than editing the PNG.
+- Search and AI-assistant copy stays factual. /about ("How Thock works"), llms.txt and the sitemap are filled from the catalog manifest on every deploy, so figures never go stale. The about page questions live in scripts/seo-content.mjs.
+- No visible SEO clutter in the app: the only additions are a quiet "How Thock works" link in the build and directory footers. Nav icons are real links so crawlers can follow them.

@@ -6,7 +6,7 @@ import {getJSON,feedAllowed} from '../scripts/catalog-network.mjs';
 import {admit,normalize,SOURCES} from '../scripts/catalog-lib.mjs';
 
 const html=await readFile(new URL('../index.html',import.meta.url),'utf8');
-const inline=[...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g)].map(m=>m[1]).filter(Boolean).join('\n');
+const inline=[...html.matchAll(/<script(?![^>]*application\/ld\+json)(?:\s[^>]*)?>([\s\S]*?)<\/script>/g)].map(m=>m[1]).filter(Boolean).join('\n');
 async function engine(storage={}){
   const ctx={URL,window:{},localStorage:{getItem:k=>storage[k]??null},innerWidth:1300,btoa:s=>Buffer.from(s,'binary').toString('base64'),atob:s=>Buffer.from(s,'base64').toString('binary')};vm.createContext(ctx);
   for(const f of ['assets/product-links.js','data/product-links.js','assets/part-names.js','data/builder-catalog.js'])vm.runInContext(await readFile(new URL('../'+f,import.meta.url),'utf8'),ctx);
