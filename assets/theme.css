@@ -5,6 +5,7 @@
   --ink:#F2F0ED; --ink-2:#D6D1CA; --muted:#B0A9A1; --faint:#918A82; --line:#403C38;
   --dark:#E7E2DB; --dark-hover:#FFFFFF; --on-dark:#242220;
   --accent:#D6D1CA; --accent-soft:rgba(214,209,202,.12);
+  --slider:#5DB985; --slider-ink:#2F7F55;
   --ok:#79C896; --warn:#E5B66C; --fail:#EF9389; --info:#93B6EC;
   --ok-soft:rgba(121,200,150,.12); --warn-soft:rgba(229,182,108,.12);
   --fail-soft:rgba(239,147,137,.12); --info-soft:rgba(147,182,236,.12);
