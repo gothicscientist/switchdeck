@@ -1,0 +1,13 @@
+{
+  "sources": {
+    "keys": {"freesound": 660387, "user": "Xemptful", "title": "Single Key Presses on Mechanical Keyboard", "preview": "https://cdn.freesound.org/previews/660/660387_3531538-hq.mp3", "license": "CC0 1.0"},
+    "large": {"freesound": 813210, "user": "Capt.Jack", "title": "Single_Key_Stroke_Large_Key", "preview": "https://cdn.freesound.org/previews/813/813210_7987620-hq.mp3", "license": "CC0 1.0"}
+  },
+  "clips": [
+    {"file": "key-1", "source": "keys", "at": 1.461, "length": 0.26, "use": "Picking a quiz answer (one of three presses, chosen at random)"},
+    {"file": "key-2", "source": "keys", "at": 2.965, "length": 0.27, "use": "Picking a quiz answer"},
+    {"file": "key-3", "source": "keys", "at": 4.047, "length": 0.26, "use": "Picking a quiz answer"},
+    {"file": "confirm", "source": "keys", "at": 1.828, "length": 0.28, "use": "Copying a share link"},
+    {"file": "settle", "source": "large", "at": 0.082, "length": 0.26, "use": "Opening a build (a larger key, like a spacebar)"}
+  ]
+}

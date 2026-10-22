@@ -1,0 +1,37 @@
+name: Build interface sounds
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/sfx-sources.json'
+      - 'scripts/build-sfx.mjs'
+      - '.github/workflows/sfx.yml'
+permissions:
+  contents: write
+concurrency:
+  group: interface-sounds
+  cancel-in-progress: false
+jobs:
+  sounds:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
+      - run: node scripts/build-sfx.mjs
+      - name: Commit sounds
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/sounds/ui
+          if ! git diff --cached --quiet; then
+            git commit -m "Build interface sounds"
+            git pull --rebase origin main
+            git push origin HEAD:main
+          fi
