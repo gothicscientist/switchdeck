@@ -20,5 +20,5 @@ for(const s of sources){
     '-ac','1','-ar','44100','-c:a','libmp3lame','-b:a','96k',path.join(out,s.key+'.mp3')]);
   credits.push(`- **${s.label}** (\`${s.key}.mp3\`): "${s.title}" by ${s.user}, https://freesound.org/s/${s.freesound}/ (${s.license}). ${s.note}. Trimmed to 10 s from ${s.start} s and loudness-matched.`);
 }
-await writeFile(path.join(out,'CREDITS.md'),`# Sound example credits\n\nThe quiz's sound examples are cut from these Freesound recordings. Each is released under the license shown.\n\n${credits.join('\n')}\n`);
+await writeFile(path.join(out,'CREDITS.md'),`# Sound example credits\n\nThe quiz's sound examples are cut from these Freesound recordings. Each is released under the license shown.\n\n${credits.join('\n')}\n\nThe site's interface sounds (key presses when you answer or open a build) have their own credits in [ui/CREDITS.md](ui/CREDITS.md).\n`);
 console.log(`Wrote ${sources.length} clips`);

@@ -17,6 +17,8 @@
 .theme-toggle:active{transform:scale(.92)}
 .theme-toggle svg{grid-area:1/1;width:20px;height:20px;transition:opacity .2s,transform .25s var(--ease)}
 .theme-toggle .theme-sun{opacity:0;transform:rotate(-45deg) scale(.7)}
+.sound-toggle .snd-off,.sound-toggle[aria-pressed="false"] .snd-on{opacity:0;transform:scale(.7)}
+.sound-toggle[aria-pressed="false"] .snd-off{opacity:1;transform:none}
 :root[data-theme="dark"] .theme-moon{opacity:0;transform:rotate(45deg) scale(.7)}
 :root[data-theme="dark"] .theme-sun{opacity:1;transform:none}
 :root[data-theme="dark"] #view-finder::before{background:radial-gradient(ellipse 62% 52% at 50% -4%,rgba(214,209,202,.065),transparent 72%),radial-gradient(ellipse 125% 105% at 50% 42%,transparent 58%,rgba(0,0,0,.16) 100%)}
