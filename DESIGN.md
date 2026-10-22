@@ -66,3 +66,12 @@ licence is recorded in assets/quiz/CREDITS.md: openly licensed Commons photos, o
 - Controls in one quiet stack: a wide search with the sort beside it, text tabs for categories (no counts), then outlined filter chips. Clear filters only appears when something is set. On phones the filter chips fold behind a Filters button and the tabs scroll sideways.
 - Results are open tiles, not shadowed cards: a photo tile, then text on the page. The whole tile opens details; store links and Add to build are text links under the price.
 - Tile photos come from the builder catalog's checked crops (SwitchdeckBuilder.photo), with the tile painted in the photo's own backdrop colour so nothing looks boxed in. Listings without a checked photo show a drawn part. Raw retailer photos appear only in the details dialog.
+
+## Build page
+
+- The heading is the build's editable name, alone. No eyebrow above it; an example build gets one plain line under it.
+- The preview is always the drawn build (case colour, keycaps, layout), never a store photo, so every change shows. There is no Photo toggle. It sits on one open stage with the colour swatches, the colour's name and the layout under the board.
+- Parts are open rows on the page, split by hairlines: thumbnail, slot name, part name, specs as spaced plain words, then store links as text. Price sits on the right with Change and Remove as text actions under it. Kit parts share one "Included" row. An empty slot is a single row button with a plus.
+- One summary rail, one surface split by hairlines: parts subtotal, compatibility, sound and feel scales (same hairlines as results, which only sweep when a change moves them), suggested mods, then copy actions.
+- Compatibility is a list of one-line items with a status dot. No verdict banner and no grey sub-notes; the detail lives in each item's tooltip. Items never claim a fit the data doesn't confirm.
+- The affiliate disclosure and price terms live in the page's footer note.

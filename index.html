@@ -190,9 +190,6 @@ h1,h2,h3{text-wrap:balance;margin:0;font-weight:700;letter-spacing:-.02em}
 .pf-photo{overflow:hidden}
 .credit{position:absolute;left:14px;bottom:12px;font-size:11px;color:var(--faint)}
 .boardwrap{position:relative}
-.stagetoggle{position:absolute;top:14px;right:14px;display:flex;background:var(--surface);border-radius:9px;padding:3px;box-shadow:var(--shadow-sm)}
-.stagetoggle button{border:0;background:transparent;font-size:12.5px;font-weight:600;padding:5px 10px;border-radius:7px;color:var(--muted)}
-.stagetoggle button[aria-pressed="true"]{background:var(--tile-hover);color:var(--ink)}
 
 /* RESULTS modal */
 .rscrim{position:fixed;inset:0;z-index:85;background:var(--scrim);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;padding:max(24px,env(safe-area-inset-top,0px)) max(24px,env(safe-area-inset-right,0px)) max(24px,env(safe-area-inset-bottom,0px)) max(24px,env(safe-area-inset-left,0px));animation:fade .3s var(--ease) both}
@@ -235,78 +232,101 @@ h1,h2,h3{text-wrap:balance;margin:0;font-weight:700;letter-spacing:-.02em}
 .rlist .best{font-size:11.5px;border-radius:6px;padding:4px 8px;box-shadow:inset 0 0 0 1px var(--line);white-space:nowrap}
 .rdetail .swapin{animation:fade .35s var(--ease) both}
 
-/* BUILDER */
+/* BUILDER: the drawn build on one open stage, an open parts list under it, and a single summary rail. No cards inside
+   cards, no status banners: colour comes from the board and its parts. */
 .page{padding-top:calc(72px + env(safe-area-inset-top,0px));padding-bottom:80px}
-.bhead{padding-block:24px 22px;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;align-items:flex-end}
-.bhead input{border:0;background:transparent;text-overflow:ellipsis;font-size:clamp(26px,3.4vw,36px);font-weight:700;letter-spacing:-.03em;width:100%;padding:2px 6px;margin-left:-6px;color:var(--ink);border-radius:8px;transition:background .2s}
+.bhead{padding-block:32px 28px;display:flex;justify-content:space-between;gap:16px 24px;flex-wrap:wrap;align-items:flex-end}
+.bname{flex:1 1 320px;min-width:0}
+.bhead input{display:block;border:0;background:transparent;text-overflow:ellipsis;font-size:clamp(30px,3.8vw,44px);font-weight:700;letter-spacing:-.035em;line-height:1.12;width:100%;padding:2px 8px;margin-left:-8px;color:var(--ink);border-radius:10px;transition:background .2s}
 .bhead input:hover,.bhead input:focus{background:var(--tile-hover);outline:none}
-.bgrid{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:16px;align-items:start}
-.stage{overflow:hidden}
+.bnote{margin:6px 0 0;font-size:14px;color:var(--muted)}
+.bacts{display:flex;gap:8px;flex-wrap:wrap}
+.bgrid{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:32px;align-items:start}
 .boardwrap{background:var(--tile);padding:44px 36px 36px;min-height:220px;display:flex;align-items:center;justify-content:center}
 .boardwrap svg,.boardwrap img{filter:drop-shadow(0 18px 24px rgba(41,37,36,.16))}
 .boardwrap .swap{animation:boardSwap .6s var(--out) both;width:100%}
 @keyframes boardSwap{from{opacity:0;transform:translateY(8px) scale(.99)}to{opacity:1;transform:none}}
-.boardwrap .empty{color:var(--muted);text-align:center;display:grid;gap:12px;justify-items:center}
-.stage svg.board{width:100%;height:auto;display:block}
-.swatches{display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:13px;color:var(--muted);padding:14px 20px}
+.boardwrap .empty{color:var(--muted);text-align:center;display:grid;gap:16px;justify-items:center}
+.boardwrap .empty p{margin:0;font-size:15px}
+.stage{background:var(--surface);border-radius:28px;overflow:hidden}
+.stage .boardwrap{background:none;min-height:340px;padding:clamp(40px,6vw,76px) clamp(24px,5.5vw,72px) clamp(28px,4vw,48px)}
+.stage svg.board{width:100%;height:auto;display:block;filter:drop-shadow(0 28px 32px rgba(41,37,36,.16)) drop-shadow(0 3px 6px rgba(41,37,36,.08))}
+:root[data-theme="dark"] .stage{background:radial-gradient(ellipse 70% 60% at 50% 42%,rgba(242,240,237,.045),transparent 72%),var(--surface)}
+:root[data-theme="dark"] .stage svg.board{filter:drop-shadow(0 28px 36px rgba(0,0,0,.42)) drop-shadow(0 3px 6px rgba(0,0,0,.3))}
+.swatches{display:flex;gap:14px;align-items:center;flex-wrap:wrap;font-size:13px;color:var(--muted);padding:0 28px 24px}
+.swatches:empty{display:none}
+.swset{display:flex;gap:10px}
+.swname{color:var(--ink-2);font-weight:500}
+.swlay{margin-left:auto}
 .sw{width:22px;height:22px;border-radius:50%;border:0;padding:0;box-shadow:inset 0 0 0 1px rgba(0,0,0,.14);transition:transform .25s var(--spring),box-shadow .2s}
 .sw:hover{transform:scale(1.12)}
 .sw[aria-pressed="true"]{box-shadow:inset 0 0 0 1px rgba(0,0,0,.14),0 0 0 2px var(--surface),0 0 0 3.5px var(--ink)}
-.plist{margin-top:16px;overflow:hidden}
-.plist-head{display:none}
-.prow{display:grid;grid-template-columns:130px minmax(0,1fr) 110px 130px;gap:16px;padding:16px 20px;border-bottom:1px solid var(--line);align-items:center;transition:background .2s}
-.prow:last-child{border-bottom:0}
-.prow .slot{font-weight:600;display:flex;flex-direction:column;gap:1px}
-.prow .slot small{font-weight:400;color:var(--muted);font-size:12px}
-.prow .item{display:flex;gap:14px;align-items:center;min-width:0}
 .thumb{flex:none;width:72px;height:52px;border-radius:8px;background:var(--tile);display:flex;align-items:center;justify-content:center;overflow:hidden;padding:5px}
 .thumb svg,.thumb img{width:100%;height:100%;object-fit:contain}
-.item .meta{min-width:0;display:flex;flex-direction:column;gap:4px}
-.item .meta b{font-size:14px;font-weight:600;line-height:1.25}
-.item .meta .by{font-size:12.5px;color:var(--muted)}
-.item .meta .by a{color:var(--muted);text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:2px}
-.item .meta .by a:hover{color:var(--ink)}
-.item .specs{display:flex;gap:4px;flex-wrap:wrap}
-.prow .price{text-align:right;font-size:14px;font-weight:600;display:flex;flex-direction:column;align-items:flex-end;gap:2px}
-.prow .price small{color:var(--muted);font-size:11.5px;font-weight:400}
-.prow .acts{display:flex;gap:4px;justify-content:flex-end}
-.prow.included .meta b{color:var(--muted);font-weight:500}
-.addbtn{border:0;background:var(--tile);border-radius:var(--r-tile);padding:13px 16px;color:var(--ink-2);font-weight:600;text-align:left;width:100%;transition:background .2s,transform .15s}
-.addbtn:hover{background:var(--tile-hover)}
-.addbtn:active{transform:scale(.99)}
-.addbtn:disabled{color:var(--faint);cursor:not-allowed}
-.extras-list{display:grid;gap:8px}
-.extra-line{display:flex;justify-content:space-between;gap:8px;align-items:center;font-size:13.5px}
-.extra-line .thumb{width:44px;height:32px}
-.rail{display:grid;gap:16px;position:sticky;top:calc(env(safe-area-inset-top,0px) + 84px)}
-.rail section{padding:20px;display:grid;gap:12px}
-.rail h3{font-size:15px;letter-spacing:-.01em}
-.verdict{display:flex;gap:8px;align-items:center;padding:10px 12px;border-radius:var(--r-tile);font-weight:600}
-.verdict.ok{background:var(--ok-soft);color:var(--ok)}.verdict.warn{background:var(--warn-soft);color:var(--warn)}.verdict.fail{background:var(--fail-soft);color:var(--fail)}.verdict.info{background:var(--info-soft);color:var(--info)}
-.issues{list-style:none;margin:0;padding:0;display:grid;gap:9px;font-size:13px}
-.issues li{display:grid;grid-template-columns:12px 1fr;gap:8px;align-items:start;animation:fade .35s var(--ease) both}
-.issues li i{width:7px;height:7px;border-radius:50%;margin-top:6px}
+/* Parts: thumbnail, what it is, where to buy it; price with Change and Remove on the right. */
+.plist{margin-top:12px}
+.prow{display:grid;grid-template-columns:88px minmax(0,1fr) auto;grid-template-areas:"t m s" "t m a";grid-template-rows:auto 1fr;column-gap:22px;padding:22px 0;border-bottom:1px solid var(--line)}
+.prow:last-child{border-bottom:0}
+.prow>.thumb{grid-area:t;width:88px;height:66px;border-radius:14px;background:var(--surface);padding:8px}
+.prow .meta{grid-area:m;min-width:0;display:flex;flex-direction:column;gap:3px}
+.prow .meta small{font-size:12.5px;color:var(--muted)}
+.prow .meta b{font-size:16px;font-weight:600;letter-spacing:-.012em;line-height:1.3}
+.prow .specs{display:flex;flex-wrap:wrap;gap:2px 12px;font-size:13px;color:var(--muted)}
+.prow .specs .chip{background:none;padding:0;border-radius:0;font-size:inherit;font-weight:400;color:inherit}
+.prow .specs .chip.warn{color:var(--warn);font-weight:500}.prow .specs .chip.fail{color:var(--fail);font-weight:500}
+.prow .stores{display:flex;flex-wrap:wrap;align-items:center;gap:8px 18px;margin-top:10px}
+.prow .store,.prow .store.maker{padding:0;background:none;box-shadow:none;font-size:13px;font-weight:500;color:var(--ink-2);gap:6px}
+.prow .store:hover,.prow .store.maker:hover{background:none;box-shadow:none;color:var(--ink);text-decoration:underline;text-underline-offset:3px}
+.prow .store svg{width:9px;height:9px}
+.prow .store .fav svg{width:14px;height:14px;opacity:1}
+.prow .stores .note{font-size:12.5px}
+.prow .side{grid-area:s;display:flex;flex-direction:column;align-items:flex-end;gap:2px;text-align:right;white-space:nowrap}
+.prow .amt{font-size:16px;font-weight:600}
+.prow .side small{font-size:12px;color:var(--muted)}
+.prow .incl{font-size:13px;color:var(--muted)}
+.prow .acts{grid-area:a;display:flex;gap:16px;justify-content:flex-end;align-items:flex-start;margin-top:8px}
+.linkbtn{border:0;background:none;padding:2px 0;font:inherit;font-size:13px;font-weight:500;color:var(--ink-2);cursor:pointer;transition:color .2s}
+.linkbtn:hover{color:var(--ink);text-decoration:underline;text-underline-offset:3px}
+.linkbtn.quiet{color:var(--muted)}
+.prow.inc .meta b{font-weight:500}
+/* An empty slot is one button: an outlined tile with a plus, and what to choose. */
+.prow.add{width:100%;border:0;border-bottom:1px solid var(--line);background:none;font:inherit;color:inherit;text-align:left;align-items:center;grid-template-areas:"t m s";grid-template-rows:auto;cursor:pointer}
+.prow.add:last-child{border-bottom:0}
+.prow.add .thumb{background:none;box-shadow:inset 0 0 0 1.5px var(--line);color:var(--faint);transition:background .2s,color .2s,box-shadow .2s}
+.prow.add .thumb svg{width:20px;height:20px}
+.prow.add .meta b{color:var(--ink-2);font-weight:500}
+.prow.add:hover .thumb{background:var(--surface);box-shadow:none;color:var(--ink)}
+.prow.add:hover .meta b{color:var(--ink)}
+.prow.add:disabled{cursor:not-allowed}
+.prow.add:disabled .meta b,.prow.add:disabled .thumb{color:var(--faint)}
+.prow.add:disabled:hover .thumb{background:none;box-shadow:inset 0 0 0 1.5px var(--line)}
+/* Summary rail: one surface split by hairlines. */
+.rail{background:var(--surface);border-radius:24px;padding:2px 24px}
+.rail section{padding:22px 0;display:grid;gap:14px;border-top:1px solid var(--line)}
+.rail section:first-child{border-top:0}
+.rail h3{margin:0;font-size:15px;font-weight:600;letter-spacing:-.01em}
+.rhead{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.rtotal{gap:6px!important}
+.rtotal span{font-size:13px;color:var(--muted)}
+.rtotal b{font-size:38px;font-weight:700;letter-spacing:-.04em;line-height:1.05}
+.issues{list-style:none;margin:0;padding:0;display:grid;gap:10px;font-size:13.5px;color:var(--ink-2)}
+.issues li{display:grid;grid-template-columns:14px 1fr;gap:8px;align-items:start;line-height:1.4}
+.issues li i{width:6px;height:6px;border-radius:50%;margin-top:7px}
 .issues .ok i{background:var(--ok)}.issues .warn i{background:var(--warn)}.issues .fail i{background:var(--fail)}.issues .info i{background:var(--info)}
-.issues small{color:var(--muted);font-size:12px}
-.totals{display:grid;gap:7px;font-size:13px}
-.totals div{display:flex;justify-content:space-between;gap:10px}
-.totals div span:first-child{color:var(--muted)}
-.totals .grand{font-size:20px;font-weight:700;border-top:1px solid var(--line);padding-top:10px;margin-top:4px;letter-spacing:-.02em}
-.totals .grand span:first-child{color:var(--ink)}
-.meter{display:grid;gap:5px}
-.meter .lbl{display:flex;justify-content:space-between;font-size:12.5px;color:var(--muted)}
-.meter .lbl b{color:var(--ink);font-weight:600}
-.meter .bar{position:relative;height:6px;border-radius:6px;background:var(--tile)}
-.meter .bar i{position:absolute;top:50%;width:14px;height:14px;border-radius:50%;background:var(--surface);box-shadow:0 1px 3px rgba(0,0,0,.25),inset 0 0 0 4px var(--accent);transform:translate(-50%,-50%);transition:left .7s var(--out)}
-.meter .ends{display:flex;justify-content:space-between;font-size:11px;color:var(--faint)}
-.railacts{display:flex;gap:8px;flex-wrap:wrap}
-.modcard .note{margin:-4px 0 4px}
-.modrow{display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
-.modrow .thumb{width:44px;height:33px;display:grid;place-items:center;border-radius:6px;background:var(--tile);overflow:hidden}
-.modrow small{display:block;font-size:11.5px;color:var(--faint)}
+.issues .fail{color:var(--ink)}
+.rail .rsf{gap:10px;padding:0}
+.rail .rsf-row{grid-template-columns:74px minmax(0,1fr) 104px}
+.rail .rsf-row.held .rsf-fill,.rail .rsf-row.held .rsf-w{animation:none}
+:root[data-theme="dark"] .rsf-bar::before{background:rgba(242,240,237,.1)}
+.railacts{display:flex!important;gap:8px;flex-wrap:wrap}
+.railacts textarea{width:100%;min-height:80px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:8px}
+.modcard{gap:4px!important}
+.modcard h3{margin-bottom:6px!important}
+.modrow{display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:12px;align-items:center;padding:8px 0}
+.modrow .thumb{width:44px;height:34px;display:grid;place-items:center;border-radius:8px;background:var(--tile);overflow:hidden;padding:3px}
 .modrow b{display:block;font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .modrow em{display:block;font-style:normal;font-size:12px;color:var(--muted);line-height:1.35}
-.modbuy{display:flex;flex-direction:column;align-items:flex-end;gap:4px;font-size:13px}
+.modbuy{display:flex;flex-direction:column;align-items:flex-end;gap:2px;font-size:13px}
 .note{font-size:12px;color:var(--muted)}
 
 /* picker sheet */
@@ -540,12 +560,9 @@ a.listen.watch:hover{background:rgba(68,64,60,.16)}
 .rdetail .rclose{left:auto;right:14px;top:14px}
 .rparts .phead{padding-right:58px}
 .rparts .affnote{margin:0;padding:8px 22px 0;font-size:11.5px}
-.prow .stores{grid-column:auto;margin-top:4px}
-.prow .stores .store{font-size:11.5px;padding:4px 9px}
 
 @media (max-width:1000px){
-  .bgrid{grid-template-columns:minmax(0,1fr)}
-  .rail{position:static}
+  .bgrid{grid-template-columns:minmax(0,1fr);gap:28px}
   .rgrid{grid-template-columns:minmax(0,1fr);height:100%;overflow:auto;grid-template-rows:max-content max-content}
   .rdetail{overflow:visible}
   .rdetail{grid-template-columns:minmax(0,1fr)}
@@ -566,11 +583,17 @@ a.listen.watch:hover{background:rgba(68,64,60,.16)}
   .opt{min-height:78px;padding:12px 8px}
   .opt .art{height:40px;margin-bottom:6px}
   .opt .art svg{max-height:40px}
-  .prow{grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"slot price" "item item" "acts acts";gap:10px}
-  .prow .slot{grid-area:slot;flex-direction:row;gap:8px;align-items:baseline}
-  .prow .item{grid-area:item}
-  .prow .price{grid-area:price}
-  .prow .acts{grid-area:acts;justify-content:flex-start}
+  .bhead{padding-block:20px 18px}
+  .bhead input{font-size:clamp(24px,7vw,30px)}
+  .bacts{width:100%}
+  .stage{border-radius:22px}
+  .stage .boardwrap{min-height:0;padding:36px 18px 24px}
+  .swatches{padding:0 18px 18px}
+  .prow{grid-template-columns:60px minmax(0,1fr) auto;grid-template-areas:"t m s" "t a a";column-gap:14px;padding:18px 0}
+  .prow>.thumb{width:60px;height:46px;border-radius:10px;padding:5px}
+  .prow .meta b{font-size:15px}
+  .prow .acts{justify-content:flex-start;margin-top:10px}
+  .rail{padding:2px 20px}
   .scrim{padding:0;align-items:flex-end}
   .drawer{height:94vh;border-radius:20px 20px 0 0}
   .dbody{grid-template-columns:minmax(0,1fr)}
@@ -647,24 +670,24 @@ a.listen.watch:hover{background:rgba(68,64,60,.16)}
   <!-- BUILDER -->
   <section class="view page" id="view-build" hidden>
     <div class="wrap">
-      <div class="bhead">
-        <div style="flex:1;min-width:240px">
-          <div class="eyebrow" id="buildeyebrow">Your build</div>
+      <header class="bhead">
+        <div class="bname">
           <input id="buildname" aria-label="Build name" value="My keyboard">
+          <p class="bnote" id="buildnote" hidden></p>
         </div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <div class="bacts">
           <button class="btn ghost small" id="clearbuild">Start over</button>
           <button class="btn small" data-go="directory">Browse all parts</button>
           <button class="btn primary small" id="savebuild">Save build</button>
         </div>
-      </div>
+      </header>
       <div class="bgrid">
         <div>
-          <div class="card stage">
+          <div class="stage">
             <div class="boardwrap" id="stageboard"></div>
             <div class="swatches" id="swatches"></div>
           </div>
-          <div class="card plist" id="plist"></div>
+          <div class="plist" id="plist"></div>
         </div>
         <aside class="rail" id="rail" aria-label="Build summary"></aside>
       </div>
@@ -972,7 +995,7 @@ function compat(b){
   const add=(level,slot,msg,sub)=>out.push({level,slot,msg,sub});
   if(!c){add('info','case','Pick a case or kit to start','The case decides the layout and which parts fit.');return out}
   if(c.assembled) add('info','case',`${partName(c)} is sold assembled`,'It ships with switches and keycaps. What you pick here are swaps or upgrades.');
-  else if(c.kit&&c.catalogId) add('info','case',`${partName(c)} is a kit listing`,`Check ${storeOf(c)} for exactly what's included.`);
+  else if(c.kit&&c.catalogId) add('info','case',`Check ${storeOf(c)} for what the ${partName(c)} kit includes`,`Check ${storeOf(c)} for exactly what's included.`);
   else if(c.kit) add('ok','case',`${partName(c)} is a kit`,`PCB, plate${c.kit.stabs?' and stabilizers':''} are included.`);
   if(!c.kit){
     const p=BYID[b.pcb], pl=BYID[b.plate];
@@ -1025,7 +1048,7 @@ function compat(b){
     else if(fit===false&&m.catalogId) add('warn','extras',`${partName(m)} is made for a different board`,'Pick a mod listed for this board or layout.');}
   if(pcb && pcb.hotswap && !(b.extras||[]).includes('puller')) add('info','extras','Get a switch puller','Swapping switches on a hot-swap board needs one.');
   if(/Tri-mode|Bluetooth/.test(c.conn)) add('ok','case',`${c.conn} wireless`, 'Use the cable for the lowest latency.');
-  const missing=SLOTS.filter(s=>needed(b,s.key)&&!b[s.key]).map(s=>s.label.toLowerCase());
+  const missing=SLOTS.filter(s=>needed(b,s.key)&&!b[s.key]).map(s=>s.key==='pcb'?'PCB':s.label.toLowerCase());
   if(missing.length) add('info','build',`Still needed: ${missing.join(', ')}`);
   return out;
 }
@@ -1214,7 +1237,6 @@ function thumbFor(p,b,w=240){
   const icon=p.cat==='switches'?switchSVG(p):p.cat==='keycaps'?capsSVG(p):p.cat==='plate'?plateSVG(p.material):p.cat==='pcb'?pcbSVG(p):p.cat==='stabs'?stabSVG(p):p.cat==='extras'?extraSVG(p):'';
   return framedPhoto(p.photo,p.name,icon,w);
 }
-let stageMode='photo';
 function caseVisual(b,kind){
   const c=caseOf(b); if(!c) return '';
   const small=kind==='field'||kind==='thumb';
@@ -2588,47 +2610,46 @@ function renderRDetail(opts={}){
 function renderBuilder(){
   const c=caseOf(build);
   document.getElementById('buildname').value=build.name||'My keyboard';
-  document.getElementById('buildeyebrow').textContent = build.example?'Example build. Change any part to make it yours.':'Your build';
+  const note=document.getElementById('buildnote'); note.hidden=!build.example; note.textContent=build.example?'Example build. Change any part to make it yours.':'';
   const sb=document.getElementById('stageboard');
-  const hasPhoto=!!(c&&c.photo&&c.photo.box);
-  sb.innerHTML = c? `<div class="swap">${hasPhoto&&stageMode==='photo'?caseVisual(build,'stage'):buildBoard(build)}</div>${hasPhoto?`<div class="stagetoggle" role="group" aria-label="Preview type"><button aria-pressed="${stageMode==='photo'}" data-stage="photo">Photo</button><button aria-pressed="${stageMode!=='photo'}" data-stage="render">Your build</button></div>${stageMode==='photo'?`<span class="credit">Photo: ${esc(c.brand)}</span>`:''}`:''}` : `<div class="empty"><p style="margin:0 0 10px">Start with a case or kit. It sets the layout for everything else.</p><button class="btn primary" data-pick="case">Choose a case</button></div>`;
-  const sw=document.getElementById('swatches');
-  sw.innerHTML = c? `<span>Case color</span>${c.colors.map(([n,h],i)=>`<button class="sw" style="background:${h}" title="${esc(n)}" aria-label="${esc(n)}" aria-pressed="${(build.color||0)===i}" data-color="${i}"></button>`).join('')}<span class="mono" style="margin-left:auto">${LAYOUT_NAMES[c.layout]}, ${c.keys} keys${c.knob?' and a knob':''}</span>`:'';
-  sw.querySelectorAll('[data-color]').forEach(b=>b.onclick=()=>{build.color=+b.dataset.color; stageMode='render'; commit()});
-  sb.querySelectorAll('[data-stage]').forEach(b=>b.onclick=()=>{stageMode=b.dataset.stage; renderBuilder()});
+  sb.innerHTML = c? `<div class="swap">${buildBoard(build)}</div>` : `<div class="empty"><p>Start with a case or kit. It sets the layout for everything else.</p><button class="btn primary" data-pick="case">Choose a case</button></div>`;
+  const sw=document.getElementById('swatches'), col=c&&(c.colors[build.color||0]||c.colors[0]);
+  sw.innerHTML = c? `<div class="swset" role="group" aria-label="Case color">${c.colors.map(([n,h],i)=>`<button class="sw" style="background:${h}" title="${esc(n)}" aria-label="${esc(n)}" aria-pressed="${(build.color||0)===i}" data-color="${i}"></button>`).join('')}</div><span class="swname">${esc(col[0])}</span><span class="swlay">${LAYOUT_NAMES[c.layout]}, ${c.keys} keys${c.knob?' and a knob':''}</span>`:'';
+  sw.querySelectorAll('[data-color]').forEach(b=>b.onclick=()=>{build.color=+b.dataset.color; commit()});
   renderParts(); renderRail(); renderPill();
 }
+const PLUS='<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M8 3.5v9M3.5 8h9"/></svg>';
+// One row per part: what it is, where to buy it, and its price with Change and Remove under it. Kit parts share one row.
 function renderParts(){
-  const items=lineItems(build), c=caseOf(build);
-  let h=`<div class="plist-head eyebrow"><span>Part</span><span>Selection</span><span style="text-align:right">Price</span><span></span></div>`;
+  const items=lineItems(build), c=caseOf(build), iss=compat(build);
+  const row=(slot,thumb,label,name,{specs='',links='',price='',sub='',acts='',cls=''}={})=>`<div class="prow${cls?' '+cls:''}" data-slot="${slot}">
+    <span class="thumb">${thumb}</span>
+    <div class="meta"><small>${label}</small><b>${name}</b>${specs?`<span class="specs">${specs}</span>`:''}${links?`<span class="stores">${links}</span>`:''}</div>
+    <div class="side">${price}${sub?`<small>${sub}</small>`:''}</div>${acts?`<div class="acts">${acts}</div>`:''}</div>`;
+  const add=(s,disabled)=>`<button type="button" class="prow add" data-pick="${s.key}"${disabled?' disabled':''}><span class="thumb">${PLUS}</span><span class="meta"><small>${s.label}</small><b>${s.multi?'Add mods, tools or cables':`Choose ${s.key==='pcb'?'PCB':s.label.toLowerCase()}`}</b></span></button>`;
+  const flags=k=>iss.filter(i=>i.slot===k&&(i.level==='fail'||i.level==='warn')).map(i=>`<span class="chip ${i.level}">${i.level==='fail'?'Conflict':'Note'}</span>`).join('');
+  let h='';
   for(const s of SLOTS){
     const included = c&&c.kit&&(s.key==='pcb'||s.key==='plate'||(s.key==='stabs'&&c.kit.stabs));
-    if(s.key==='extras'){
-      const ex=items.filter(i=>i.slot==='extras');
-      h+=`<div class="prow"><div class="slot">${s.label}<small>${s.hint}</small></div><div class="item" style="display:block"><div class="extras-list">${ex.map(i=>`<div class="extra-line"><span class="item" style="gap:10px"><span class="thumb" style="width:44px;height:33px">${thumbFor(i.part)}</span><span>${esc(i.part.name)}</span></span><span style="display:flex;gap:6px;align-items:center"><span class="mono">${money(i.price)}</span><button class="btn small ghost" data-rmextra="${i.part.id}" aria-label="Remove ${esc(i.part.name)}">✕</button></span></div>`).join('')}<button class="addbtn" data-pick="extras">+ Add extras</button></div></div><div class="price mono">${ex.length?money(ex.reduce((a,b)=>a+b.price,0)):'—'}</div><div class="acts"></div></div>`;
+    if(included){
+      if(s.key!=='pcb') continue;
+      const kp=c.kit.pcb, desc=[kp.hotswap===true?'Hot-swap':kp.hotswap===false?'Solder':'',kp.pins?`${kp.pins}-pin`:'',kp.rgb?`RGB${kp.led?`, ${kp.led}-facing`:''}`:''].filter(Boolean);
+      const what=c.catalogId?`PCB and plate${c.kit.stabs?' and stabilizers':''}, per the listing`:`PCB, ${c.kit.plate?esc(c.kit.plate.toLowerCase())+' plate':'plate'}${c.kit.stabs?' and stabilizers':''}`;
+      h+=row('kit',pcbSVG(kp),`Included with the ${esc(partName(c))}`,what,{specs:desc.map(d=>`<span class="chip">${esc(d)}</span>`).join(''),price:'<span class="incl">Included</span>',cls:'inc'});
       continue;
     }
-    if(included){
-      const kp=c.kit.pcb, desc= s.key==='pcb'?[kp.hotswap===true?'Hot-swap':kp.hotswap===false?'Solder':'PCB type not listed',kp.pins?`${kp.pins}-pin`:'',kp.rgb?`RGB${kp.led?` (${kp.led}-facing)`:''}`:''].filter(Boolean).join(', '): s.key==='plate'?(c.kit.plate?`${c.kit.plate} plate`:'Plate material not listed'):c.kit.stabs;
-      const thumb = s.key==='pcb'?pcbSVG(c.kit.pcb): s.key==='plate'?plateSVG(c.kit.plate): stabSVG({mount:/Plate/.test(c.kit.stabs)?'plate':'screw'});
-      h+=`<div class="prow included"><div class="slot">${s.label}<small>${s.hint}</small></div><div class="item"><span class="thumb">${thumb}</span><div class="meta"><b>Included with ${esc(partName(c))}</b><span class="by">${esc(desc)}</span></div></div><div class="price"><span class="chip ok">Included</span></div><div class="acts"></div></div>`;
+    if(s.key==='extras'){
+      for(const i of items.filter(i=>i.slot==='extras'))
+        h+=row('extras',thumbFor(i.part),'Extra',esc(partName(i.part)),{specs:specChips(i.part),links:storeChips(i.part),price:`<span class="amt">${money(i.price)}</span>`,acts:`<button type="button" class="linkbtn quiet" data-rmextra="${i.part.id}" aria-label="Remove ${esc(i.part.name)}">Remove</button>`});
+      h+=add(s,!c);
       continue;
     }
     const li=items.find(i=>i.slot===s.key);
-    if(!li){
-      const disabled = !c && s.key!=='case';
-      h+=`<div class="prow"><div class="slot">${s.label}<small>${s.hint}</small></div><div class="item"><button class="addbtn" data-pick="${s.key}" ${disabled?'disabled title="Pick a case first"':''}>+ Choose ${s.label.toLowerCase()}</button></div><div class="price mono">—</div><div class="acts"></div></div>`;
-      continue;
-    }
-    const p=li.part, iss=compat(build).filter(i=>i.slot===s.key&&(i.level==='fail'||i.level==='warn'));
-    let sub='';
-    if(s.key==='switches') sub=`<small>${keyCount(build)} needed, buying ${li.qty} at ${money(p.price)}</small>`;
-    if(s.key==='keycaps'&&li.addon) sub=`<small>incl. numpad kit ${money(li.addon)}</small>`;
-    if(s.key==='stabs') sub=`<small>${layoutOf(build)==='full'?'7':'5'}-stab set</small>`;
-    h+=`<div class="prow"><div class="slot">${s.label}<small>${s.hint}</small></div>
-      <div class="item"><span class="thumb">${thumbFor(p)}</span><div class="meta"><b>${esc(p.name)}</b><span class="by">${esc(p.brand)}</span><span class="specs">${specChips(p)}${iss.map(i=>`<span class="chip ${i.level}">${i.level==='fail'?'Conflict':'Note'}</span>`).join('')}</span><span class="stores">${s.key==='switches'?soundLink(p)+moreSoundTests(p):''}${storeChips(p)}</span></div></div>
-      <div class="price"><span>${money(li.price)}</span>${sub}</div>
-      <div class="acts"><button class="btn small" data-pick="${s.key}">Change</button><button class="btn small ghost" data-rm="${s.key}" aria-label="Remove ${esc(p.name)}">✕</button></div></div>`;
+    if(!li){ h+=add(s,!c&&s.key!=='case'); continue }
+    const p=li.part;
+    const sub= s.key==='switches'?`${li.qty} × ${money(p.price)}`: s.key==='keycaps'&&li.addon?`incl. ${money(li.addon)} numpad kit`: s.key==='stabs'?`${layoutOf(build)==='full'?'7':'5'}-stab set`:'';
+    h+=row(s.key,thumbFor(p),s.label,esc(partName(p)),{specs:specChips(p)+flags(s.key),links:(s.key==='switches'?`<span class="watchrow">${soundLink(p)}${moreSoundTests(p)}</span>`:'')+storeChips(p),price:`<span class="amt">${money(li.price)}</span>`,sub,
+      acts:`<button type="button" class="linkbtn" data-pick="${s.key}" aria-label="Change ${s.key==='pcb'?'PCB':s.label.toLowerCase()}">Change</button><button type="button" class="linkbtn quiet" data-rm="${s.key}" aria-label="Remove ${esc(p.name)}">Remove</button>`});
   }
   const el=document.getElementById('plist'); el.innerHTML=h;
   el.querySelectorAll('[data-rm]').forEach(b=>b.onclick=()=>{const k=b.dataset.rm; build[k]=null; if(k==='case'){build.pcb=null;build.plate=null;build.stabs=build.stabs} commit()});
@@ -2641,30 +2662,33 @@ function modCard(){
   const c=caseOf(build); if(!c) return '';
   const T=SOUND_T[quizAns.sound]||null, budget=typeof quizAns.budget==='number'&&quizAns.budget<B_MAX?quizAns.budget:null;
   const picks=suggestMods(build,T,budget?budget-total(build):MODS_MAX_SPEND); if(!picks.length) return '';
-  return `<section class="card modcard"><h3>Suggested mods</h3><p class="note">${T?`Picked to move this build toward the ${esc(quizAns.sound)} sound you chose`:'Fixes most boards benefit from'}${budget?', within your budget':''}.</p>
-    ${picks.map(({m})=>`<div class="modrow"><span class="thumb">${thumbFor(m)}</span><div><small>${esc(MOD_LABELS[m.mod])}</small><b>${esc(partName(m))}</b><em>${esc(m.blurb||'')}</em></div><div class="modbuy"><span class="mono">${money(m.price)}</span><button class="btn small" data-addmod="${esc(m.id)}">Add</button></div></div>`).join('')}</section>`;
+  return `<section class="modcard"><h3>Suggested mods</h3>
+    ${picks.map(({m})=>`<div class="modrow"><span class="thumb">${thumbFor(m)}</span><div><b>${esc(partName(m))}</b><em>${esc(m.blurb||MOD_LABELS[m.mod]||'')}</em></div><div class="modbuy"><span class="mono">${money(m.price)}</span><button type="button" class="linkbtn" data-addmod="${esc(m.id)}" aria-label="Add ${esc(partName(m))}">Add</button></div></div>`).join('')}</section>`;
 }
+// The sound and feel scales sweep only where a change moved them, so editing one part doesn't replay all four.
+let railSF=null;
 function renderRail(){
-  const iss=compat(build), v=verdict(iss), e=estimate(build), items=lineItems(build), t=total(build);
+  const c=caseOf(build), iss=compat(build), e=estimate(build), t=total(build), sw=BYID[build.switches];
   const order={fail:0,warn:1,info:2,ok:3};
   const sorted=[...iss].sort((a,b)=>order[a.level]-order[b.level]);
-  const meter=(label,val,word,l,r)=>`<div class="meter"><div class="lbl"><span>${label}</span><b>${word}</b></div><div class="bar"><i style="left:${val}%"></i></div><div class="ends"><span>${l}</span><span>${r}</span></div></div>`;
+  const force=sw&&sw.force!=null?sw.force:null, forceWord=g=>g<42?'light':g<55?'medium':g<67?'firm':'heavy';
+  const vals=[e.pitch,e.vol,e.flex,force==null?null:Math.max(3,Math.min(97,(force-30)*2))];
+  const sfRow=(k,label,word,a,bb)=>`<div class="rsf-row${vals[k]==null?' none':''}${railSF&&railSF[k]===vals[k]?' held':''}" style="--r:0;--a:${a};--b:${bb}" role="img" aria-label="${label}: ${esc(word)}"><span class="rsf-k" aria-hidden="true">${label}</span><span class="rsf-bar" aria-hidden="true">${vals[k]!=null?`<i class="rsf-fill" style="--v:${vals[k]}"></i>`:''}</span><b class="rsf-w" aria-hidden="true">${esc(word)}</b></div>`;
   const rail=document.getElementById('rail');
   rail.innerHTML=`
-  <section class="card"><h3>Compatibility</h3><div class="verdict ${v.level}">${v.text}</div>
-    <ul class="issues">${sorted.map(i=>`<li class="${i.level}"><i></i><span>${esc(i.msg)}${i.sub?`<br><small>${esc(i.sub)}</small>`:''}</span></li>`).join('')}</ul></section>
-  <section class="card"><h3>Price</h3><div class="totals">${items.map(i=>`<div><span>${SLOTS.find(s=>s.key===i.slot).label}${i.slot==='extras'?': '+esc(i.part.name):''}</span><span class="mono">${money(i.price)}</span></div>`).join('')||'<div><span class="note">Nothing yet</span></div>'}
-    <div class="grand"><span>Parts subtotal</span><span class="mono">${money(t)}</span></div></div><p class="note" style="margin:0">Approximate list prices, before shipping and tax.</p>${affNote()}</section>
-  <section class="card"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><h3>Sound and feel estimate</h3>${build.switches?soundLink(BYID[build.switches],'Hear switches'):''}</div>
-    ${build.switches?`<p class="note">The recording uses a different keyboard. These meters are estimates of your build.</p>`:''}
-    ${meter('Pitch',e.pitch,pitchWord(e.pitch),'Deep','Bright')}
-    ${meter('Volume',e.vol,volWord(e.vol),'Quiet','Loud')}
-    ${meter('Typing feel',e.flex,flexWord(e.flex),'Stiff','Bouncy')}
-    <div class="totals"><div><span>Actuation force</span><span class="mono">${e.force?e.force+' g':'—'}</span></div></div>
-    <p class="note" style="margin:0">A rough guide from plate, mount, switches, keycaps and mods. Real boards vary.</p></section>
+  <section class="rtotal"><span>Parts subtotal, before shipping and tax</span><b class="mono">${money(t)}</b></section>
+  <section><h3>Compatibility</h3>
+    <ul class="issues">${sorted.map(i=>`<li class="${i.level}"${i.sub?` title="${esc(i.sub)}"`:''}><i></i><span>${esc(i.msg)}</span></li>`).join('')}</ul></section>
+  ${c?`<section><div class="rhead"><h3>Sound and feel</h3>${build.switches?soundLink(BYID[build.switches],'Hear switches'):''}</div>
+    <div class="rsf" role="group" aria-label="Sound and feel estimate">
+      ${sfRow(0,'Pitch',pitchWord(e.pitch),'#D9923B','#5B5BD6')}
+      ${sfRow(1,'Volume',volWord(e.vol),'#F2B98A','#E0453A')}
+      ${sfRow(2,'Bounce',flexWord(e.flex),'#9AD3B4','#1F8A66')}
+      ${sfRow(3,'Key weight',force==null?'No switches yet':`${force} g, ${forceWord(force)}`,'#CFC9C2','#57534E')}</div></section>`:''}
   ${modCard()}
-  <section class="card"><h3>Share</h3><div class="railacts"><button class="btn small" id="copylist">Copy parts list</button><button class="btn small" id="copycode">Copy build code</button></div>
-    <textarea id="copyfallback" hidden aria-label="Copy text" style="width:100%;min-height:80px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:6px"></textarea></section>`;
+  <section class="railacts"><button class="btn small" id="copylist">Copy parts list</button><button class="btn small" id="copycode">Copy build code</button>
+    <textarea id="copyfallback" hidden aria-label="Copy text"></textarea></section>`;
+  railSF=vals;
   rail.querySelectorAll('[data-addmod]').forEach(btn=>btn.onclick=()=>{build.extras=[...new Set([...(build.extras||[]),btn.dataset.addmod])]; commit(); toast(`Added ${partName(BYID[btn.dataset.addmod])}`)});
   rail.querySelector('#copylist').onclick=e=>copyText(partsText(build),rail.querySelector('#copyfallback'),e.currentTarget);
   rail.querySelector('#copycode').onclick=e=>copyText(encodeBuild(build),rail.querySelector('#copyfallback'),e.currentTarget);
@@ -2801,7 +2825,6 @@ function choose(slot,p){
   const notes=[];
   if(slot==='extras'){ build.extras=[...new Set([...(build.extras||[]),p.id])]; commit(); renderPickList(); toast(`Added ${partName(p)}`); return }
   build[slot]=p.id;
-  if(slot==='keycaps') stageMode='render'; if(slot==='case') stageMode='photo';
   if(slot==='case'){
     build.color=0;
     if(p.kit){ if(build.pcb||build.plate) notes.push('PCB and plate are now included with the kit'); build.pcb=null; build.plate=null; if(p.kit.stabs&&build.stabs){notes.push('stabilizers are included'); build.stabs=null} }
