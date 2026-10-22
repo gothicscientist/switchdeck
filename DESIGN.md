@@ -58,6 +58,7 @@ licence is recorded in assets/quiz/CREDITS.md: openly licensed Commons photos, o
 
 - Share copies a link; the only confirmation is the button's label lifting into "Copied". No modal, no share sheet.
 - Swap is a quiet text action under each part's price. Alternatives open in place under that part, show only the change in price and match, and keep the panel open so several can be tried. Undo and Reset sit as text links under the total.
+- Every part row uses one grid: slot label; name with the price on its line; specs with the price note on their line; store links with Swap on their line; then one line of quiet text extras (Sound test, More tests, Shuffle) only where they apply. Kit rows and missing parts fill the same cells. Sold out is a warn-coloured word beside the slot label, never a chip under the specs. Store chips never wrap inside; long store names truncate on narrow phones.
 - Fit wording never overclaims: "Fits" appears only where store data confirms it. Unconfirmed alternatives carry no tag and rank lower. Price changes in the swap list are whole dollars. No budget line, fit line or explanatory subtitle on the results screen (Bharat removed them).
 
 ## Parts directory

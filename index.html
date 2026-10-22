@@ -452,8 +452,8 @@ h1,h2,h3{text-wrap:balance;margin:0;font-weight:700;letter-spacing:-.02em}
 .vh{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
 .rnote{margin:0;padding:10px 12px;border-radius:10px;background:var(--info-soft);color:var(--ink-2);font-size:12.5px;line-height:1.45}
 .part.gone .pt{background:repeating-linear-gradient(135deg,var(--tile) 0 6px,transparent 6px 12px);box-shadow:inset 0 0 0 1px var(--line)}
-.part.gone .pn b{color:var(--muted);font-weight:500}
-.part.gone .pp{color:var(--faint);font-weight:500}
+.part.gone .pnm{color:var(--muted);font-weight:500}
+.part.gone .ppr{color:var(--faint);font-weight:500}
 .rsum .rcap{margin:-8px 0 0;font-size:12.5px;color:var(--muted);line-height:1.3}
 .rsum .rcap svg{width:12px;height:12px;margin-right:6px;vertical-align:-1px;color:var(--faint)}
 .rcap-n{display:none}
@@ -491,16 +491,32 @@ a.listen.watch:hover{background:rgba(68,64,60,.16)}
 .rparts .phead{position:sticky;top:0;z-index:1;background:color-mix(in srgb,var(--surface) 88%,transparent);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);padding:20px 22px 12px;display:flex;justify-content:space-between;align-items:baseline;gap:12px;border-bottom:1px solid var(--line)}
 .rparts .phead h3{font-size:15px;letter-spacing:-.01em}
 .rparts .phead span{font-size:12px;color:var(--muted)}
-.part{display:grid;grid-template-columns:52px minmax(0,1fr) auto;gap:4px 14px;padding:14px 22px;border-bottom:1px solid var(--line);animation:fadeUp .45s var(--out) both;animation-delay:calc(var(--i,0) * 40ms)}
+/* Results parts: every row is the same grid. Each line on the left has a partner on the right that shares its line
+   box, so the price sits on the name's baseline, the price note on the specs' baseline and Swap on the store links'
+   line. Fixed line heights keep the gaps identical from row to row. */
+.part{display:grid;grid-template-columns:52px minmax(0,1fr) auto;grid-template-areas:"pt k ." "pt n p" "pt d q" "pt a s" "pt x x";column-gap:14px;align-items:start;padding:16px 22px;border-bottom:1px solid var(--line);animation:fadeUp .45s var(--out) both;animation-delay:calc(var(--i,0) * 40ms)}
 .part:last-of-type{border-bottom:0}
-.part .pt{grid-row:span 2;width:52px;height:40px;border-radius:8px;background:var(--tile);display:grid;place-items:center;padding:4px;overflow:hidden}
+.part .pt{grid-area:pt;width:52px;height:40px;border-radius:8px;background:var(--tile);display:grid;place-items:center;padding:4px;overflow:hidden}
 .part .pt svg{width:100%;height:100%}
-.part .pn{min-width:0;display:flex;flex-direction:column;gap:1px}
-.part .pn small{font-size:11.5px;color:var(--faint);font-weight:500}
-.part .pn b{font-size:14px;font-weight:600;line-height:1.3}
-.part .pn em{font-style:normal;font-size:12px;color:var(--muted)}
-.part .pp{text-align:right;font-size:14px;font-weight:600;white-space:nowrap}
-.part .pp small{display:block;font-weight:400;font-size:11px;color:var(--muted)}
+.part .pk{grid-area:k;font-size:11.5px;line-height:16px;color:var(--faint);font-weight:500}
+.part .pso{margin-left:8px;color:var(--warn)}
+.part .pnm{grid-area:n;min-width:0;font-size:14px;line-height:20px;font-weight:600}
+.part .ppr{grid-area:p;display:flex;justify-content:flex-end;align-items:center;min-height:20px;font-size:14px;line-height:20px;font-weight:600;white-space:nowrap;font-variant-numeric:tabular-nums}
+.part .ppr .chip{line-height:16px}
+.part .psp{grid-area:d;min-width:0;font-style:normal;font-size:12px;line-height:17px;color:var(--muted)}
+.part .psub{grid-area:q;text-align:right;font-size:12px;line-height:17px;color:var(--muted);white-space:nowrap;font-variant-numeric:tabular-nums}
+.part .stores{grid-area:a;display:flex;flex-wrap:wrap;align-items:center;gap:6px;min-height:28px;margin-top:10px}
+.part .store{height:28px;max-width:100%;padding:0 11px 0 8px;white-space:nowrap}
+.part .store .sn{min-width:0;overflow:hidden;text-overflow:ellipsis}
+.part .store>svg,.part .store .fav{flex:none}
+.part .stores .note{font-size:12px;line-height:17px}
+.part .swapbtn{grid-area:s;justify-self:end;height:28px;margin-top:10px;padding:0}
+.part .pmore{grid-area:x;display:flex;flex-wrap:wrap;align-items:center;gap:4px 16px;min-height:24px;margin-top:6px}
+.part .pmore .listen{gap:5px;height:24px;padding:0;background:none;font:inherit;font-size:12px;font-weight:500;color:var(--ink-2);cursor:pointer}
+.part .pmore .listen:hover{background:none;color:var(--ink)}
+.part .pmore .listen svg{width:10px;height:10px}
+.part .pmore .textlink{display:inline-flex;align-items:center;height:24px;text-decoration:none}
+.part .pmore .textlink:hover{text-decoration:underline}
 .stores{grid-column:2 / -1;display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;align-items:center}
 .store{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:500;color:var(--ink);text-decoration:none;padding:5px 10px;border-radius:999px;background:var(--surface);box-shadow:inset 0 0 0 1px var(--line);transition:background .2s,box-shadow .2s,transform .15s var(--ease)}
 .store:hover{background:var(--tile);box-shadow:inset 0 0 0 1px var(--faint)}
@@ -509,9 +525,8 @@ a.listen.watch:hover{background:rgba(68,64,60,.16)}
 .store.maker:hover{background:var(--dark)}
 .store svg{width:10px;height:10px;opacity:.6}
 .store.cmp{color:var(--muted)}
-.part.inc .pn b{color:var(--muted);font-weight:500}
+.part.inc .pnm{color:var(--muted);font-weight:500}
 /* Swapping parts on the results screen: a quiet text action per part, alternatives open in place under it. */
-.part .pp{display:flex;flex-direction:column;align-items:flex-end}
 .swapbtn{display:inline-flex;align-items:center;gap:4px;margin-top:6px;padding:3px 0;border:0;background:none;font:inherit;font-size:12px;font-weight:500;color:var(--muted);cursor:pointer;transition:color .2s}
 .swapbtn svg{opacity:.7;transition:transform .35s var(--out)}
 .swapbtn:hover,.swapbtn[aria-expanded=true]{color:var(--ink)}
@@ -1405,7 +1420,7 @@ function storeFav(l){
   return `<span class="fav" data-l="${esc((l.n||'?').trim().charAt(0).toUpperCase())}" aria-hidden="true"><svg viewBox="0 0 16 16" focusable="false"><image href="https://${esc(host)}/favicon.ico" width="16" height="16" loading="lazy" preserveAspectRatio="xMidYMid meet"/></svg></span>`;
 }
 document.addEventListener('error',e=>{const f=e.target.closest&&e.target.closest('.fav'); if(f) f.classList.add('bad')},true);
-const storeChips=p=>buyLinks(p).length?buyLinks(p).map(l=>`<a class="store ${l.maker?'maker':''} ${l.cmp?'cmp':''}" href="${esc(l.u)}" target="_blank" rel="sponsored noopener">${storeFav(l)}${esc(l.n)}${l.available===false?', sold out':''}${ARROW}</a>`).join(''):'<span class="note">Exact product link not confirmed yet</span>';
+const storeChips=p=>buyLinks(p).length?buyLinks(p).map(l=>`<a class="store ${l.maker?'maker':''} ${l.cmp?'cmp':''}" href="${esc(l.u)}" target="_blank" rel="sponsored noopener">${storeFav(l)}<span class="sn">${esc(l.n)}${l.available===false?', sold out':''}</span>${ARROW}</a>`).join(''):'<span class="note">Exact product link not confirmed yet</span>';
 
 /* =========================================================
    ROUTING
@@ -2529,21 +2544,27 @@ function redrawSwap(r0,was,said,to){
   const d=document.getElementById('rdetail');
   (d.querySelector('.swaps .swopt')||d.querySelector('#rundo:not(:disabled)')||d.querySelector('#rreset')||d.querySelector('#rbuild'))?.focus({preventScroll:true});
 }
-const partDesc=p=>p.cat==='case'?[LAYOUT_NAMES[p.layout],p.material,p.mount&&p.mount+' mount',p.assembled?'sold assembled':p.kit&&'kit'].filter(Boolean).join(', '):p.cat==='switches'?[p.type,p.force&&`${p.force} g`,p.pins&&`${p.pins}-pin`].filter(Boolean).join(', '):p.cat==='keycaps'?[p.profile&&`${p.profile} profile`,p.material,p.legends].filter(Boolean).join(', '):p.cat==='pcb'?[p.hotswap===true?'Hot-swap':p.hotswap===false?'Solder':null,p.pins&&`${p.pins}-pin`].filter(Boolean).join(', '):p.cat==='plate'?p.material||'':p.blurb||'';
+const partDesc=p=>p.cat==='case'?[LAYOUT_NAMES[p.layout],p.material,p.mount&&(/mount$/i.test(p.mount)?p.mount:p.mount+' mount'),p.assembled?'sold assembled':p.kit&&'kit'].filter(Boolean).join(', '):p.cat==='switches'?[p.type,p.force&&`${p.force} g`,p.pins&&`${p.pins}-pin`].filter(Boolean).join(', '):p.cat==='keycaps'?[p.profile&&`${p.profile} profile`,p.material,p.legends].filter(Boolean).join(', '):p.cat==='pcb'?[p.hotswap===true?'Hot-swap':p.hotswap===false?'Solder':null,p.pins&&`${p.pins}-pin`].filter(Boolean).join(', '):p.cat==='plate'?p.material||'':p.blurb||'';
 function renderRDetail(opts={}){
   const r0=resList[resIdx], r=resView(r0), b=r.b, c=caseOf(b), s=BYID[b.switches], note=(n=>n&&n.sh?shareNote(n.sh,b):n)(resNotes.get(r0.b.case)), ed=resCustom.get(r0.b.case);
   const items=lineItems(b), SL=k=>SLOTS.find(x=>x.key===k).label;
   const sub=i=>i.slot==='switches'?`${i.qty} × ${money(i.part.price)}`:i.slot==='keycaps'&&i.addon?`incl. ${money(i.addon)} numpad kit`:i.slot==='stabs'?`${layoutOf(b)==='full'?7:5}-stab set`:'';
   const desc=partDesc;
+  // Every row shares one grid (see .part in the styles): slot label; name with the price beside it; specs with the
+  // price note beside them; store links with Swap beside them; then, for switches and surprise keycaps, one line of
+  // quiet extras. Kit and missing rows fill the same cells, so every row lines up the same way.
+  const swapBtn=(k,verb)=>`<button type="button" class="swapbtn" data-swap aria-expanded="false" aria-label="${verb==='Swap'?`Swap ${esc(SL(k).toLowerCase())}: see alternatives`:`Choose ${esc(SL(k).toLowerCase())}`}">${icon('swap')}${verb}</button>`;
+  const extra=i=>i.slot==='switches'?`${soundLink(i.part)}${moreSoundTests(i.part)}`:i.slot==='keycaps'&&quizAns.look==='surprise'?'<button type="button" class="listen" id="reroll">↻ Shuffle</button>':'';
   let rows=items.map((i,n)=>`<div class="part" data-pi="${n}" data-slot="${i.slot}" data-id="${esc(i.part.id)}" style="--i:${n}"><span class="pt">${i.slot==='case'?caseVisual({case:c.id,color:b.color||0,keycaps:null,extras:[]},'thumb'):thumbFor(i.part)}</span>
-      <div class="pn"><small>${esc(SL(i.slot))}</small><b>${esc(partName(i.part))}</b><em>${esc(desc(i.part))}</em>${i.part.soldOut?'<span class="chip warn" style="align-self:flex-start;margin-top:4px">Sold out</span>':''}</div>
-      <div class="pp">${money(i.price)}${sub(i)?`<small>${esc(sub(i))}</small>`:''}<button type="button" class="swapbtn" data-swap aria-expanded="false" aria-label="Swap ${esc(SL(i.slot).toLowerCase())}: see alternatives">${icon('swap')}Swap</button></div>
-      <div class="stores">${i.slot==='switches'?`<span class="watchrow">${soundLink(i.part)}${moreSoundTests(i.part)}</span>`:''}${i.slot==='keycaps'&&quizAns.look==='surprise'?'<button type="button" class="listen" id="reroll">↻ Shuffle</button>':''}${storeChips(i.part)}</div></div>`);
-  if(c.assembled) rows.splice(1,0,`<div class="part inc" style="--i:1"><span class="pt">${pcbSVG(c.kit.pcb)}</span><div class="pn"><small>Included</small><b>Switches and keycaps, per the listing</b><em>Listed as a complete keyboard. Check ${esc(storeOf(c))} for which switches and keycaps it ships with.</em></div><div class="pp"><span class="chip ok">Included</span></div></div>`);
-  else if(c.kit&&c.catalogId) rows.splice(1,0,`<div class="part inc" style="--i:1"><span class="pt">${pcbSVG(c.kit.pcb)}</span><div class="pn"><small>Kit</small><b>PCB and plate, per the listing</b><em>Check ${esc(storeOf(c))} for exactly what the ${esc(partName(c))} kit includes.</em></div><div class="pp"><span class="chip ok">Kit</span></div></div>`);
-  else if(c.kit) rows.splice(1,0,`<div class="part inc" style="--i:1"><span class="pt">${pcbSVG(c.kit.pcb)}</span><div class="pn"><small>Included</small><b>PCB, ${esc(c.kit.plate)} plate${c.kit.stabs?' and stabilizers':''}</b><em>Comes with the ${esc(partName(c))}</em></div><div class="pp"><span class="chip ok">Included</span></div></div>`);
+      <small class="pk">${esc(SL(i.slot))}${i.part.soldOut?'<span class="pso">Sold out</span>':''}</small><b class="pnm">${esc(partName(i.part))}</b><b class="ppr">${money(i.price)}</b>
+      ${desc(i.part)?`<em class="psp">${esc(desc(i.part))}</em>`:''}${sub(i)?`<small class="psub">${esc(sub(i))}</small>`:''}
+      <div class="stores">${storeChips(i.part)}</div>${swapBtn(i.slot,'Swap')}${extra(i)?`<div class="pmore">${extra(i)}</div>`:''}</div>`);
+  const incRow=(k,name,note,tag)=>`<div class="part inc" style="--i:1"><span class="pt">${pcbSVG(c.kit.pcb)}</span><small class="pk">${k}</small><b class="pnm">${name}</b><b class="ppr"><span class="chip ok">${tag}</span></b><em class="psp">${note}</em></div>`;
+  if(c.assembled) rows.splice(1,0,incRow('Included','Switches and keycaps, per the listing',`Listed as a complete keyboard. Check ${esc(storeOf(c))} for which switches and keycaps it ships with.`,'Included'));
+  else if(c.kit&&c.catalogId) rows.splice(1,0,incRow('Kit','PCB and plate, per the listing',`Check ${esc(storeOf(c))} for exactly what the ${esc(partName(c))} kit includes.`,'Kit'));
+  else if(c.kit) rows.splice(1,0,incRow('Included',`PCB, ${esc(c.kit.plate)} plate${c.kit.stabs?' and stabilizers':''}`,`Comes with the ${esc(partName(c))}`,'Included'));
   // Slots a shared link named but the catalog no longer has: shown empty, never filled with another part.
-  for(const k of note?.missing||[]) if(!b[k]&&needed(b,k)) rows.push(`<div class="part gone" data-slot="${k}" data-id="" style="--i:${rows.length}"><span class="pt"></span><div class="pn"><small>${esc(SL(k))}</small><b>No longer listed</b><em>The part in this link has left the catalog. Nothing was put in its place.</em></div><div class="pp">—<button type="button" class="swapbtn" data-swap aria-expanded="false" aria-label="Choose ${esc(SL(k).toLowerCase())}">${icon('swap')}Choose</button></div></div>`);
+  for(const k of note?.missing||[]) if(!b[k]&&needed(b,k)) rows.push(`<div class="part gone" data-slot="${k}" data-id="" style="--i:${rows.length}"><span class="pt"></span><small class="pk">${esc(SL(k))}</small><b class="pnm">No longer listed</b><b class="ppr">—</b><em class="psp">The part in this link has left the catalog. Nothing was put in its place.</em>${swapBtn(k,'Choose')}</div>`);
   const nParts=items.length+(c.kit?1:0);
   // Sound and feel for this build, with a pin where the quiz's sound answer sits on pitch and volume.
   const T=SOUND_T[quizAns.sound], e=r.e;
