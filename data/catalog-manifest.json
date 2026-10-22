@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-22T03:39:44.088Z",
+  "generatedAt": "2026-10-22T03:43:15.346Z",
   "listingCount": 8905,
   "inStockCount": 4814,
   "builderSwitchCount": 2000,
@@ -155,7 +155,7 @@
       "url": "https://cannonkeys.com",
       "currency": "USD",
       "status": "fresh",
-      "checkedAt": "2026-10-22T03:39:01.500Z",
+      "checkedAt": "2026-10-22T03:42:40.792Z",
       "rawProducts": 1185,
       "listings": 917
     },
@@ -165,7 +165,7 @@
       "url": "https://divinikey.com",
       "currency": "USD",
       "status": "fresh",
-      "checkedAt": "2026-10-22T03:39:02.505Z",
+      "checkedAt": "2026-10-22T03:42:42.115Z",
       "rawProducts": 1483,
       "listings": 1354
     },
@@ -175,7 +175,7 @@
       "url": "https://novelkeys.com",
       "currency": "USD",
       "status": "fresh",
-      "checkedAt": "2026-10-22T03:38:56.743Z",
+      "checkedAt": "2026-10-22T03:42:36.333Z",
       "rawProducts": 410,
       "listings": 347
     },
@@ -185,7 +185,7 @@
       "url": "https://kbdfans.com",
       "currency": "USD",
       "status": "fresh",
-      "checkedAt": "2026-10-22T03:38:59.828Z",
+      "checkedAt": "2026-10-22T03:42:39.369Z",
       "rawProducts": 463,
       "listings": 377
     },
@@ -195,7 +195,7 @@
       "url": "https://www.keychron.com",
       "currency": "USD",
       "status": "fresh",
-      "checkedAt": "2026-10-22T03:39:04.053Z",
+      "checkedAt": "2026-10-22T03:42:43.350Z",
       "rawProducts": 712,
       "listings": 640
     },
@@ -205,7 +205,7 @@
       "url": "https://keebsforall.com",
       "currency": "USD",
       "status": "fresh",
-      "checkedAt": "2026-10-22T03:39:05.247Z",
+      "checkedAt": "2026-10-22T03:42:42.277Z",
       "rawProducts": 452,
       "listings": 412
     },
@@ -215,7 +215,7 @@
       "url": "https://modedesigns.com",
       "currency": "USD",
       "status": "fresh",
-      "checkedAt": "2026-10-22T03:39:03.033Z",
+      "checkedAt": "2026-10-22T03:42:42.628Z",
       "rawProducts": 73,
       "listings": 46
     },
@@ -226,7 +226,7 @@
       "currency": "USD",
       "optional": true,
       "status": "fresh",
-      "checkedAt": "2026-10-22T03:39:35.856Z",
+      "checkedAt": "2026-10-22T03:43:06.863Z",
       "rawProducts": 5739,
       "listings": 3077
     },
@@ -237,7 +237,7 @@
       "currency": "USD",
       "optional": true,
       "status": "fresh",
-      "checkedAt": "2026-10-22T03:39:14.616Z",
+      "checkedAt": "2026-10-22T03:42:49.753Z",
       "rawProducts": 1380,
       "listings": 1266
     },
@@ -248,7 +248,7 @@
       "currency": "USD",
       "optional": true,
       "status": "fresh",
-      "checkedAt": "2026-10-22T03:39:05.704Z",
+      "checkedAt": "2026-10-22T03:42:43.891Z",
       "rawProducts": 205,
       "listings": 103
     },
@@ -259,7 +259,7 @@
       "currency": "USD",
       "optional": true,
       "status": "fresh",
-      "checkedAt": "2026-10-22T03:39:06.491Z",
+      "checkedAt": "2026-10-22T03:42:44.719Z",
       "rawProducts": 113,
       "listings": 80
     },
@@ -270,7 +270,7 @@
       "currency": "USD",
       "optional": true,
       "status": "fresh",
-      "checkedAt": "2026-10-22T03:39:06.936Z",
+      "checkedAt": "2026-10-22T03:42:45.123Z",
       "rawProducts": 31,
       "listings": 23
     },
@@ -281,7 +281,7 @@
       "currency": "USD",
       "optional": true,
       "status": "fresh",
-      "checkedAt": "2026-10-22T03:39:07.966Z",
+      "checkedAt": "2026-10-22T03:42:45.937Z",
       "rawProducts": 122,
       "listings": 108
     },
@@ -303,7 +303,7 @@
       "currency": "USD",
       "optional": true,
       "status": "fresh",
-      "checkedAt": "2026-10-22T03:39:14.874Z",
+      "checkedAt": "2026-10-22T03:42:51.200Z",
       "rawProducts": 177,
       "listings": 155
     },
@@ -433,5 +433,5 @@
     "parts/0110.json",
     "parts/0111.json"
   ],
-  "fingerprint": "2460ac33ec80740785faecadc372a69dd1a126c3f39a61a03e5d3a36c970ece8"
+  "fingerprint": "46b85d986c4e2051a21ab258f103d4f55d96b88b6e464cfac618eb2cb9904fe6"
 }
