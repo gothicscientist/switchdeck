@@ -22,8 +22,11 @@
       const name=isAmazon(url)?'Amazon':r.name||new URL(url).hostname.replace(/^www\./,'');
       out.push({...r,name,url});
     }
-    return out.sort((a,b)=>Number(isAmazon(b.url))-Number(isAmazon(a.url))||Number(a.available===false)-Number(b.available===false));
+    return out.sort((a,b)=>Number(a.available===false)-Number(b.available===false)||storeRank(a.url)-storeRank(b.url));
   }
+  // Store preference for the same product: Amazon, then stores with an affiliate code, then the rest.
+  // Sold-out links still go last, so a shopper is never sent to a sold-out page ahead of one that can sell it.
+  function storeRank(url,cfg=globalThis.SWITCHDECK_AFFILIATES||{}){return isAmazon(url)?0:affiliateFor(url,cfg)!==url?1:2}
   // The link a shopper follows: the canonical product URL with the store's affiliate tag, when one is set.
   function affiliateFor(url,cfg=globalThis.SWITCHDECK_AFFILIATES||{}){
     try{
@@ -43,5 +46,5 @@
       ...(p.url?[{name:p.retailer||p.brand,url:p.url,available:p.available}]:[]),
       ...(p.photo?.page?[{name:p.brand,url:p.photo.page}]:[])]).map(r=>({...r,href:affiliateFor(r.url)}));
   }
-  globalThis.SwitchdeckLinks={productURL,isAmazon,orderLinks,linksFor,affiliateFor,isAffiliate,hasAffiliates};
+  globalThis.SwitchdeckLinks={productURL,isAmazon,storeRank,orderLinks,linksFor,affiliateFor,isAffiliate,hasAffiliates};
 })();

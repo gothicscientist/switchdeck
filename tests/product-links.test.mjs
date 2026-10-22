@@ -68,3 +68,16 @@ test('every store link on the page and in the directory goes out through the aff
  const links=globalThis.SwitchdeckLinks.linksFor({id:'x',url:'https://kbdfans.com/products/foo'},{});
  assert.equal(links[0].url,'https://kbdfans.com/products/foo'); assert.ok('href' in links[0]);
 });
+test('Bharat\'s affiliate codes tag every link from those stores, and Amazon then affiliate stores lead',async()=>{
+ const ctx={};vm.runInNewContext(await readFile(new URL('../assets/affiliates.js',import.meta.url),'utf8'),ctx);
+ const cfg=ctx.globalThis?.SWITCHDECK_AFFILIATES||ctx.SWITCHDECK_AFFILIATES, {affiliateFor,storeRank}=globalThis.SwitchdeckLinks;
+ assert.equal(affiliateFor('https://www.amazon.com/dp/B0CR1JTHWV',cfg),'https://www.amazon.com/dp/B0CR1JTHWV?tag=thock-20');
+ assert.equal(affiliateFor('https://www.keychron.com/products/keychron-q1-max?variant=1',cfg),'https://www.keychron.com/products/keychron-q1-max?variant=1&ref=thock');
+ assert.equal(affiliateFor('https://epomaker.com/products/epomaker-th80-v2',cfg),'https://epomaker.com/products/epomaker-th80-v2?sca_ref=12591760.vF400L2Pzt');
+ assert.deepEqual(['https://divinikey.com/products/a','https://epomaker.com/products/a','https://www.amazon.com/dp/B0CR1JTHWV'].map(u=>storeRank(u,cfg)),[2,1,0]);
+ const prev=globalThis.SWITCHDECK_AFFILIATES;globalThis.SWITCHDECK_AFFILIATES=cfg;
+ try{
+  const links=orderLinks([{name:'Divinikey',url:'https://divinikey.com/products/q2'},{name:'Keychron',url:'https://www.keychron.com/products/q2'},{name:'Sold out',url:'https://epomaker.com/products/q2',available:false},{name:'Amazon',url:'https://www.amazon.com/dp/B0CR1JTHWV'}]);
+  assert.deepEqual(links.map(l=>l.name),['Amazon','Keychron','Divinikey','Sold out']);
+ }finally{globalThis.SWITCHDECK_AFFILIATES=prev}
+});

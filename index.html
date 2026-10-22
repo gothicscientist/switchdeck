@@ -1642,6 +1642,21 @@ function suggestMods(b,T,room,useMod){
   }
   return picks;
 }
+// When stores list the same product, the finder recommends one listing: Amazon first, then a store with an affiliate
+// code, then the rest, unless it costs over 15% more than the cheapest in-stock listing. The other stores' listings stay
+// in the builder and directory, and a store's own variants are never merged.
+let SHADOWED=null;
+function shadowed(){
+  if(SHADOWED) return SHADOWED; SHADOWED=new Set();
+  const g=new Map(), host=p=>{try{return new URL(p.retailers[0].url).hostname.replace(/^www\./,'')}catch{return ''}}, rank=p=>SwitchdeckLinks.storeRank(p.retailers?.[0]?.url||'');
+  for(const p of [...CASES,...SWITCHES,...KEYCAPS]) if(p.catalogId&&!p.soldOut){const k=[p.cat,sameKey(p),p.layout||'',p.assembled?1:0].join('|'); (g.get(k)||g.set(k,[]).get(k)).push(p)}
+  for(const a of g.values()){
+    if(new Set(a.map(host)).size<2) continue;
+    const min=Math.min(...a.map(p=>p.price)), keep=[...a].sort((x,y)=>rank(x)-rank(y)||x.price-y.price).find(p=>p.price<=min*1.15);
+    for(const p of a) if(host(p)!==host(keep)) SHADOWED.add(p.id);
+  }
+  return SHADOWED;
+}
 function evalAns(ans){
   const key=JSON.stringify(ans); if(evalCache.has(key)) return evalCache.get(key);
   const L=ans.layout&&ans.layout!=='any'?ans.layout:null;
@@ -1654,16 +1669,17 @@ function evalAns(ans){
   // Shortlists: the parts that suit the answers best on their own. The exact build score is worked out per board.
   // One shortlist per switch family (MX-style, magnetic, low-profile, optical): a board only takes its own family.
   const swBy={};
-  for(const s of SWITCHES) if(!s.soldOut&&s.vol!=null&&feelOk(s,feel)&&(!mustSys||swSystem(s)===mustSys)){const q=swQuality(s,ans), sp=swPitch(s); (swBy[swSystemOf(s)]??=[]).push({s,q,sp,key:sameKey(s),proxy:q-Math.abs(sp-(T.p-50))*.35-Math.abs(20+.6*s.vol-T.v)*.45})}
+  const shadow=shadowed();
+  for(const s of SWITCHES) if(!s.soldOut&&!shadow.has(s.id)&&s.vol!=null&&feelOk(s,feel)&&(!mustSys||swSystem(s)===mustSys)){const q=swQuality(s,ans), sp=swPitch(s); (swBy[swSystemOf(s)]??=[]).push({s,q,sp,key:sameKey(s),proxy:q-Math.abs(sp-(T.p-50))*.35-Math.abs(20+.6*s.vol-T.v)*.45})}
   // Reserve room for affordable choices so a high sound score cannot price every build out of budget.
   const shortlist=(pool,n,price)=>{const ranked=[...pool].sort((a,b)=>b.proxy-a.proxy);return [...new Set([...ranked.slice(0,n-8),...[...pool].sort((a,b)=>price(a)-price(b)).slice(0,8)])]};
   for(const k in swBy) swBy[k]=shortlist(swBy[k],SW_SHORT,x=>switchCost(x.s,110));
-  const kcPool=KEYCAPS.filter(k=>!k.soldOut&&(surprise?(k.photo||k.pal):!look||(k.mood||[]).includes(look)))
+  const kcPool=KEYCAPS.filter(k=>!k.soldOut&&!shadow.has(k.id)&&(surprise?(k.photo||k.pal):!look||(k.mood||[]).includes(look)))
     .map(k=>{const s=capSound(k), q=kcQuality(k,look); return {k,q,kp:s.p,kv:s.v,key:sameKey(k),proxy:q-Math.abs(s.p-(T.p-50)/2)*.35}});
   const kcs=surprise?kcPool:shortlist(kcPool,KC_SHORT,x=>x.k.price);
   const list=[], boards=[];
   for(const c of FINDER_CASES){
-    if(c.soldOut) continue;
+    if(c.soldOut||shadow.has(c.id)) continue;
     if(c.layoutLabel==='70%') continue;
     if(L&&c.layout!==L) continue;
     const wl=/tri|blue|2\.4|wireless/i.test(c.conn);
