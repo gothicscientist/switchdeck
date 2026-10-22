@@ -14,6 +14,11 @@ globalThis.SWITCHDECK_SOUND_VIDEOS={
   "title": "AEBoards Blaeck Switch Sound Test - ai03 Vega",
   "creator": "steam piano"
  },
+ "aiglatsonstudioagsradianthe": {
+  "video": "KKLuWgij2aU",
+  "title": "AGS Radiant HE Switch Sound Test - Our first HE Switch!",
+  "creator": "Aiglatson Studio"
+ },
  "chaoseraklein": {
   "video": "F6IYSWnooZE",
   "title": "EAU by CHAOSERA with Klein Blue Typing Sounds ASMR custom keyboard Mechanicalkeyboard",
@@ -470,6 +475,11 @@ globalThis.SWITCHDECK_SOUND_VIDEOS={
   "title": "QK60 (Alu Plate) with Haimu x Geon HG Red Silent Linears Sound Test",
   "creator": "chaelaza"
  },
+ "hmxaster": {
+  "video": "ClHEWiomnbo",
+  "title": "HMX Aster Linear Switch | Sound Test",
+  "creator": "Divinikey"
+ },
  "hmxcola": {
   "video": "7k_ex78Z9jY",
   "title": "Here's a refill just for you | HMX Cola 3.5mm linear switch sound test review",
@@ -558,6 +568,16 @@ globalThis.SWITCHDECK_SOUND_VIDEOS={
   "title": "KBDfans Roller v2 sound test",
   "creator": "DadTech1981"
  },
+ "keygeekfullnylon": {
+  "video": "P3OJHZ2lUi4",
+  "title": "Keygeek Full Nylon sound test on Typface Univers",
+  "creator": "Nguyen Voy"
+ },
+ "keygeekpeachcheesecake": {
+  "video": "AKSGIW-kU0Y",
+  "title": "Didn’t Expect These to Be So Loud - Keygeek Peach Cheesecake Sound Test (Neo65 CU)  #customkeyboard",
+  "creator": "Groke"
+ },
  "keygeekraw": {
   "video": "7abuBlbjyGg",
   "title": "KeyGeek Raw Switches! Smooth Stock Linear? Full review and Soundtest on Vega65! Keyboard ASMR",
@@ -605,6 +625,11 @@ globalThis.SWITCHDECK_SOUND_VIDEOS={
   "video": "_IDC-aQQcAs",
   "title": "PORTICO Keyboard Typing Sounds ASMR | KTT Sea Salt Lemon Switches",
   "creator": "hi_keebs"
+ },
+ "lichicxyogurtsilent": {
+  "video": "W-PwPWaiXcQ",
+  "title": "Wingtree Lichicx Yogurt silent switch - Neo Ergo sound test",
+  "creator": "StickyChewy"
  },
  "owlablatte": {
   "video": "xQXWrGfZp8E",
@@ -669,6 +694,11 @@ globalThis.SWITCHDECK_SOUND_VIDEOS={
   "video": "3HMs0iEjgvI",
   "title": "Do you like TTC Magneto Sound Test?😜",
   "creator": "TTC"
+ },
+ "wektnafusilent": {
+  "video": "Gl4exN4dBQ4",
+  "title": "WEKT Nafu Silent Linear Switch | Sound Test",
+  "creator": "Divinikey"
  },
  "wingtreebm11": {
   "video": "_tgzYrk-pco",
