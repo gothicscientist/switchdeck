@@ -276,6 +276,17 @@ try {
   const touchPage=await touchContext.newPage();
   touchPage.on('pageerror',error=>errors.push(error.message));
   await touchPage.goto(origin,{waitUntil:'domcontentloaded'});
+  // Phone browsers leave far less height than the screen size once their toolbars show. On every question the centre
+  // boards either show at a readable size or not at all, never as a squeezed caption with no picture.
+  for(const [width,height] of [[320,568],[360,640],[375,553],[375,667],[390,664],[393,659],[414,715],[430,739],[844,390]]){
+    await touchPage.setViewportSize({width,height});
+    for(let n=0;n<8;n++){
+      await touchPage.evaluate(n=>moveQuiz(n),n);await touchPage.waitForTimeout(450);
+      const widths=await touchPage.locator('.fitem.feat').evaluateAll(items=>items.map(el=>el.getBoundingClientRect().width));
+      assert.ok(widths.every(w=>w>=60),`${width}x${height} question ${n+1}: centre boards ${widths.map(Math.round)}`);
+    }
+  }
+  await touchPage.setViewportSize({width:390,height:844});
   await touchPage.evaluate(()=>moveQuiz(0));
   await touchPage.locator('.opt[data-v="75"]').tap();
   await touchPage.waitForFunction(()=>quizStep===1);
