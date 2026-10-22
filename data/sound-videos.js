@@ -91,6 +91,11 @@ globalThis.SWITCHDECK_SOUND_VIDEOS={
   "video": "Ed_H1t0yh7c",
   "title": "Nude Rosa Silent Switches: Best Silent Switch? by Epomaker: Full Review and Soundtest!"
  },
+ "everfreecedar": {
+  "video": "VjaQjxsF_oQ",
+  "title": "Gateron EverFree Cedar Switch Review & Sound Test",
+  "creator": "keebscape"
+ },
  "everfreecurry": {
   "video": "vvGc2B0vrQ8",
   "title": "Budget Quiet Switch || Everfree Curry || typing test ASMR",
