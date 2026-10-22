@@ -2222,18 +2222,23 @@ function wireBudget(card){
   const commit=(v,final)=>{const sv=snap(v); quizAns.budget=sv; tr.style.opacity=''; nl.setAttribute('aria-pressed','false');
     if(final) store.set('sy.quiz',quizAns); recount(final)};
   const fromX=x=>{const r=tr.getBoundingClientRect(); return clampV(B_MIN+(x-r.left)/r.width*(B_MAX-B_MIN))};
+  // The slider clicks like a detent every $25 as it slides, rising slightly in pitch with the price; the two ends land
+  // a little heavier.
+  let detent=Math.floor((cur-B_MIN)/25);
+  const tick=v=>{const d=Math.floor((clampV(v)-B_MIN)/25); if(d===detent) return; detent=d;
+    const end=v<=B_MIN||v>=B_MAX; window.ThockSfx?.play('tick',{dur:.05,rate:.94+.16*(clampV(v)-B_MIN)/(B_MAX-B_MIN),gain:end?1.5:1})};
   paint();
   let sx=0, moved=false;
   tr.addEventListener('pointerdown',e=>{
     if(e.button!==undefined&&e.button>0) return;
     try{tr.setPointerCapture(e.pointerId)}catch(_){}
     dragging=true; moved=false; sx=e.clientX; tr.classList.add('drag','snap'); tr.focus({preventScroll:true});
-    cur=fromX(e.clientX); commit(cur,false); sched(); e.preventDefault()});
+    cur=fromX(e.clientX); tick(cur); commit(cur,false); sched(); e.preventDefault()});
   tr.addEventListener('pointermove',e=>{
     if(!dragging) return;
     if(!moved&&Math.abs(e.clientX-sx)>3){moved=true; tr.classList.remove('snap')}
     if(!moved) return;
-    cur=fromX(e.clientX); commit(cur,false); sched()});
+    cur=fromX(e.clientX); tick(cur); commit(cur,false); sched()});
   const end=()=>{ if(!dragging) return; dragging=false; tr.classList.remove('drag'); tr.classList.add('snap');
     cur=snap(cur); commit(cur,true); sched()};
   tr.addEventListener('pointerup',end); tr.addEventListener('pointercancel',end);
@@ -2242,7 +2247,7 @@ function wireBudget(card){
     const v=typeof quizAns.budget==='number'?quizAns.budget:300, st=e.shiftKey?50:10; let n=null;
     if(e.key==='ArrowRight'||e.key==='ArrowUp') n=v+st; else if(e.key==='ArrowLeft'||e.key==='ArrowDown') n=v-st;
     else if(e.key==='Home') n=B_MIN; else if(e.key==='End') n=B_MAX;
-    if(n==null) return; e.preventDefault(); tr.classList.add('snap'); cur=snap(n); commit(cur,true); sched()});
+    if(n==null) return; e.preventDefault(); tr.classList.add('snap'); if(snap(n)!==snap(cur)){detent=null; tick(snap(n))} cur=snap(n); commit(cur,true); sched()});
   nl.onclick=()=>{const on=quizAns.budget!=='any'; quizAns.budget=on?'any':snap(cur); saveQuizProgress(); nl.setAttribute('aria-pressed',on); tr.style.opacity=on?'.45':''; paint(); setCount(); layoutField()};
   card.querySelector('#bcontinue').onclick=()=>{window.ThockSfx?.play('key'); moveQuiz(quizStep+1)};
 }
