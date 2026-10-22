@@ -1,46 +1,63 @@
 # Thock
 
-A static mechanical-keyboard finder, builder, saved-build library, and sourced parts directory at https://thock.cc/.
+**A PC-parts-picker for custom mechanical keyboards, built on real, daily-updated store data.**
 
-## Develop and check
+**Live: [thock.cc](https://thock.cc)**
 
-Requires Node 22 or newer.
+Custom keyboards are a maze: cases, PCBs, plates, switches, stabilizers and keycaps all come from different stores, and not every part fits every other. Thock walks you through a short quiz (size, feel, sound, look, budget), then assembles complete builds from parts that are actually for sale, with real prices and links.
+
+## What it does
+
+- **Finder.** Eight questions turn into ranked, personalized builds. A scoring engine rates every switch and keycap set in the catalog against your answers and penalizes repeats, so two people with different tastes get different boards.
+- **Builder.** Pick parts yourself. Switch families (MX, magnetic, low-profile, optical) and PCB/plate pairings are checked, and anything unconfirmed is flagged as "check" instead of being guessed.
+- **Swap and mod.** Swap any part in a result and watch the score update, with undo. Up to three suggested mods (foam, films, lube) are added within your remaining budget.
+- **Sound.** Four quiz sound clips, plus a link to a real sound test for each switch.
+- **Share and save.** Builds save in the browser and copy as a short link (`thock.cc/?b=…`) that restores the exact build.
+- **Directory.** Browse every listing, sold out or not, with its source store.
+
+## The data
+
+Everything comes from public store product feeds, no API keys or paid data.
+
+| | |
+| --- | --- |
+| Retailer listings | **8,905** from **16** stores (CannonKeys, Divinikey, NovelKeys, KBDfans, Keychron, Epomaker and more) |
+| Parts usable in builds | **7,524** (2,000 switches, 1,803 keycap sets, 1,522 cases, 538 plates, 234 PCBs, 130 stabilizer sets, 1,297 mods and extras) |
+| Daily refresh | 09:17 UTC via GitHub Actions |
+
+Listings that can't be used in a build are kept out for a stated reason, counted in `data/catalog-manifest.json` (for example "not a full set", "no layout", "non-ANSI", "Topre/EC/Alps"). Specs are never invented: a missing spec stays unknown.
+
+### The scraper
+
+`scripts/sync-catalog.mjs` reads each store's public Shopify `/products.json` feed, after checking `robots.txt`. It retries temporary network failures, paginates fully, verifies USD pricing, and parses titles and variants into typed parts (pack sizes, switch types, layouts, stock, exact variant URLs). Required-source failures, empty feeds, incomplete pagination, or a catalog shrink above 20% abort the run, so a bad crawl never reaches the site.
+
+### Photo checks
+
+Product photos are screened with [sharp](https://sharp.pixelplumbing.com/) in `scripts/image-check.mjs`: clean background, product not cut off, keyboards shot top-down. Passing photos are cropped to their frame; anything else falls back to a drawn icon. A test blocks unchecked images from shipping.
+
+## Engineering
+
+- **No framework, no backend.** Vanilla JavaScript, one static site, hosted on GitHub Pages at a custom domain. The 8,905-listing directory loads on demand from 113 JSON shards.
+- **Pipeline.** A scheduled Action syncs the catalog, validates it, runs the tests, and commits the data. A successful refresh triggers the Pages deploy. A failed one leaves the live site on the last good build.
+- **Tests.** 111 unit tests (Node's built-in runner) cover catalog admission, compatibility, recommendations, part swapping, share-code round trips, product links, and sound lookups. A Playwright suite checks the real UI: keyboard navigation, history, laptop and phone sizes, reduced motion, and broken images. Both gate every deploy.
+- **Performance.** The floating keyboard field lays out once per answer and animates with transforms only, with next-question boards pre-built during the button press.
+- **Clean URLs.** `/build`, `/saved` and `/directory` use the History API, with a staged 404 fallback that redirects on a static host.
+
+### Credits and sources
+
+Quiz sound clips are CC0 recordings from Freesound, credited in `assets/sounds/CREDITS.md`. Switch sound tests link out to creators' YouTube videos (never embedded or downloaded); sources are listed in `docs/sound-sources.md`. Product names, prices and photos belong to their stores. Purchase links support optional affiliate codes (`assets/affiliates.js`), disclosed on the site once enabled.
+
+## Run it locally
+
+Requires Node 22+.
 
 ```sh
 npm ci
-npm test
+npm test                          # unit tests
 npx playwright install chromium
-npm run test:ui
-npm run catalog:check
-npm run site:stage
+npm run test:ui                   # browser tests
+npm run catalog:sync              # re-crawl the stores (--offline uses cached feeds)
+npm run site:stage                # build dist/
 ```
 
-The browser suite covers quiz shortcuts and progress, rapid back/forward navigation, refreshed recommendations, clipboard success and failure, modal focus, slow/broken images, browser history, laptop/mobile sizes, and reduced motion. Retailer images are mocked so these checks do not depend on store availability. Set `THOCK_BROWSER_EXECUTABLE` to use an existing Chromium/Chrome executable. Screenshots are written to the ignored `test-results/ui/` folder.
-
-In the finder, use Tab to move between controls, 1–9 to select an option, Enter to continue with a saved answer, and Backspace to return to the previous question. Shortcuts leave text fields, editable content, and browser key combinations alone. Escape closes product overlays. Answers and the current question stay in this browser until “Start over.”
-
-Serve the repository or `dist/` with a static HTTP server. Use HTTP rather than a file URL: the directory loads its index and detail shards on demand. The theme follows the device preference; the header toggle overrides it for the current visit. Builds are stored in the browser on the current origin. Build codes retain the SY1 format for compatibility and can move builds between devices or domains.
-
-## Daily catalog finder
-
-**Refresh keyboard catalog** runs daily at **09:17 UTC** and can also be run manually from GitHub Actions. It checks robots.txt, reads public retailer product feeds, retries temporary network failures, verifies USD for optional stores, checks photos, builds purchase links, validates the resulting catalog, and runs all tests before committing. A failed refresh leaves the deployed catalog intact. Its successful `workflow_run` triggers **Deploy to GitHub Pages**, including bot commits that do not trigger ordinary push workflows.
-
-```sh
-npm run catalog:sync
-npm run catalog:check
-npm test
-```
-
-Last-good raw snapshots and photo measurements are cached in ignored `.cache/`. `npm run catalog:sync -- --offline` rebuilds from cached feeds. Required source failures, incomplete pagination, empty feeds, and a catalog shrink greater than 20% abort publication. Optional unavailable sources are reported in the manifest and workflow summary; they are not claimed as fresh. See `data/catalog-manifest.json` for current source status, timestamps, counts, admission reasons, and fingerprint. Counts represent retailer listings, not unique products.
-
-## Catalog and compatibility
-
-Source records retain retailer titles, published specifications, stock, exact variant URLs, pack quantities, and provenance. Display names use `assets/part-names.js`. Missing specifications stay unknown. Individual component variants on a keyboard listing are not complete kits. A sold-out base kit is kept sold out even when add-ons remain available. Sold-out parts remain browsable and recoverable in saved builds but are excluded from finder recommendations.
-
-The finder prices whole switch packs and the selected case, PCB, plate, stabilizers, and keycaps. PCB and plate pairings require a shared catalog family; unknown fit is shown as a check in the builder. Switch systems must match, including upgrades to assembled keyboards. Imported keycap coverage inferred from key counts still requires checking the exact kitting. Sound estimates are illustrative; recordings and exact-model sound-test links have separate source information in `docs/sound-sources.md`.
-
-Directory additions respect the selected exact variant. Unsupported variants can still be inspected and purchased but cannot be silently replaced with another builder variant. Purchase links resolve to product pages, prioritize confirmed Amazon listings, and support optional affiliate configuration in `assets/affiliates.js`; see `docs/product-links.md`.
-
-## Deployment
-
-GitHub Pages deploys `dist/`, assembled by `npm run site:stage` from browser assets, catalog data, CNAME, robots.txt, and sitemap.xml. Source scripts, tests, dependencies, and importer caches are excluded. `CNAME` preserves thock.cc. Tests and catalog validation gate every deploy.
+Serve the repo or `dist/` over HTTP (not `file://`); the directory fetches its shards on demand. Design decisions are in [DESIGN.md](DESIGN.md).
