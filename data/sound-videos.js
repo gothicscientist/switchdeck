@@ -1,8 +1,28 @@
 globalThis.SWITCHDECK_SOUND_VIDEOS={
+ "43studiojing": {
+  "video": "pXno98AVevE",
+  "title": "Monokei Hiro (Brass Bottom) | POM Plate | 43 Studio x JWK Jing | Sound Test",
+  "creator": "Jaded Johnny"
+ },
+ "43studioobsidianlong": {
+  "video": "iLbHa7jm294",
+  "title": "Monokei Hiro (Brass Bottom) | POM Plate | 43 Studio x JWK Obsidian Long | Sound Test",
+  "creator": "Jaded Johnny"
+ },
  "aeboardsblaeck": {
   "video": "4UH-U1kUqhU",
   "title": "AEBoards Blaeck Switch Sound Test - ai03 Vega",
   "creator": "steam piano"
+ },
+ "chaoseraklein": {
+  "video": "F6IYSWnooZE",
+  "title": "EAU by CHAOSERA with Klein Blue Typing Sounds ASMR custom keyboard Mechanicalkeyboard",
+  "creator": "PeppRr's Gear"
+ },
+ "cherryhyperglidebrown": {
+  "video": "BYLqwprf3hk",
+  "title": "Cherry MX Hyperglide Brown Sound Test #mechanicalkeyboard #keyboard #keyboardasmr #keycaps",
+  "creator": "Chai Key"
  },
  "cherrymx2ablack": {
   "video": "Q-YPHoxnyXY",
@@ -32,6 +52,46 @@ globalThis.SWITCHDECK_SOUND_VIDEOS={
   "video": "J3lfzmVnvvw",
   "title": "Neo65 + CF Plate + DK Blueberry Milk #soundtest #typingtest #asmr #keyboards #typing #dangkeebs",
   "creator": "Keyboard Dad"
+ },
+ "dangkeebsblueskylinear": {
+  "video": "ndkn8S_zH9U",
+  "title": "Freebird 75 Sound Test | Blue Sky Linear Switches",
+  "creator": "dutchmasterw"
+ },
+ "dangkeebsemogogocreamno1": {
+  "video": "aMqS9lxlZPE",
+  "title": "Monokei Hiro (Brass Bottom) | POM Plate | Emogogo Cream NO1 | Sound Test",
+  "creator": "Jaded Johnny"
+ },
+ "dangkeebsemogogohybridblack": {
+  "video": "pbxO1-9LBTM",
+  "title": "Monokei Hiro (Brass Bottom) | POM Plate | Emogogo Hybrid Black | Sound Test",
+  "creator": "Jaded Johnny"
+ },
+ "dangkeebsiceyicemangoberry": {
+  "video": "VqWSvKJLwqE",
+  "title": "✨ASMR Typing Icey Ice Mango Berry Tactile Switches | #soundtest #keyboard #thocky",
+  "creator": "Yamikeebs"
+ },
+ "dangkeebsinvisiblend": {
+  "video": "icqaRpxJHbw",
+  "title": "INVISIBLEND SWITCHES from Dangkeebs ✨ #keyboardswitches #soundtest #typing #keyboardbuild",
+  "creator": "Mochi Crafts"
+ },
+ "dangkeebsjwickfullnylonblack": {
+  "video": "7CAlejProHY",
+  "title": "CIY Gas67 | Jwick Black V2 Full Nylon switch  Sound Test",
+  "creator": "Jsng "
+ },
+ "dangkeebsjwickgingermilk": {
+  "video": "jyxGhG-HWN4",
+  "title": "Jwick Ginger Milk Typing Sound Test | QK65",
+  "creator": "Type and Types"
+ },
+ "dangkeebsmelonmilklinear": {
+  "video": "3Jtfb20QguI",
+  "title": "Melon Milk Linear Switches on Mr. Suit Sound Test",
+  "creator": "Cozy Kaye"
  },
  "durockblacklotus": {
   "video": "ekW6TtH5a9I",
@@ -63,6 +123,11 @@ globalThis.SWITCHDECK_SOUND_VIDEOS={
   "title": "Sound Test - Space65 / Durock Lilac / GMK Serenity",
   "creator": "Kem Tn"
  },
+ "durocklinear67g": {
+  "video": "Qnb831HKFFs",
+  "title": "durock Linear 67g sound test",
+  "creator": "joevegan"
+ },
  "durocklupine": {
   "video": "N6UYk32Bpuk",
   "title": "Durock Lupine Sound Test with GMK, MT3 and SA Keycaps",
@@ -72,6 +137,11 @@ globalThis.SWITCHDECK_SOUND_VIDEOS={
   "video": "SxV7sz1lcts",
   "title": "Matrix Noah V2 with lubed Mekanisk Ultramarine Typing Sounds",
   "creator": "wabi sabi"
+ },
+ "durockpomt167g": {
+  "video": "zelXjCvaUUU",
+  "title": "Durock Sunflower POM T1 (67g) Stock on KBD67 R3 (Sound Test) (Stock)",
+  "creator": "What the Keeb"
  },
  "durocksilent": {
   "video": "K-0JRAbvwmc",
@@ -174,9 +244,19 @@ globalThis.SWITCHDECK_SOUND_VIDEOS={
   "video": "GydLR6Ch4gg",
   "title": "Gateron G Pro 3.0 Yellow sound test"
  },
+ "gateroninkv2": {
+  "video": "KxN9QgCuV6Y",
+  "title": "Gateron INK v2 Black Baltic Edition Linear Switch - Quick Sound Test (Stock - Factory Lubed)",
+  "creator": "2shycats"
+ },
  "gateroninkv2problack": {
   "video": "lF73kwneHLA",
   "title": "Switch Sound Test: Gateron Ink V2 Pro Black, Gateron EverFree Silent Yellow, Nuphy Rose Glacier"
+ },
+ "gateronkhonsu": {
+  "video": "td3nVDOmGdQ",
+  "title": "I'm simply blown away | Gateron Khonsu switch sound test and review",
+  "creator": "The Switch Journal"
  },
  "gateronks3milkyyellowpro": {
   "video": "bl98TqlhwJk",
@@ -200,6 +280,11 @@ globalThis.SWITCHDECK_SOUND_VIDEOS={
   "video": "vuV3WWUQC-U",
   "title": "Gateron Magnetic Jade Pro Switch Sound Test | Ultra Smooth & Quiet",
   "creator": "Click and Thock"
+ },
+ "gateronmagneticjadeprohe": {
+  "video": "K0fWyUBMqb4",
+  "title": "Gateron Magnetic Jade Pro HE Switch Sound Test & Close-Up",
+  "creator": "KeebPilot"
  },
  "gateronmagneticorange": {
   "video": "8TRLiIrqa1E",
@@ -326,6 +411,11 @@ globalThis.SWITCHDECK_SOUND_VIDEOS={
   "video": "b51X6_XQWEI",
   "title": "Gateron Strawberry Smoothie Linear Switch Sound Test"
  },
+ "gateronyellow": {
+  "video": "d9t-VKb8DUc",
+  "title": "Gateron MILKY YELLOW Sound Test & Review // The best budget linear switches?",
+  "creator": "KeebNews"
+ },
  "gateronyellowinkv2": {
   "video": "_Jhm_qNjMBA",
   "title": "Tofu65 with Gateron Ink v2 yellow switches. Sound Test",
@@ -340,6 +430,11 @@ globalThis.SWITCHDECK_SOUND_VIDEOS={
   "video": "GHY-BXKmWeU",
   "title": "Geon Raptor MX Extreme Gaming Switches sound test",
   "creator": "DadTech1981"
+ },
+ "geonrawhe60g": {
+  "video": "otaOc9YcXpE",
+  "title": "Geon Raw 60g Sound Test with Wooting80 HE",
+  "creator": "Skehla"
  },
  "geonyellow": {
   "video": "wd0tJs_ItME",
@@ -375,6 +470,21 @@ globalThis.SWITCHDECK_SOUND_VIDEOS={
   "title": "QK60 (Alu Plate) with Haimu x Geon HG Red Silent Linears Sound Test",
   "creator": "chaelaza"
  },
+ "hmxcola": {
+  "video": "7k_ex78Z9jY",
+  "title": "Here's a refill just for you | HMX Cola 3.5mm linear switch sound test review",
+  "creator": "The Switch Journal"
+ },
+ "hmxretroc": {
+  "video": "wxQ__QzvBGY",
+  "title": "HMX Retro C Typing Test | Smooth & Resonant Linear Switches",
+  "creator": "Divinikey"
+ },
+ "hmxretror": {
+  "video": "Dn7bwdGuxy0",
+  "title": "HMX Retro R Typing Test | Bright & Snappy Linear Switch",
+  "creator": "Divinikey"
+ },
  "hmxretrot": {
   "video": "9WRARjjKKUI",
   "title": "Typing on HMX Retro T"
@@ -383,10 +493,25 @@ globalThis.SWITCHDECK_SOUND_VIDEOS={
   "video": "7CB0VBNsfXo",
   "title": "NEW HMX Saru v2 Sound Test"
  },
+ "hmxsnowflake": {
+  "video": "choiz08pSIM",
+  "title": "HMX Snowflake sound test",
+  "creator": "DadTech1981"
+ },
+ "hmxvolume0silenttactile": {
+  "video": "ApWUvS35nng",
+  "title": "0 must have a new meaning | HMX Volume 0 T silent tactile switch sound test and review",
+  "creator": "The Switch Journal"
+ },
  "huanoraw": {
   "video": "DkCvKYiImPQ",
   "title": "CIY GK68 + Huano Raw Switches Sound Test",
   "creator": "eqily"
+ },
+ "huanosakura": {
+  "video": "vHMzf1ZUODc",
+  "title": "Huano Sakura Switches Sound Test #keyboard #switch #tech",
+  "creator": "LettersEF"
  },
  "jwkjwickred": {
   "video": "IYWvb6eJQXc",
@@ -441,6 +566,16 @@ globalThis.SWITCHDECK_SOUND_VIDEOS={
  "keygeeksanglei": {
   "video": "ARCpzM91fq4",
   "title": "Divinikey x ModoKey Tess65 with Keygeek Sanglei Linear Switches Typing Test"
+ },
+ "keygeeky2": {
+  "video": "4nwsAcXfRPo",
+  "title": "Keygeek Y2 Linear Switches Sound Test!",
+  "creator": "Click and Thock"
+ },
+ "keygeeky2x": {
+  "video": "PgrwNSTeOP4",
+  "title": "Finally, a genuine upgrade | Keygeek Y2X linear switch sound test review",
+  "creator": "The Switch Journal"
  },
  "kprepublicemotoyslittledaisylittledaisylinear": {
   "video": "S-Upa-L-lp0",
@@ -547,6 +682,26 @@ globalThis.SWITCHDECK_SOUND_VIDEOS={
   "video": "ycuF_NA6-ms",
   "title": "Wow, they're really good at making linears huh? | WS BigLucky Clicky switch sound test review",
   "creator": "The Switch Journal"
+ },
+ "wuquestudiored": {
+  "video": "BiiyXlBdEpw",
+  "title": "Wuque Studio WS Red - Sound test - Monsgeek M1",
+  "creator": "notsonabil"
+ },
+ "wuquestudioyellow": {
+  "video": "P795LdePHgs",
+  "title": "Ultimate Wuque Studio WS Yellow Linear switch Sound Test!",
+  "creator": "Click and Thock"
+ },
+ "wuquewsarowanagold": {
+  "video": "95FHPsmipFg",
+  "title": "Typing Test on Wuque WS Arowana Gold Linear Switches",
+  "creator": "Divinikey"
+ },
+ "wuquewsarowanared": {
+  "video": "FIQqd64VPXU",
+  "title": "Wuque WS Arowana Red Linear Switches Sound Test on Tofu 2.0",
+  "creator": "Divinikey"
  },
  "wuquewsarowanayellow": {
   "video": "iebKHfWl444",
