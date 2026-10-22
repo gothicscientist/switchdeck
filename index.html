@@ -171,7 +171,7 @@ h1,h2,h3{text-wrap:balance;margin:0;font-weight:700;letter-spacing:-.02em}
 .btrack{position:relative;flex:1;height:48px;border-radius:var(--r-tile);background:var(--tile);cursor:pointer;touch-action:none;user-select:none}
 .bfill{position:absolute;left:0;top:0;bottom:0;border-radius:var(--r-tile);background:var(--slider);will-change:width}
 .btrack.snap .bfill{transition:width .2s cubic-bezier(.2,.8,.2,1)}
-.bknob{position:absolute;top:50%;left:0;transform:translate3d(0,-50%,0) translateX(-50%);will-change:transform;background:var(--slider-ink);color:#fff;font-weight:600;font-size:13px;padding:10px 10px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.18);white-space:nowrap;pointer-events:none}
+.bknob{position:absolute;top:50%;left:0;transform:translate3d(0,-50%,0) translateX(-50%);will-change:transform;background:var(--surface);color:#fff;font-weight:600;font-size:13px;padding:10px 10px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.18);white-space:nowrap;pointer-events:none}
 .btrack.snap .bknob{transition:transform .2s cubic-bezier(.2,.8,.2,1)}
 .btrack.drag{cursor:grabbing}
 @media (prefers-reduced-motion:reduce){.btrack.snap .bfill,.btrack.snap .bknob{transition:none}}
