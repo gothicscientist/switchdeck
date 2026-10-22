@@ -5,7 +5,7 @@
   --ink:#F2F0ED; --ink-2:#D6D1CA; --muted:#B0A9A1; --faint:#918A82; --line:#403C38;
   --dark:#E7E2DB; --dark-hover:#FFFFFF; --on-dark:#242220;
   --accent:#D6D1CA; --accent-soft:rgba(214,209,202,.12);
-  --slider:#5DB985; --slider-ink:#2F7F55;
+  --slider:#5DB985; --slider-ink:#2F7F55; --knob-ink:#FFFFFF;
   --ok:#79C896; --warn:#E5B66C; --fail:#EF9389; --info:#93B6EC;
   --ok-soft:rgba(121,200,150,.12); --warn-soft:rgba(229,182,108,.12);
   --fail-soft:rgba(239,147,137,.12); --info-soft:rgba(147,182,236,.12);
@@ -34,3 +34,5 @@
 @media(max-width:760px){.topright{gap:4px}.theme-toggle{width:40px;height:44px}.pricepill{font-size:12px;gap:4px}.fp-th{display:none}.top .bar{padding-left:max(12px,env(safe-area-inset-left,0px));padding-right:max(12px,env(safe-area-inset-right,0px))}}
 @media(prefers-reduced-motion:reduce){.theme-toggle,.theme-toggle svg{transition:none}}
 @media(max-width:480px){.nav{gap:2px}.nav button{width:32px}.theme-toggle{width:36px}.pricepill{font-size:11px;gap:0}.pricepill .statusdot{display:none}}
+:root[data-theme="dark"] .sw{box-shadow:inset 0 0 0 1px rgba(255,255,255,.22)}
+:root[data-theme="dark"] .sw[aria-pressed="true"]{box-shadow:inset 0 0 0 1px rgba(255,255,255,.22),0 0 0 2px var(--surface),0 0 0 3.5px var(--ink)}

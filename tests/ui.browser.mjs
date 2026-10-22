@@ -171,6 +171,7 @@ try {
   // Open a picker from its real trigger, then type digits and Backspace without changing the quiz.
   const trigger = page.locator('[data-pick="switches"]').first();
   await trigger.click();
+  assert.equal(await page.locator('#pkfilters').evaluate(el=>el.scrollWidth<=el.clientWidth+1),true,'picker filters fit their column');
   const framedThumbs=await page.locator('#picker .thumb .pf-photo').evaluateAll(items=>items.every(el=>{
     const frame=el.closest('.thumb').getBoundingClientRect(),photo=el.getBoundingClientRect();
     return photo.height<=frame.height+1&&photo.width<=frame.width+1;
@@ -195,6 +196,8 @@ try {
 
   await page.locator('#nav-directory').click();
   await page.locator('.directory-card').first().waitFor();
+  // Store links under each tile sit above the tile's full-size open button, so a tap reaches the store.
+  assert.equal(await page.locator('.directory-actions a').first().evaluate(a=>{const r=a.getBoundingClientRect();const hit=document.elementFromPoint(r.left+r.width/2,r.top+r.height/2);return a===hit||a.contains(hit)}),true,'directory store links are clickable');
   await page.locator('[data-detail]').first().click();
   await page.locator('#directory-detail-title').waitFor();
   assert.equal(await page.evaluate(() => document.activeElement.classList.contains('directory-close')),true);

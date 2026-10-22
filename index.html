@@ -70,6 +70,7 @@ h1,h2,h3{text-wrap:balance;margin:0;font-weight:700;letter-spacing:-.02em}
 .pricepill:hover{color:var(--ink)}
 .pricepill .pname+span,.fp-name+span{color:var(--ink);font-weight:500}
 .pricepill .pname,.fp-name{margin-right:4px}
+.pricepill{white-space:nowrap;min-width:0}.pricepill .pname{display:inline-block;vertical-align:bottom;max-width:clamp(80px,18vw,240px);overflow:hidden;text-overflow:ellipsis}
 .statusdot{display:inline-block;width:7px;height:7px;border-radius:50%}
 .fp-in{display:inline-flex;align-items:center;gap:8px;transition:opacity .4s ease,transform .4s ease}
 .fp-in.swap{opacity:0;transform:translateY(5px)}
@@ -95,7 +96,7 @@ h1,h2,h3{text-wrap:balance;margin:0;font-weight:700;letter-spacing:-.02em}
 .iconbtn:hover{background:var(--tile)}
 .iconbtn:active{transform:scale(.92)}
 .iconbtn:disabled{opacity:.3;cursor:default;background:transparent}
-.chip{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;font-weight:500;padding:2px 8px;border-radius:6px;background:var(--tile);color:var(--muted);white-space:nowrap}
+.chip{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;font-weight:500;padding:2px 8px;border-radius:6px;background:var(--tile);color:var(--muted);white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
 .chip.ok{background:var(--ok-soft);color:var(--ok)}.chip.warn{background:var(--warn-soft);color:var(--warn)}.chip.fail{background:var(--fail-soft);color:var(--fail)}.chip.info{background:var(--info-soft);color:var(--info)}
 .card{background:var(--surface);border-radius:var(--r);box-shadow:var(--shadow-card)}
 
@@ -171,7 +172,7 @@ h1,h2,h3{text-wrap:balance;margin:0;font-weight:700;letter-spacing:-.02em}
 .btrack{position:relative;flex:1;height:48px;border-radius:var(--r-tile);background:var(--tile);cursor:pointer;touch-action:none;user-select:none}
 .bfill{position:absolute;left:0;top:0;bottom:0;border-radius:var(--r-tile);background:var(--slider);will-change:width}
 .btrack.snap .bfill{transition:width .2s cubic-bezier(.2,.8,.2,1)}
-.bknob{position:absolute;top:50%;left:0;transform:translate3d(0,-50%,0) translateX(-50%);will-change:transform;background:var(--surface);color:#fff;font-weight:600;font-size:13px;padding:10px 10px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.18);white-space:nowrap;pointer-events:none}
+.bknob{position:absolute;top:50%;left:0;transform:translate3d(0,-50%,0) translateX(-50%);will-change:transform;background:var(--surface);color:var(--knob-ink,var(--slider-ink));font-weight:600;font-size:13px;padding:10px 10px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.18);white-space:nowrap;pointer-events:none}
 .btrack.snap .bknob{transition:transform .2s cubic-bezier(.2,.8,.2,1)}
 .btrack.drag{cursor:grabbing}
 @media (prefers-reduced-motion:reduce){.btrack.snap .bfill,.btrack.snap .bknob{transition:none}}
@@ -339,10 +340,10 @@ h1,h2,h3{text-wrap:balance;margin:0;font-weight:700;letter-spacing:-.02em}
 .dhead input[type=search]{flex:1 1 240px;min-width:0;border:0;border-radius:var(--r-tile);padding:10px 14px;background:var(--tile);outline:none}
 .dhead input[type=search]:focus{box-shadow:inset 0 0 0 1.5px var(--ink)}
 .dbody{display:grid;grid-template-columns:220px minmax(0,1fr);min-height:0}
-.filters{border-right:1px solid var(--line);padding:18px 20px;overflow:auto;display:grid;gap:20px;align-content:start}
-.filters fieldset{border:0;padding:0;margin:0;display:grid;gap:7px}
+.filters{border-right:1px solid var(--line);padding:18px 20px;overflow:auto;display:grid;grid-template-columns:minmax(0,1fr);gap:20px;align-content:start}
+.filters fieldset{border:0;padding:0;margin:0;display:grid;gap:7px;min-width:0}
 .filters legend{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px}
-.filters label{display:flex;gap:9px;align-items:center;font-size:13.5px}
+.filters label{display:flex;gap:9px;align-items:center;font-size:13.5px;min-width:0;overflow-wrap:anywhere}
 .filters input[type=checkbox]{accent-color:var(--ink);width:15px;height:15px}
 .filters input[type=range]{width:100%;accent-color:var(--accent)}
 .toggle{display:flex;align-items:center;gap:9px;font-size:13.5px;font-weight:600}
@@ -361,7 +362,7 @@ h1,h2,h3{text-wrap:balance;margin:0;font-weight:700;letter-spacing:-.02em}
 .pick .why{font-size:12.5px;color:var(--fail)}
 .pick .links{display:flex;gap:12px;font-size:12.5px;flex-wrap:wrap;align-items:center}
 .pick .links a{color:var(--muted);text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:2px}
-.pick .links a.store{text-decoration:none}
+.pick .links a.store{text-decoration:none;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
 .pick.selected{box-shadow:inset 0 0 0 1.5px var(--ink)}
 .filtbtn{display:none}
 .grabber{display:none}
@@ -378,7 +379,7 @@ h1,h2,h3{text-wrap:balance;margin:0;font-weight:700;letter-spacing:-.02em}
 .codebox{display:grid;gap:10px;padding:22px;margin-top:18px}
 .codebox textarea{width:100%;min-height:72px;border:0;border-radius:var(--r-tile);padding:12px;background:var(--tile);font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;color:var(--ink);resize:vertical}
 
-.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--dark);color:var(--on-dark);padding:11px 16px;border-radius:12px;font-size:13.5px;font-weight:500;z-index:100;box-shadow:var(--shadow-lg);max-width:calc(100% - 32px);animation:toastIn .45s var(--out) both}
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--dark);color:var(--on-dark);padding:11px 16px;border-radius:12px;font-size:13.5px;font-weight:500;z-index:100;box-shadow:var(--shadow-lg);width:max-content;max-width:calc(100vw - 32px);text-align:center;animation:toastIn .45s var(--out) both}
 @keyframes toastIn{from{opacity:0;transform:translate(-50%,14px)}to{opacity:1;transform:translate(-50%,0)}}
 .foot{color:var(--faint);font-size:12px;padding-block:24px}
 .foot .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
@@ -438,6 +439,7 @@ h1,h2,h3{text-wrap:balance;margin:0;font-weight:700;letter-spacing:-.02em}
 .stats3 span{font-size:11.5px;line-height:1.2;color:var(--muted)}
 .stats3 b{font-size:14px;line-height:1.25;font-weight:500;color:var(--ink-2);letter-spacing:-.005em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .stats3 div:first-child b{font-size:19px;line-height:1.1;font-weight:600;color:var(--ink);letter-spacing:-.025em}
+@media (max-width:400px){.stats3 div{padding:0 10px}.stats3 b{white-space:normal;overflow-wrap:anywhere}}
 .rsum .ractions{grid-template-columns:1fr auto auto}
 .rsum .ractions .btn.primary{grid-column:auto}
 /* Share: the label lifts away and "Copied" settles in its place; both share one cell so the button keeps its width. */
@@ -585,6 +587,9 @@ a.listen.watch:hover{background:rgba(68,64,60,.16)}
   .rcap-w,.rsum .rcap svg{display:none}.rcap-n{display:inline}
   .rparts{overflow:visible}
   .rlist{max-height:none}
+  .pick{grid-template-columns:84px minmax(0,1fr)}
+  .pick .thumb{width:84px;height:62px}
+  .pick .side{grid-column:1 / -1;flex-direction:row;justify-content:space-between;align-items:center;text-align:left}
 }
 @media (max-width:760px){
   .top .bar{height:60px}
@@ -614,6 +619,11 @@ a.listen.watch:hover{background:rgba(68,64,60,.16)}
   .filters{display:none;border-right:0;border-bottom:1px solid var(--line);max-height:42vh}
   .filters.open{display:grid}
   .filtbtn{display:inline-flex}
+  .dhead{padding:14px 16px;gap:10px}
+  .dhead h2{order:0;flex:1 1 calc(100% - 96px);min-width:0}
+  #pkclose{order:1}
+  .dhead input[type=search]{order:2;flex:1 1 160px}
+  .filtbtn{order:3}
   .pick{grid-template-columns:76px minmax(0,1fr)}
   .pick .thumb{width:76px;height:56px}
   .pick .side{grid-column:1 / -1;flex-direction:row;justify-content:space-between;align-items:center;text-align:left}
@@ -1242,7 +1252,17 @@ function extraSVG(e){
     Mod:`<rect x="18" y="20" width="60" height="32" rx="3" fill="#1E4D35"/><rect x="14" y="30" width="68" height="12" fill="#E8D47A" opacity=".85"/>`,
     Lube:`<rect x="38" y="14" width="20" height="44" rx="4" fill="#E9E9EC" stroke="#888"/><rect x="42" y="8" width="12" height="8" fill="#3B6FD0"/><text x="48" y="40" font-size="7" text-anchor="middle" fill="#333" font-family="system-ui">205</text>`,
     Tool:`<path d="M30 14v36a6 6 0 0 0 6 6M66 14v36a6 6 0 0 1-6 6" stroke="#8C9399" stroke-width="5" fill="none" stroke-linecap="round"/>`,
-    Cable:`<path d="M10 36c8-14 12 14 20 0s12 14 20 0 12 14 20 0" stroke="#7E66C7" stroke-width="4" fill="none"/><rect x="70" y="30" width="18" height="12" rx="3" fill="#C9A44A"/>`}[e.kind]||'';
+    Cable:`<path d="M10 36c8-14 12 14 20 0s12 14 20 0 12 14 20 0" stroke="#7E66C7" stroke-width="4" fill="none"/><rect x="70" y="30" width="18" height="12" rx="3" fill="#C9A44A"/>`,
+    Deskmat:`<rect x="8" y="18" width="80" height="36" rx="6" fill="#B9B4AC"/><rect x="8" y="18" width="80" height="36" rx="6" fill="none" stroke="#8F8A83" stroke-width="1.5"/>`,
+    Accessory:`<rect x="30" y="20" width="36" height="34" rx="7" fill="#A8A29E"/><rect x="36" y="22" width="24" height="22" rx="5" fill="#D6D3D1"/>`,
+    Badge:`<rect x="26" y="26" width="44" height="20" rx="4" fill="#C9A44A"/><rect x="31" y="31" width="34" height="10" rx="2" fill="none" stroke="#9C7C2E" stroke-width="1.5"/>`,
+    'Switch films':`<g fill="none" stroke="#8F8A83" stroke-width="1.5"><rect x="26" y="24" width="30" height="30" rx="3" fill="#E7E5E4" fill-opacity=".8"/><rect x="40" y="18" width="30" height="30" rx="3" fill="#F5F5F4" fill-opacity=".8"/></g>`,
+    Gaskets:`<g fill="#57534E"><rect x="16" y="22" width="64" height="7" rx="3.5"/><rect x="16" y="33" width="64" height="7" rx="3.5"/><rect x="16" y="44" width="64" height="7" rx="3.5"/></g>`,
+    Feet:`<g fill="#44403C"><ellipse cx="34" cy="38" rx="14" ry="8"/><ellipse cx="62" cy="38" rx="14" ry="8"/></g><g fill="#78716C"><ellipse cx="34" cy="35" rx="10" ry="4"/><ellipse cx="62" cy="35" rx="10" ry="4"/></g>`,
+    Knob:`<rect x="30" y="22" width="36" height="30" rx="6" fill="#A9AEB3"/><g stroke="#80868C" stroke-width="2">${[...Array(7)].map((_,i)=>`<line x1="${35+i*4.3}" y1="26" x2="${35+i*4.3}" y2="48"/>`).join('')}</g>`,
+    Weight:`<rect x="14" y="28" width="68" height="18" rx="3" fill="#C9A44A"/><rect x="14" y="28" width="68" height="5" rx="2.5" fill="#E2C574"/>`,
+    Springs:`<path d="M34 16h28M34 20 62 26 34 32 62 38 34 44 62 50 34 56M34 56h28" stroke="#A8A29E" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>`}[e.kind]
+    ||`<rect x="30" y="20" width="36" height="34" rx="7" fill="#A8A29E"/><rect x="36" y="22" width="24" height="22" rx="5" fill="#D6D3D1"/>`;
   return `<svg viewBox="0 0 96 72" aria-hidden="true">${ic}</svg>`;
 }
 function thumbFor(p,b,w=240){
@@ -1957,7 +1977,8 @@ function layoutField(){
   const card=document.getElementById('qwrap'), cardTop=card.getBoundingClientRect().top;
   const topBar=document.querySelector('.top .bar').getBoundingClientRect().bottom-fieldRect.top;
   const avail=Math.max(0,cardTop-fieldRect.top-topBar-16);
-  const featBase=mobile?Math.min(150,W*0.36)*MFEAT_SCALE:W*0.18/LW['75']*FEAT_SCALE; // 18% of the width is the 75% layout's size; other layouts scale by LW
+  // 18% of the width is the 75% layout's size; other layouts scale by LW. A portrait tablet has room to spare above the card, so it gets 28%.
+  const featBase=mobile?Math.min(150,W*0.36)*MFEAT_SCALE:W*(H>W*1.15?0.28:0.18)/LW['75']*FEAT_SCALE;
   const othW=mobile?W*0.16:Math.max(80,Math.min(130,W*0.065));
   // Only cut-out boards (transparent photo) are ever drawn. Matches fill the slots first, best first; slots with no
   // transparent match are left empty rather than filled with anything else.
@@ -2000,6 +2021,17 @@ function layoutField(){
   const pairLeft=(W-pairWidth)/2;
   fx=[W/2,pairLeft+(f.w[1]||0)/2,pairLeft+(f.w[1]||0)/2+separation];
   fy=[firstTop+(f.h[0]||0)/2,rowTop+rowHeight()/2,rowTop+rowHeight()/2];
+  // A band too short for two rows (a phone held sideways, a squat browser window) would shrink the boards to specks:
+  // there the three sit in one row instead, the first in the middle.
+  if(!mobile&&top.length===3&&Math.min(...f.w)<140){
+    const one=fit(1), gap=GX*2, tall=Math.max(...one.h.map(h=>h-CAP));
+    const s1=Math.min(1,Math.max(0,roomC-CAP-16)/Math.max(1,tall),(widthRoom-gap)/Math.max(1,one.w[0]+one.w[1]+one.w[2]));
+    const g=fit(s1);
+    if(Math.min(...g.w)>Math.min(...f.w)*1.25){
+      sc=s1; f=g; const rh=Math.max(...f.h), y=topBar+Math.max(0,roomC-rh)*.45+rh/2, total=f.w[0]+f.w[1]+f.w[2]+gap, left=(W-total)/2;
+      fx=[left+f.w[1]+GX+f.w[0]/2,left+f.w[1]/2,left+f.w[1]+f.w[0]+gap+f.w[2]/2]; fy=[y,y,y];
+    }
+  }
   // The centre three stay exactly where they are while they stay the same boards and the next card leaves them room:
   // a card that is shorter or a little taller is no reason to nudge them. A card that would cover them, or a new board,
   // lays them out again.

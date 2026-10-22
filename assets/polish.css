@@ -30,3 +30,5 @@
 @media(pointer:coarse){.iconbtn::before,.play::before,.qinfo::before{content:"";position:absolute;inset:-6px}.iconbtn:not(.rclose),.qinfo{position:relative}}
 @media(max-width:600px){.directory-main-photo-frame{height:220px}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
+/* iOS zooms the page into any text field under 16px; touch screens get 16px fields so focus never jumps the layout. */
+@media(pointer:coarse){:is(input:not([type=checkbox]):not([type=radio]):not([type=range]),select,textarea):not(#buildname){font-size:16px}}
