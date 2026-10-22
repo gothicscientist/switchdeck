@@ -2824,8 +2824,22 @@ const BY_LISTING=new Map();for(const p of ALLPARTS)if(p.catalogId){if(!BY_LISTIN
 window.SwitchdeckBuilder={
   parts:(id,url)=>(BY_LISTING.get(id)||[]).filter(p=>!url||p.retailers?.some(r=>r.url===url)),
   has:(id,url)=>!!window.SwitchdeckBuilder.parts(id,url).length,
-  add:(id,url)=>{const parts=window.SwitchdeckBuilder.parts(id,url);if(!parts.length){toast('This variant is not available in the builder');return}const p=parts.find(p=>!p.soldOut)||parts[0];go('build');choose(p.cat,p)}
+  add:(id,url)=>{const parts=window.SwitchdeckBuilder.parts(id,url);if(!parts.length){toast('This variant is not available in the builder');return}const p=parts.find(p=>!p.soldOut)||parts[0];go('build');choose(p.cat,p)},
+  // Directory tiles follow the image rule: the catalog's checked, cropped photo for the listing, or a drawn part.
+  photo:(id,category)=>{const parts=BY_LISTING.get(id)||[], p=parts.find(p=>p.photo?.box)||parts[0];return p?thumbFor(p,null,480):directoryIcon(category)},
+  // The photo's own backdrop colour, so the tile behind a cropped photo continues it instead of boxing it in.
+  photoBg:id=>{const bg=(BY_LISTING.get(id)||[]).find(p=>p.photo?.box)?.photo.bg;return /^#[0-9a-f]{6}$/i.test(bg||'')?bg:null}
 };
+function directoryIcon(category){
+  if(category==='switches') return switchSVG({col:{top:'#E4E1DB',bot:'#4A4845',stem:'#B9B4AC'}});
+  if(category==='plate') return plateSVG('Aluminum');
+  if(category==='pcb') return pcbSVG({hotswap:true});
+  if(category==='stabs') return stabSVG({mount:'plate'});
+  if(category==='extras') return extraSVG({kind:'Tool'});
+  if(category==='deskmats') return '<svg viewBox="0 0 96 72" aria-hidden="true"><rect x="8" y="18" width="80" height="36" rx="6" fill="#B9B4AC"/><rect x="8" y="18" width="80" height="36" rx="6" fill="none" stroke="#8F8A83" stroke-width="1.5"/></svg>';
+  if(category==='keycaps') return capsSVG({pal:NEUTRAL_PAL,profile:'Cherry'});
+  return boardSVG({layout:'65',caseColor:'#9EA3A8',legends:false,u:20,cls:'',label:''}).replace(/role="img" aria-label="[^"]*"/,'aria-hidden="true"');
+}
 // Discard obsolete or malformed quiz answers while retaining valid choices across refreshes.
 function cleanAnswers(a){
   for(const key of Object.keys(a)){

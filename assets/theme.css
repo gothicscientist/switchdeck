@@ -28,7 +28,6 @@
 :root[data-theme="dark"] .rlist .pct.g{color:var(--ok)}
 :root[data-theme="dark"] .rlist .pct.y{color:var(--warn)}
 :root[data-theme="dark"] .rlist .pct.r{color:var(--fail)}
-:root[data-theme="dark"] .directory-categories button[aria-pressed=true]{color:var(--on-dark)}
 :root[data-theme="dark"] .directory-detail select{background:var(--surface)}
 :root[data-theme="dark"] .directory-dialog::backdrop{background:var(--scrim)}
 @media(max-width:760px){.topright{gap:4px}.theme-toggle{width:40px;height:44px}.pricepill{font-size:12px;gap:4px}.fp-th{display:none}.top .bar{padding-left:max(12px,env(safe-area-inset-left,0px));padding-right:max(12px,env(safe-area-inset-right,0px))}}

@@ -77,14 +77,17 @@ test('the site shows only checked photos, inside a clipped frame, with an icon f
   // No raw <img> anywhere in the builder: every product picture goes through framedPhoto.
   assert.equal((html.match(/<img\b/g)||[]).length,0);
 });
-test('directory photos are letterboxed inside fixed frames',async()=>{
+test('directory tiles use checked, cropped photos or drawn parts; the details photo sits in a fixed frame',async()=>{
   const js=await readFile(new URL('../assets/directory.js',import.meta.url),'utf8');
   const css=await readFile(new URL('../assets/directory.css',import.meta.url),'utf8');
-  assert.equal((js.match(/<img\b/g)||[]).length,1,'one image helper');
-  for(const cls of ['directory-photo','directory-main-photo']){
-    const rule=css.match(new RegExp('\\.'+cls+'\\{([^}]*)\\}'))?.[1]||'';
-    assert.match(rule,/object-fit:contain/,cls);assert.match(rule,/height:\d+px/,cls);
-  }
+  const html=await readFile(new URL('../index.html',import.meta.url),'utf8');
+  assert.equal((js.match(/<img\b/g)||[]).length,1,'one image helper, used only in the details dialog');
+  assert.match(js,/SwitchdeckBuilder\?\.photo\?\.\(p\.id,p\.category\)/,'grid tiles go through the builder photo helper');
+  assert.doesNotMatch(js,/image\(p\.image,/,'no unchecked retailer photo in the grid');
+  assert.match(html,/photo:\(id,category\)=>\{[^\n]*thumbFor\(p,null,480\):directoryIcon\(category\)/);
+  assert.match(css,/\.directory-thumb\{[^}]*aspect-ratio:4\/3[^}]*overflow:hidden/);
+  const rule=css.match(/\.directory-main-photo\{([^}]*)\}/)?.[1]||'';
+  assert.match(rule,/object-fit:contain/);assert.match(rule,/height:\d+px/);
 });
 
 // Pulls the finder's cutout filter out of index.html.

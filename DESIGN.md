@@ -59,3 +59,10 @@ licence is recorded in assets/quiz/CREDITS.md: openly licensed Commons photos, o
 - Share copies a link; the only confirmation is the button's label lifting into "Copied". No modal, no share sheet.
 - Swap is a quiet text action under each part's price. Alternatives open in place under that part, show only the change in price and match, and keep the panel open so several can be tried. Undo and Reset sit as text links under the total.
 - Fit wording never overclaims: "Fits" appears only where store data confirms it. Unconfirmed alternatives carry no tag and rank lower. Price changes in the swap list are whole dollars. No budget line, fit line or explanatory subtitle on the results screen (Bharat removed them).
+
+## Parts directory
+
+- The heading stands alone: no listing counts, dates or price notes under it (Bharat removed them). Price terms and the affiliate disclosure live in the small note at the foot of the page.
+- Controls in one quiet stack: a wide search with the sort beside it, text tabs for categories (no counts), then outlined filter chips. Clear filters only appears when something is set. On phones the filter chips fold behind a Filters button and the tabs scroll sideways.
+- Results are open tiles, not shadowed cards: a photo tile, then text on the page. The whole tile opens details; store links and Add to build are text links under the price.
+- Tile photos come from the builder catalog's checked crops (SwitchdeckBuilder.photo), with the tile painted in the photo's own backdrop colour so nothing looks boxed in. Listings without a checked photo show a drawn part. Raw retailer photos appear only in the details dialog.
