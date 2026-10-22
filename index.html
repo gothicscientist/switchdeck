@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="en">
 <meta charset="utf-8">
+<script src="assets/analytics.js"></script>
 <title>Thock: build a custom mechanical keyboard</title>
 <meta name="description" content="Find and build a custom mechanical keyboard. Answer a few questions about size, feel and sound, then buy every part from real stores.">
 <link rel="canonical" href="https://thock.cc/">
@@ -1438,7 +1439,7 @@ function storeFav(l){
   return `<span class="fav" data-l="${esc((l.n||'?').trim().charAt(0).toUpperCase())}" aria-hidden="true"><svg viewBox="0 0 16 16" focusable="false"><image href="https://${esc(host)}/favicon.ico" width="16" height="16" loading="lazy" preserveAspectRatio="xMidYMid meet"/></svg></span>`;
 }
 document.addEventListener('error',e=>{const f=e.target.closest&&e.target.closest('.fav'); if(f) f.classList.add('bad')},true);
-const storeChips=p=>buyLinks(p).length?buyLinks(p).map(l=>`<a class="store ${l.maker?'maker':''} ${l.cmp?'cmp':''}" href="${esc(l.u)}" target="_blank" rel="sponsored noopener">${storeFav(l)}<span class="sn">${esc(l.n)}${l.available===false?', sold out':''}</span>${ARROW}</a>`).join(''):'<span class="note">Exact product link not confirmed yet</span>';
+const storeChips=p=>buyLinks(p).length?buyLinks(p).map(l=>`<a data-product-id="${esc(p.id)}" data-product-category="${esc(p.cat)}" class="store ${l.maker?'maker':''} ${l.cmp?'cmp':''}" href="${esc(l.u)}" target="_blank" rel="sponsored noopener">${storeFav(l)}<span class="sn">${esc(l.n)}${l.available===false?', sold out':''}</span>${ARROW}</a>`).join(''):'<span class="note">Exact product link not confirmed yet</span>';
 
 /* =========================================================
    ROUTING
@@ -2166,9 +2167,14 @@ function saveQuizProgress(){store.set('sy.quiz',quizAns);store.set('sy.quizStep'
 function moveQuiz(step){
   clearTimeout(window.__adv); cancelAnimationFrame(answerFrame);
   const next=Math.max(0,Math.min(QUESTIONS.length,step));
+  if(next>quizStep){
+    const q=QUESTIONS[quizStep];
+    if(q) window.ThockAnalytics?.answer(q.key,quizStep+1,quizAns[q.key]);
+    if(next===QUESTIONS.length&&QUESTIONS.every(q=>quizAns[q.key]!=null)) window.ThockAnalytics?.complete({match_count:evalAns(quizAns).list.length});
+  }
   qDir=next<quizStep?-1:1; quizStep=next; saveQuizProgress(); renderQuiz();
 }
-function resetQuiz(){window.ThockSfx?.play('key',{gain:.55,rate:1.06}); quizAns={}; moveQuiz(0)}
+function resetQuiz(){window.ThockAnalytics?.reset(); window.ThockSfx?.play('key',{gain:.55,rate:1.06}); quizAns={}; moveQuiz(0)}
 function renderFinder(){ initField(); renderQuiz(); }
 function icon(name){return {
   back:'<svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 9H3M8 4L3 9l5 5"/></svg>',
@@ -2186,6 +2192,7 @@ function renderQuiz(){
   const focusQuestion=card.contains(document.activeElement)&&window.ThockUI.keyboardUsed;
   const oldH=card.offsetHeight;
   const done=quizStep>=QUESTIONS.length, Q=done?null:QUESTIONS[quizStep];
+  if(Q) window.ThockAnalytics?.step(Q.key,quizStep+1);
   // The budget step starts at $300. Set it before the field is laid out, or the boards would move again a moment later.
   if(Q&&Q.budget&&quizAns.budget==null){quizAns.budget=300; saveQuizProgress()}
   const n=evalAns(quizAns).list.length, combos=comboCount(quizAns);
@@ -2268,6 +2275,7 @@ function choose_(Q,btn){
   const changed=quizAns[Q.key]!==btn.dataset.v;
   window.ThockSfx?.play('key');
   quizAns[Q.key]=btn.dataset.v; if(changed&&btn.dataset.v==='surprise') quizAns.seed=Math.floor(Math.random()*1e6); saveQuizProgress();
+  window.ThockAnalytics?.answer(Q.key,quizStep+1,quizAns[Q.key]);
   btn.closest('.opts').querySelectorAll('.opt').forEach(o=>o.setAttribute('aria-pressed',o===btn));
   // The pressed option paints first and the counter updates on the next frame. The field waits for the next card:
   // laying it out now and again when the card changes size would send every board on two moves in a row.
@@ -2390,6 +2398,7 @@ function openResults(caseId,opts={}){
   el.innerHTML=`<div class="rscrim" id="rscrim"><div class="rgrid" role="dialog" aria-modal="true" aria-label="Your matches"><div class="card rdetail" id="rdetail"></div><div class="card rlist" id="rlist"></div></div></div>`;
   el.querySelector('#rscrim').addEventListener('click',e=>{if(e.target.id==='rscrim') closeResults()});
   renderRList(); renderRDetail();
+  window.ThockAnalytics?.event('results_view',{match_count:resList.length,source:sh?'shared_build':'finder'});
   window.ThockSfx?.play('settle');
   window.ThockUI.openModal(el,closeResults,el.querySelector('#rclose'));
 }
@@ -2658,7 +2667,7 @@ function renderRDetail(opts={}){
   const sb=el.querySelector('#rshare'); let shareT;
   sb.onclick=async()=>{
     const url=shareUrl(b), msg=el.querySelector('#rsharemsg');
-    if(await copyLink(url)){clearTimeout(shareT); sb.classList.remove('copied'); void sb.offsetWidth; sb.classList.add('copied'); msg.textContent='Link copied'; window.ThockSfx?.play('confirm');
+    if(await copyLink(url)){window.ThockAnalytics?.event('share',{method:'copy_link',content_type:'keyboard_build',item_id:b.case}); clearTimeout(shareT); sb.classList.remove('copied'); void sb.offsetWidth; sb.classList.add('copied'); msg.textContent='Link copied'; window.ThockSfx?.play('confirm');
       shareT=setTimeout(()=>{sb.classList.remove('copied'); msg.textContent=''},1900)}
     else{const fb=el.querySelector('#rcopyfb'); fb.hidden=false; fb.value=url; fb.focus(); fb.select(); toast('Select the link and copy it')}
   };
@@ -2969,5 +2978,6 @@ if(shareCode()!=null) openShare(shareCode());
 renderPill();
 </script>
 </html>
+
 
 
