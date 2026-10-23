@@ -94,20 +94,23 @@ try {
   await page.keyboard.press('1');await page.keyboard.press('Backspace');
   assert.deepEqual((await state()).answers,{});
   await page.locator('#editing-probe').evaluate(el=>el.remove());
-  await page.keyboard.press('3'); await step(1);
+  // 75% skips the 60% layout question (step 1), forward and back.
+  await page.keyboard.press('4'); await step(2);
   await page.keyboard.press('1');
   await page.keyboard.press('Backspace');
   await page.waitForTimeout(420);
   assert.equal((await state()).step,0,'Back cancels the pending answer advance');
   assert.equal((await state()).answers.feel,'Linear');
-  await page.keyboard.press('Enter'); await step(1);
-  assert.equal(await page.locator('.opt[data-v="Linear"]').getAttribute('aria-pressed'),'true');
   await page.keyboard.press('Enter'); await step(2);
-  await choose('thock',3);
-  await choose('surprise',4);
-  await choose('any',5);
+  assert.equal(await page.locator('.opt[data-v="Linear"]').getAttribute('aria-pressed'),'true');
+  await page.keyboard.press('Enter'); await step(3);
+  await choose('thock',4);
+  await choose('surprise',5);
   await choose('any',6);
-  await choose('either',7);
+  await choose('any',7);
+  await choose('either',8);
+  await choose('any',9);
+  await choose('any',10);
   const budget = page.locator('#btrack');
   await budget.focus();
   await page.keyboard.press('Control+ArrowLeft');
@@ -116,16 +119,21 @@ try {
   assert.equal((await state()).answers.budget,290);
   await page.locator('#nolimit').click();
   assert.equal(await budget.getAttribute('aria-valuetext'),'No limit');
-  await budget.focus();await page.keyboard.press('Enter');await step(8);
+  await budget.focus();await page.keyboard.press('Enter');await step(11);
   const complete = (await state()).answers;
   const original = await page.evaluate(() => evalAns(quizAns).list[0].b);
-  for (let i=7;i>=0;i--) {await page.keyboard.press('Backspace');await step(i)}
+  for (let i=10;i>=0;i--) {if(i===1) continue; await page.keyboard.press('Backspace');await step(i)}
   assert.deepEqual((await state()).answers,complete);
-  await choose('65',1);
+  // 60% asks which 60% layout; changing the size away from 60% drops that answer again.
+  await choose('60',1);
+  await choose('hhkb',2);
+  assert.equal(await page.evaluate(() => evalAns(quizAns).list.every(r=>caseOf(r.b).layout==='60')),true);
+  for (let i=1;i>=0;i--) {await page.keyboard.press('Backspace');await step(i)}
+  await choose('65',2);
   assert.deepEqual((await state()).answers,{...complete,layout:'65'});
   assert.equal(await page.evaluate(() => evalAns(quizAns).list.every(r=>caseOf(r.b).layout==='65')),true);
   assert.notEqual(await page.evaluate(() => evalAns(quizAns).list[0].b.case),original.case);
-  await page.reload({waitUntil:'domcontentloaded'});await step(1);
+  await page.reload({waitUntil:'domcontentloaded'});await step(2);
   assert.deepEqual((await state()).answers,{...complete,layout:'65'});
   console.log('PASS: quiz keyboard controls, answer preservation, refreshed recommendations and reload persistence');
 
@@ -149,7 +157,7 @@ try {
   await page.locator('#rshare').click();
   await page.waitForFunction(()=>document.getElementById('rshare').classList.contains('copied'));
   const shareURL=await page.evaluate(()=>window.copiedText);
-  assert.match(shareURL,/^http:\/\/127\.0\.0\.1:\d+\/\?b=1\.[^#]+$/);
+  assert.match(shareURL,/^http:\/\/127\.0\.0\.1:\d+\/\?b=2\.[^#]+$/);
   const sharePage=await context.newPage();
   sharePage.on('pageerror',error=>errors.push(error.message));
   await sharePage.goto(shareURL,{waitUntil:'domcontentloaded'});
@@ -265,9 +273,9 @@ try {
   assert.equal(await page.evaluate(()=>getComputedStyle(document.activeElement).outlineStyle),'solid');
   await page.screenshot({path:path.join(results,'keyboard-focus.png')});
   await page.emulateMedia({reducedMotion:'reduce'});
-  await page.evaluate(()=>moveQuiz(2));
+  await page.evaluate(()=>moveQuiz(3));
   assert.equal(await page.locator('.qbody').evaluate(el=>getComputedStyle(el).animationName),'none');
-  await choose('thock',3);
+  await choose('thock',4);
   assert.equal(await page.locator('#qcard').evaluate(el=>el.style.height),'');
   assert.deepEqual(errors,[]);
   console.log('PASS: browser history, responsive viewports, reduced motion and zero JavaScript errors');
@@ -282,8 +290,8 @@ try {
   // boards either show at a readable size or not at all, never as a squeezed caption with no picture.
   for(const [width,height] of [[320,568],[360,640],[375,553],[375,667],[390,664],[393,659],[414,715],[430,739],[844,390]]){
     await touchPage.setViewportSize({width,height});
-    for(let n=0;n<8;n++){
-      await touchPage.evaluate(n=>moveQuiz(n),n);await touchPage.waitForTimeout(450);
+    for(let n=0;n<11;n++){
+      await touchPage.evaluate(n=>{if(n===1) quizAns.layout='60'; moveQuiz(n)},n);await touchPage.waitForTimeout(450);
       const widths=await touchPage.locator('.fitem.feat').evaluateAll(items=>items.map(el=>el.getBoundingClientRect().width));
       assert.ok(widths.every(w=>w>=60),`${width}x${height} question ${n+1}: centre boards ${widths.map(Math.round)}`);
     }
@@ -291,7 +299,7 @@ try {
   await touchPage.setViewportSize({width:390,height:844});
   await touchPage.evaluate(()=>moveQuiz(0));
   await touchPage.locator('.opt[data-v="75"]').tap();
-  await touchPage.waitForFunction(()=>quizStep===1);
+  await touchPage.waitForFunction(()=>quizStep===2);
   await touchPage.locator('#nav-build').tap();
   await touchPage.locator('[data-pick="switches"]').first().tap();
   await touchPage.locator('#pkfilt').tap();
