@@ -799,7 +799,6 @@ const LAYOUT_KEYS  = {'40':41,'60':61,'65':68,'75':84,'tkl':87,'full':104};
 /* Board facts the finder can ask about, as the stores publish them (scripts/catalog-lib.mjs): mount styles, firmware and
    layout options. Hand-picked boards state their mount as text ("Gasket"), read the same way as a store's Mount line. */
 const MOUNT_NAMES={gasket:'Gasket','top':'Top','tray':'Tray','o-ring':'O-ring','leaf-spring':'Leaf spring',sandwich:'Sandwich',bottom:'Bottom'};
-const SOFT_MOUNTS=['gasket','o-ring','leaf-spring'], FIRM_MOUNTS=['top','tray','bottom','sandwich'];
 const FIRMWARE_NAMES={qmk:'QMK',via:'VIA',vial:'Vial',zmk:'ZMK'};
 const STYLE_NAMES={ansi:'Standard',tsangan:'Tsangan',hhkb:'HHKB'};
 const LAYOUT_OPT_NAMES={ansi:'ANSI',iso:'ISO',tsangan:'Tsangan',hhkb:'HHKB','split-backspace':'Split backspace','split-space':'Split spacebar','split-rshift':'Split right Shift'};
@@ -1069,12 +1068,8 @@ function effPcb(b){const c=caseOf(b); if(c&&c.kit) return {...c.kit.pcb,name:c.k
 function effPlate(b){const c=caseOf(b); if(c&&c.kit) return {material:c.kit.plate,kit:true,plateStabs:true}; return BYID[b.plate]||null}
 function stabsIncluded(b){const c=caseOf(b); return !!(c&&c.kit&&c.kit.stabs)}
 const layoutOf = b=>{const c=caseOf(b); return c?c.layout:null};
-// Firmware of a whole build: a kit or assembled board speaks for itself; a bare case runs its PCB's firmware.
-function fwOf(b){const c=caseOf(b); if(!c) return null; const p=!c.kit&&BYID[b.pcb]; return (p&&p.firmware)||c.firmware||null}
-// How a build meets a mount, firmware or 60% layout answer: 'yes' when a listing says so, 'no' when its listing names only
+// How a build meets a 60% layout answer: 'yes' when a listing says so, 'no' when its listing names only
 // something else, 'check' when nothing is published (ranked lower, never hidden), or null when the answer is open.
-function mountFit(b,want){if(!want||want==='any') return null; const m=mountsOf(caseOf(b)); if(!m) return 'check'; return m.some(x=>(want==='soft'?SOFT_MOUNTS:FIRM_MOUNTS).includes(x))?'yes':'no'}
-function fwFit(b,want){if(!want||want==='any') return null; const f=fwOf(b); if(!f) return 'check'; return (want==='zmk'?f.includes('zmk'):f.some(x=>x!=='zmk'))?'yes':'no'}
 // The parts that decide a 60% board's bottom row: a kit's own listing, else the PCB and plate, and a bare case only when it
 // is an HHKB case (its blockers fix the bottom row). "ANSI" next to a Tsangan or HHKB mention could be either, so it is a check.
 function styleParts(b){const c=caseOf(b); return c.kit?[c]:[c.layoutOpts?.includes('hhkb')?c:null,BYID[b.pcb],BYID[b.plate]].filter(Boolean)}
@@ -1090,9 +1085,9 @@ function styleFit(b,want){
   }
   return yes?'yes':'check';
 }
-// The layout weighs most: it decides which keys the board has, where mount and firmware change how it feels and is set up.
-const FACT_SCORE={yes:8,check:0,no:-12}, STYLE_SCORE={yes:16,check:0,no:-24};
-function factScore(b,ans){const st=styleFit(b,ans.style); let s=st?STYLE_SCORE[st]:0; for(const v of [mountFit(b,ans.mount),fwFit(b,ans.firmware)]) if(v) s+=FACT_SCORE[v]; return s}
+// Ranks only: a board whose listing names the 60% layout asked for leads, one that names another trails.
+const STYLE_SCORE={yes:16,check:0,no:-24};
+function factScore(b,ans){const st=styleFit(b,ans.style); return st?STYLE_SCORE[st]:0}
 // The drawn layout. A 60% shows the Tsangan or HHKB bottom row the build asks for when a part names it, or the one
 // fixed style its parts name.
 function drawLayout(b){
@@ -1714,28 +1709,8 @@ const QUESTIONS = [
     {v:'wired',b:'Wired only',s:'Nothing to charge',art:()=>quizPhoto('wired')},{v:'yes',b:'Wireless',s:'Bluetooth or 2.4 GHz',art:()=>quizPhoto('wireless')},{v:'any',b:'No preference',s:'Nothing ruled out',art:()=>quizPhoto('either-conn')}]},
   {key:'solder',title:'Will you solder?',info:'Soldering means melting metal to fix each switch permanently to the circuit board. Hot-swap boards have sockets instead, so switches press in and pull out by hand with no tools.',opts:[
     {v:'hotswap',b:'No, hot-swap',s:'Switches press in by hand',art:()=>quizPhoto('hotswap')},{v:'either',b:'Happy to solder',s:'Opens up more PCBs',art:()=>quizPhoto('solder')}]},
-  {key:'mount',title:'How firm should it feel?',since:2,info:'The mount is how the plate holding the switches sits in the case. Top and tray mounts hold it rigidly, for a firm, direct press. Gasket, o-ring and leaf-spring mounts float it on soft supports, so each press gives a little and sounds softer.',opts:[
-    {v:'firm',b:'Firm',s:'Top or tray mount',art:()=>mountSVG('firm')},{v:'soft',b:'Flexible',s:'Gasket, o-ring or leaf spring',art:()=>mountSVG('soft')},{v:'any',b:'No preference',s:'Nothing ruled out'}]},
-  {key:'firmware',title:'Which firmware?',since:2,info:'Firmware runs the keyboard. QMK, and the VIA and Vial apps built on it, let you remap any key and add layers. ZMK does the same for wireless boards. Boards whose store doesn\'t name the firmware are shown lower, with a note to check.',opts:[
-    {v:'qmk',b:'QMK or VIA',s:'Remap any key',art:()=>firmwareSVG('qmk')},{v:'zmk',b:'ZMK',s:'Open firmware for wireless',art:()=>firmwareSVG('zmk')},{v:'any',b:'No preference',s:'Nothing ruled out'}]},
   {key:'budget',title:"What's your budget?",budget:true},
 ];
-// Mount and firmware options are drawn in the same stone line style as the sound waves.
-// A cross-section of the case: the plate is fixed to the case walls (firm), or floats on soft gaskets and flexes (soft).
-function mountSVG(kind){
-  const ink='#57534E', soft='#A8A29E', caps=[24,46,68,90].map(x=>`<rect x="${x-8}" y="${kind==='soft'?11:10}" width="16" height="9" rx="2.5" fill="#E7E5E4" stroke="${ink}" stroke-width="1.5"/>`).join('');
-  const box=`<path d="M8 14V48a5 5 0 0 0 5 5h94a5 5 0 0 0 5-5V14" fill="none" stroke="${ink}" stroke-width="2" stroke-linecap="round"/>`;
-  const plate=kind==='soft'
-    ?`<path d="M20 26Q60 32 100 26" fill="none" stroke="${ink}" stroke-width="3" stroke-linecap="round"/>${[[16,22.5],[16,30],[104,22.5],[104,30]].map(([x,y])=>`<rect x="${x-4}" y="${y-2.5}" width="8" height="5" rx="2.5" fill="${soft}"/>`).join('')}`
-    :`<path d="M8 25H112" stroke="${ink}" stroke-width="3" stroke-linecap="round"/>${[18,102].map(x=>`<circle cx="${x}" cy="25" r="2.6" fill="#F5F5F4" stroke="${ink}" stroke-width="1.4"/>`).join('')}`;
-  return `<svg viewBox="0 0 120 60" aria-hidden="true">${box}${plate}${caps}<path d="M14 44H106" stroke="${soft}" stroke-width="2" stroke-dasharray="3 4" stroke-linecap="round"/></svg>`;
-}
-// Remapping: one key's job moves to another. ZMK: a key with wireless arcs.
-function firmwareSVG(kind){
-  const ink='#57534E', key=(x,t)=>`<rect x="${x}" y="11" width="38" height="38" rx="7" fill="#E7E5E4" stroke="${ink}" stroke-width="2"/><text x="${x+19}" y="36" text-anchor="middle" font-family="Host Grotesk,system-ui" font-weight="600" font-size="17" fill="${ink}">${t}</text>`;
-  if(kind==='zmk') return `<svg viewBox="0 0 120 60" aria-hidden="true">${key(30,'Z')}${[8,15,22].map(r=>`<path d="M${76} ${30-r}a${r} ${r} 0 0 1 0 ${r*2}" fill="none" stroke="${ink}" stroke-width="2" stroke-linecap="round" opacity="${(1.15-r/30).toFixed(2)}"/>`).join('')}</svg>`;
-  return `<svg viewBox="0 0 120 60" aria-hidden="true">${key(6,'A')}${key(76,'B')}<path d="M50 25Q60 16 70 25" fill="none" stroke="${ink}" stroke-width="2" stroke-linecap="round"/><path d="M64.6 24.7l5.4.3.3-5.4" fill="none" stroke="${ink}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M70 35Q60 44 50 35" fill="none" stroke="${ink}" stroke-width="2" stroke-linecap="round" opacity=".4"/></svg>`;
-}
 function waveSVG(pitch,amp=1){
   const n=26, pts=[]; for(let i=0;i<n;i++){const x=4+i*(112/(n-1)), env=Math.exp(-((i%13)/(2+ (1-pitch)*5))), y=30+Math.sin(i*(1.1+pitch*2.4))*env*20*amp; pts.push(`${x.toFixed(1)},${y.toFixed(1)}`)}
   return `<svg viewBox="0 0 120 60" aria-hidden="true"><polyline points="${pts.join(' ')}" fill="none" stroke="#57534E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;

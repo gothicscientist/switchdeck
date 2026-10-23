@@ -33,9 +33,8 @@ test('finder answers keep their meaning in old links',()=>{
   // Links store each answer as its option's position. Reordering options needs a new link version.
   assert.deepEqual(QUESTIONS.map(q=>q.budget?'budget':q.key+':'+q.opts.map(o=>o.v).join(',')),[
     'layout:40,60,65,75,tkl,full,any','style:ansi,tsangan,hhkb,any','feel:Linear,Tactile,Clicky,Silent,any','sound:thock,creamy,clack,quiet,any',
-    'look:dark,light,colorful,retro,surprise','use:gaming,work,any','wireless:wired,yes,any','solder:hotswap,either',
-    'mount:firm,soft,any','firmware:qmk,zmk,any','budget']);
-  // Version 1 had no 40% size and no layout, mount or firmware questions; those are marked since:2 and skipped.
+    'look:dark,light,colorful,retro,surprise','use:gaming,work,any','wireless:wired,yes,any','solder:hotswap,either','budget']);
+  // Version 1 had no 40% size and no 60% layout question; those are marked since:2 and skipped.
   const v1=QUESTIONS.filter(q=>!q.since).map(q=>q.budget?'budget':q.key+':'+q.opts.filter(o=>!o.since).map(o=>o.v).join(','));
   assert.deepEqual(v1,['layout:60,65,75,tkl,full,any','feel:Linear,Tactile,Clicky,Silent,any','sound:thock,creamy,clack,quiet,any',
     'look:dark,light,colorful,retro,surprise','use:gaming,work,any','wireless:wired,yes,any','solder:hotswap,either','budget']);
@@ -46,9 +45,9 @@ test('version 1 links open with their original answers',()=>{
   assert.deepEqual(JSON.parse(JSON.stringify(d.ans)),{layout:'60',feel:'Tactile',sound:'creamy',look:'light',use:'work',wireless:'yes',solder:'hotswap',budget:250});
 });
 test('the new answers round-trip, with the 60% layout only when asked',()=>{
-  const ans={layout:'60',style:'hhkb',feel:'Linear',solder:'hotswap',mount:'soft',firmware:'zmk',budget:'any'};
+  const ans={layout:'60',style:'hhkb',feel:'Linear',solder:'hotswap',budget:'any'};
   assert.deepEqual(JSON.parse(JSON.stringify(S.decode(S.encode({case:'x1'},ans,QUESTIONS),QUESTIONS).ans)),ans);
-  const forty={layout:'40',mount:'firm',firmware:'qmk'};
+  const forty={layout:'40',feel:'Tactile'};
   const code=S.encode({case:'x1'},forty,QUESTIONS);
   assert.match(code,/^2\./);
   assert.deepEqual(JSON.parse(JSON.stringify(S.decode(code,QUESTIONS).ans)),forty);

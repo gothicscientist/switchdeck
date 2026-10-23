@@ -26,10 +26,10 @@ test('every sound option plays a credited clip that ships with the site',async()
     assert.ok(credits.includes(`freesound.org/s/${s.freesound}/`),k+' credit');
   }
 });
-test('questions run size, 60% layout, feel, sound, look, use, wireless, solder, mount, firmware, budget',()=>{
+test('questions run size, 60% layout, feel, sound, look, use, wireless, solder, budget',()=>{
   const s=html.indexOf('const QUESTIONS = [');
   const block=html.slice(s,html.indexOf('\n];',s));
-  assert.deepEqual([...block.matchAll(/\{key:'(\w+)'/g)].map(m=>m[1]),['layout','style','feel','sound','look','use','wireless','solder','mount','firmware','budget']);
+  assert.deepEqual([...block.matchAll(/\{key:'(\w+)'/g)].map(m=>m[1]),['layout','style','feel','sound','look','use','wireless','solder','budget']);
   assert.doesNotMatch(step('feel'),/feel-graph/);
 });
 
@@ -102,20 +102,10 @@ test('price caps filter recommendations without biasing sound match scores',()=>
   assert.ok(html.includes('list.sort((a,b)=>b.sc-a.sc||b.t-a.t)'),'higher priced equal-score recommendations are surfaced first');
 });
 
-test('mount, firmware and 60% layout answers only count what a listing names',async()=>{
+test('60% layout answers only count what a listing names',async()=>{
   const ctx=await load();
   const fit=(fn,parts,want)=>run(ctx,`(()=>{const ps=${JSON.stringify(parts)}; for(const p of ps) BYID[p.id]=p; return ${fn}({case:ps[0].id,pcb:ps[1]?.id,plate:ps[2]?.id},${JSON.stringify(want)})})()`);
   const kit=(id,x)=>({id,cat:'case',layout:'60',kit:{pcb:{}},...x});
-  assert.equal(fit('mountFit',[kit('t1',{mounts:['gasket','top']})],'firm'),'yes');
-  assert.equal(fit('mountFit',[kit('t2',{mounts:['gasket']})],'firm'),'no');
-  assert.equal(fit('mountFit',[kit('t3',{})],'soft'),'check');
-  assert.equal(fit('mountFit',[kit('t4',{mount:'Gasket Mount'})],'soft'),'yes'); // hand-picked boards state it as text
-  assert.equal(fit('mountFit',[kit('t3',{})],'any'),null);
-  assert.equal(fit('fwFit',[kit('t5',{firmware:['via']})],'qmk'),'yes');
-  assert.equal(fit('fwFit',[kit('t5',{firmware:['via']})],'zmk'),'no');
-  assert.equal(fit('fwFit',[kit('t6',{})],'zmk'),'check');
-  // a bare case runs its PCB's firmware
-  assert.equal(fit('fwFit',[{id:'c1',cat:'case',layout:'60',kit:null},{id:'p1',cat:'pcb',firmware:['zmk']}],'zmk'),'yes');
   assert.equal(fit('styleFit',[kit('s1',{layoutOpts:['hhkb']})],'hhkb'),'yes');
   assert.equal(fit('styleFit',[kit('s1',{layoutOpts:['hhkb']})],'ansi'),'no');
   assert.equal(fit('styleFit',[kit('s2',{layoutOpts:['ansi','tsangan']})],'ansi'),'check');

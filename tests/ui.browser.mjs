@@ -109,8 +109,6 @@ try {
   await choose('any',6);
   await choose('any',7);
   await choose('either',8);
-  await choose('any',9);
-  await choose('any',10);
   const budget = page.locator('#btrack');
   await budget.focus();
   await page.keyboard.press('Control+ArrowLeft');
@@ -119,10 +117,10 @@ try {
   assert.equal((await state()).answers.budget,290);
   await page.locator('#nolimit').click();
   assert.equal(await budget.getAttribute('aria-valuetext'),'No limit');
-  await budget.focus();await page.keyboard.press('Enter');await step(11);
+  await budget.focus();await page.keyboard.press('Enter');await step(9);
   const complete = (await state()).answers;
   const original = await page.evaluate(() => evalAns(quizAns).list[0].b);
-  for (let i=10;i>=0;i--) {if(i===1) continue; await page.keyboard.press('Backspace');await step(i)}
+  for (let i=8;i>=0;i--) {if(i===1) continue; await page.keyboard.press('Backspace');await step(i)}
   assert.deepEqual((await state()).answers,complete);
   // 60% asks which 60% layout; changing the size away from 60% drops that answer again.
   await choose('60',1);
@@ -290,7 +288,7 @@ try {
   // boards either show at a readable size or not at all, never as a squeezed caption with no picture.
   for(const [width,height] of [[320,568],[360,640],[375,553],[375,667],[390,664],[393,659],[414,715],[430,739],[844,390]]){
     await touchPage.setViewportSize({width,height});
-    for(let n=0;n<11;n++){
+    for(let n=0;n<9;n++){
       await touchPage.evaluate(n=>{if(n===1) quizAns.layout='60'; moveQuiz(n)},n);await touchPage.waitForTimeout(450);
       const widths=await touchPage.locator('.fitem.feat').evaluateAll(items=>items.map(el=>el.getBoundingClientRect().width));
       assert.ok(widths.every(w=>w>=60),`${width}x${height} question ${n+1}: centre boards ${widths.map(Math.round)}`);

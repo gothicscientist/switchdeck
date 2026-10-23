@@ -86,8 +86,8 @@ licence is recorded in assets/quiz/CREDITS.md: openly licensed Commons photos, o
 
 ## Finder questions
 
-- Order: size, the 60% layout (only after a 60% answer), feel, sound, look, use, connection, solder, mount, firmware, budget. One tap each, always with a "No preference" way out.
+- Order: size, the 60% layout (only after a 60% answer), feel, sound, look, use, connection, solder, budget. One tap each, always with a "No preference" way out.
 - Sizes run 40% to full size. 50% is left out: almost every 50% board is ortholinear and needs ortho keycaps. ISO is left out until ISO keycap sets and boards are in the catalog.
 - The 60% layout options are drawn boards (Standard, Tsangan with its 7u spacebar, HHKB with blank bottom corners), the same stone minis as the size question. A build drawn later shows the Tsangan or HHKB row only where a part's listing names it.
-- Mount and firmware art is line drawing in the stone ink of the sound waves: a case cross-section (plate screwed to the walls, or floating on soft gaskets) and keycaps (a remap arrow, wireless arcs). No photos, no brand marks.
-- Mount, firmware and layout answers rank, never hide: a board whose store names the answer ranks first, one that names nothing ranks lower, and one that names only something else ranks lowest. Size, connection, solder and budget stay filters.
+- Mount and firmware are not quiz questions (Bharat, 2026-10-23). They live in the builder and directory as part details and filters, only where a store names them.
+- The 60% layout answer ranks, never hides: a board whose store names the answer ranks first, one that names nothing ranks lower, and one that names only something else ranks lowest. Size, connection, solder and budget stay filters.
