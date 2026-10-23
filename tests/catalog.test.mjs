@@ -193,3 +193,15 @@ test('a board names its mount, firmware and layout options when the store does, 
   const b=builderPart(kb({body_html:'<li>Layout: 60%</li>'}));
   assert.ok(!('mounts' in b)&&!('firmware' in b)&&!('layoutOpts' in b));
 });
+test('layout options ignore passing mentions and read a Layout option per variant',()=>{
+  const plate=normalize(raw({title:'Example60 Plate',product_type:'Plate',vendor:'Example',body_html:'<p>Aluminum plate. Our Tsangan edition sold out last year and we may bring it back.</p>',options:[{name:'Layout',values:['Standard','Tsangan']}],
+    variants:[{id:1,title:'Standard',price:'30',available:true},{id:2,title:'Tsangan',price:'35',available:true}]}),source,'2026-10-19T00:00:00Z');
+  assert.deepEqual(builderPart(plate)[0].layoutOpts,['ansi']);
+  assert.equal(normalize(raw({title:'Example60 Keyboard',product_type:'Keyboard',body_html:'<p>We also made a Tsangan one in 2019, now sold out.</p>'}),source,'2026-10-19T00:00:00Z').specs.layoutOpts,undefined);
+});
+test('a plate sold in standard and Tsangan rows is one part per row',()=>{
+  const plate=normalize(raw({title:'Example60 Plate',product_type:'Plate',vendor:'Example',body_html:'<li>Material: Aluminum</li>',options:[{name:'Layout',values:['Standard','Tsangan']}],
+    variants:[{id:1,title:'Standard',price:'30',available:true},{id:2,title:'Tsangan',price:'35',available:true}]}),source,'2026-10-19T00:00:00Z');
+  const parts=builderPart(plate);
+  assert.deepEqual(parts.map(x=>[x.material,x.layoutOpts]),[['Aluminum',['ansi']],['Aluminum',['tsangan']]]);
+});

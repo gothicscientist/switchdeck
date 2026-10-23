@@ -16,7 +16,8 @@
   // The questions as a version saw them: a question or option added later (since) is not in an older link.
   const asOf=(questions,v)=>questions.filter(q=>!(q.since>v)).map(q=>q.opts?{...q,opts:q.opts.filter(o=>!(o.since>v))}:q);
   const STORES=['cannonkeys','dangkeebs','divinikey','epomaker','kbdfans','keebsforall','keychron','kprepublic',
-    'mechanicalkeyboards','meletrix','mode','novelkeys','qwertykeys','wobkey'];
+    'mechanicalkeyboards','meletrix','mode','novelkeys','qwertykeys','wobkey','kineticlabs','milktooth','whatgeek','kono',
+    'keebmonkey','dixiemech'];
   const LETTERS='ABCDEFGHIJKLMNOPQRSTUVWXYZ';
   const LISTING=/^([a-z]+)-([1-9]\d{5,})(?:~([1-9]\d{5,}))?$/;
   const RAW=/^[a-z0-9][a-z0-9~-]*$/;

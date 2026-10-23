@@ -1693,7 +1693,7 @@ const QUESTIONS = [
   {key:'style',title:'Which 60% layout?',when:a=>a.layout==='60',since:2,info:'The layouts differ in the bottom row and the top right. Standard has a 6.25u spacebar and a full set of modifiers. Tsangan has a longer 7u spacebar between wider keys. HHKB moves Control beside A, splits backspace and leaves the bottom corners blank.',opts:[
     {v:'ansi',b:'Standard',s:'Full row of modifiers',art:()=>miniBoard('60')},
     {v:'tsangan',b:'Tsangan',s:'Longer 7u spacebar',art:()=>miniBoard('60-tsangan')},
-    {v:'hhkb',b:'HHKB',s:'Split backspace, blank corners',art:()=>miniBoard('60-hhkb')},
+    {v:'hhkb',b:'HHKB',s:'Blank bottom corners',art:()=>miniBoard('60-hhkb')},
     {v:'any',b:'No preference'}]},
   {key:'feel',title:'How should a key feel to press?',hint:'Feel only: how the key moves under your finger. Sound is the next step.',opts:[
     {v:'Linear',b:'Linear',s:'Smooth and even, top to bottom',art:()=>switchSVG(BYID.milkyyp)},
@@ -1731,9 +1731,9 @@ function mountSVG(kind){
 }
 // Remapping: one key's job moves to another. ZMK: a key with wireless arcs.
 function firmwareSVG(kind){
-  const ink='#57534E', key=(x,t)=>`<rect x="${x}" y="17" width="26" height="26" rx="5" fill="#E7E5E4" stroke="${ink}" stroke-width="1.8"/><text x="${x+13}" y="34.5" text-anchor="middle" font-family="Host Grotesk,system-ui" font-weight="600" font-size="12" fill="${ink}">${t}</text>`;
-  if(kind==='zmk') return `<svg viewBox="0 0 120 60" aria-hidden="true">${key(34,'Z')}${[9,16,23].map(r=>`<path d="M${66+r*.5} ${30-r}a${r} ${r} 0 0 1 0 ${r*2}" fill="none" stroke="${ink}" stroke-width="1.8" stroke-linecap="round" opacity="${1-r/40}"/>`).join('')}</svg>`;
-  return `<svg viewBox="0 0 120 60" aria-hidden="true">${key(18,'A')}${key(76,'B')}<path d="M48 26Q60 14 72 26" fill="none" stroke="${ink}" stroke-width="1.8" stroke-linecap="round"/><path d="M66.5 25.5l5.5.8.8-5.5" fill="none" stroke="${ink}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M72 36Q60 48 48 36" fill="none" stroke="${ink}" stroke-width="1.8" stroke-linecap="round" opacity=".45"/></svg>`;
+  const ink='#57534E', key=(x,t)=>`<rect x="${x}" y="11" width="38" height="38" rx="7" fill="#E7E5E4" stroke="${ink}" stroke-width="2"/><text x="${x+19}" y="36" text-anchor="middle" font-family="Host Grotesk,system-ui" font-weight="600" font-size="17" fill="${ink}">${t}</text>`;
+  if(kind==='zmk') return `<svg viewBox="0 0 120 60" aria-hidden="true">${key(30,'Z')}${[8,15,22].map(r=>`<path d="M${76} ${30-r}a${r} ${r} 0 0 1 0 ${r*2}" fill="none" stroke="${ink}" stroke-width="2" stroke-linecap="round" opacity="${(1.15-r/30).toFixed(2)}"/>`).join('')}</svg>`;
+  return `<svg viewBox="0 0 120 60" aria-hidden="true">${key(6,'A')}${key(76,'B')}<path d="M50 25Q60 16 70 25" fill="none" stroke="${ink}" stroke-width="2" stroke-linecap="round"/><path d="M64.6 24.7l5.4.3.3-5.4" fill="none" stroke="${ink}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M70 35Q60 44 50 35" fill="none" stroke="${ink}" stroke-width="2" stroke-linecap="round" opacity=".4"/></svg>`;
 }
 function waveSVG(pitch,amp=1){
   const n=26, pts=[]; for(let i=0;i<n;i++){const x=4+i*(112/(n-1)), env=Math.exp(-((i%13)/(2+ (1-pitch)*5))), y=30+Math.sin(i*(1.1+pitch*2.4))*env*20*amp; pts.push(`${x.toFixed(1)},${y.toFixed(1)}`)}

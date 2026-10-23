@@ -24,4 +24,8 @@ globalThis.SWITCHDECK_AFFILIATES={
   'dangkeebs.com':{param:'ref',code:''},
   'milktooth.com':{param:'ref',code:''},
   'ringerkeys.com':{param:'ref',code:''},
+  'whatgeek.com':{param:'ref',code:''},
+  'kono.store':{param:'ref',code:''},
+  'keebmonkey.com':{param:'ref',code:''},
+  'dixiemech.store':{param:'ref',code:''},
 };
