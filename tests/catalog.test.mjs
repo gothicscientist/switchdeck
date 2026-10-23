@@ -205,3 +205,14 @@ test('a plate sold in standard and Tsangan rows is one part per row',()=>{
   const parts=builderPart(plate);
   assert.deepEqual(parts.map(x=>[x.material,x.layoutOpts]),[['Aluminum',['ansi']],['Aluminum',['tsangan']]]);
 });
+test('bottom rows named under other options count: blockers for a kit, 6.25U and 7U versions for a PCB',()=>{
+  const kit=normalize(raw({title:'Example60 Barebones Keyboard Kit',product_type:'Keyboard Kit',vendor:'Example',body_html:'<li>Layout: 60%</li>',options:[{name:'Color',values:['Black']},{name:'Blocker',values:['WK','WKL']}],
+    variants:[{id:1,title:'Black / WK',price:'129',available:true},{id:2,title:'Black / WKL',price:'129',available:true}]}),source,'2026-10-19T00:00:00Z');
+  assert.deepEqual(builderPart(kit).layoutOpts,['ansi','tsangan']);
+  const pcb=normalize(raw({title:'Example60 PCB',product_type:'PCB',vendor:'Example',body_html:'<p>Hot-swap PCB.</p>',options:[{name:'Version',values:['Hotswap 6.25U','Hotswap 7U']}],
+    variants:[{id:1,title:'Hotswap 6.25U',price:'50',available:true},{id:2,title:'Hotswap 7U',price:'55',available:true}]}),source,'2026-10-19T00:00:00Z');
+  assert.deepEqual(builderPart(pcb).map(x=>[x.hotswap,x.layoutOpts]),[[true,['ansi']],[true,['tsangan']]]);
+  const plain=normalize(raw({title:'Example60 Plate',product_type:'Plate',vendor:'Example',body_html:'<li>Material: Aluminum</li>',options:[{name:'Finish',values:['Standard']}],
+    variants:[{id:1,title:'Standard',price:'30',available:true}]}),source,'2026-10-19T00:00:00Z');
+  assert.ok(!('layoutOpts' in [builderPart(plain)].flat()[0]));
+});

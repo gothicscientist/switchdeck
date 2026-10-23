@@ -351,14 +351,27 @@ const UNSUPPORTED_SYSTEM=/topre|\bEC\b|electro.?capacitive|\balps\b/i;
 // ortholinear, split and ergonomic boards are not.
 const NO_DRAW=/ortho|\bsplit\b(?![- ](?:space|backspace|right|shift|bar|plate|top|cut))|alice|\bnumpad\b|number ?pad|key ?pad|macro ?pad|\bpad\b|ergo|one[- ]handed|foldable|(?<![\d.])(?:[1-9]|[1-3]\d|5[0-5])\s?%|(?<![\d.])(?:2[0-9]|3[0-9])[- ]?keys?\b|\b(?:xd24|bm16\w*|bm40\w*|jj\d+\w*|cstc40|cospad|planck|preonic|corne|lily58|kyria|ergodox|dactyl|sofle|ergodone|pi40|levinson|nori|lets split)\b/i;
 const drawable=(raw,name)=>builderLayout(raw,name)||layoutFromName(name);
+// The 60% bottom rows a variant names in any of its options ("Layout: Tsangan", "Blocker: WKL", "Plate: 7U",
+// "Version: Hotswap 6.25U"). "Standard" counts only under a layout, bottom row, spacebar or blocker option.
+const ROW_STYLE={ansi:'ansi',tsangan:'tsangan',hhkb:'hhkb'};
+function rowStyles(p,v) {
+  const names=(p.options||[]).map(o=>o.name), out=new Set();
+  String(v&&v.name!=='Default Title'?v.name:'').split(' / ').forEach((seg,i)=>{
+    for(const x of layoutOptsIn(seg)||[]) if(ROW_STYLE[x]) out.add(x);
+    if(/6\.25\s?u\b/i.test(seg)) out.add('ansi');
+    if(/(?<![\d.])7\s?u\b/i.test(seg)) out.add('tsangan');
+    if(/^standard\b/i.test(seg)&&/layout|bottom row|spacebar|blocker/i.test(names[i]||'')) out.add('ansi');
+  });
+  return [...out];
+}
 // Mount, firmware and layout options for a board part (a kit, case, PCB or plate), from the description when the refresh
-// read one, else from the name and published spec lines. A variant that names its own layout ("Tsangan", "ANSI") is that
-// layout only, so a listing's other variants never count for it. Keys with no published value are left out.
-function boardFacts(p,v) {
+// read one, else from the name and published spec lines. The variants a part stands for (one for a PCB or plate,
+// every variant on sale for a kit or case) decide its layout options when any of them names one, so a listing's
+// description never adds a row its variants don't offer. Keys with no published value are left out.
+function boardFacts(p,v,vs=[v]) {
   const s=p.specs, pub=Object.entries(p.publishedSpecs||{}).map(([k,x])=>k+': '+x).join('\n'), vn=v&&v.name!=='Default Title'?v.name:'';
-  // A variant's own value for a Layout option ("Standard", "WKL"); else any layout its name gives.
-  const li=(p.options||[]).findIndex(o=>/layout|bottom row|spacebar/i.test(o.name)), seg=li>=0?vn.split(' / ')[li]:null;
-  const own=seg?layoutOptsIn(seg)||(/^standard\b|6\.25/i.test(seg)?['ansi']:null):layoutOptsIn(vn), lo=own?[...new Set([...own,...(layoutOptsIn(p.name)||[])])]:[...new Set([...(s.layoutOpts||[]),...(layoutOptsIn(p.name+'\n'+layoutLines(pub))||[])])];
+  const named=[...new Set(vs.flatMap(x=>[...rowStyles(p,x),...(layoutOptsIn(x&&x.name!=='Default Title'?x.name:'')||[])]))];
+  const lo=named.length?[...new Set([...named,...(layoutOptsIn(p.name)||[])])]:[...new Set([...(s.layoutOpts||[]),...(layoutOptsIn(p.name+'\n'+layoutLines(pub))||[])])];
   const out={mounts:s.mounts??mountsIn(p.name+'\n'+pub,s.mount??published(p,/mount/i)),firmware:s.firmware??firmwareIn(p.name+'\n'+vn+'\n'+pub),layoutOpts:lo.length?LAYOUT_OPTS.filter(k=>lo.includes(k)):null};
   for(const k in out) if(!out[k]) delete out[k];
   return out;
@@ -621,7 +634,7 @@ function keyboardsRule(p) {
   const boards=vs.filter(boardVariant); if(!boards.length) return {reason:'no board variant'};
   const v=bare||cheapest(boards);
   const board=boardName(n,cleanBrand(p),p.retailer), switchSystem=switchSystemOf(n)||s.switchSystem||(LOW_PROFILE_MODELS.test(n)?'low-profile':null);
-  return {parts:{...base(p,v),cat:'case',brand:board.brand,name:board.name,layout:L.layout,layoutLabel:L.label,keys:null,knob:/\bknob\b/i.test(n),mount:tidy(s.mount??published(p,/mount/i)),material:tidy(s.material??published(p,/case material|^material$/i)),conn:s.connection||connOf(n)||connOf(v.name)||'Not listed',colors:colorsOf(p,v),assembled,...(switchSystem?{switchSystem}:{}),...boardFacts(p,v),
+  return {parts:{...base(p,v),cat:'case',brand:board.brand,name:board.name,layout:L.layout,layoutLabel:L.label,keys:null,knob:/\bknob\b/i.test(n),mount:tidy(s.mount??published(p,/mount/i)),material:tidy(s.material??published(p,/case material|^material$/i)),conn:s.connection||connOf(n)||connOf(v.name)||'Not listed',colors:colorsOf(p,v),assembled,...(switchSystem?{switchSystem}:{}),...boardFacts(p,v,boards),
     kit:{pcb:{hotswap:s.hotswap??hotOf(n+' '+v.name),pins:null,led:null,rgb:null,stabs:[]},plate:null,stabs:null},
     blurb:assembled?'Sold assembled. Switches and keycaps you pick here are swaps or upgrades.':'Kit listing. Check the store for exactly what is included.'}};
 }
@@ -642,19 +655,14 @@ function casesRule(p) {
   const vs0=pool(p); if(!vs0.length) return {reason:'no case variant'};
   const vs=vs0.filter(v=>!LOCALE.test(v.name)).length?vs0.filter(v=>!LOCALE.test(v.name)):vs0;
   const v=cheapest(vs), switchSystem=switchSystemOf(n)||s.switchSystem||null;
-  return {parts:{...base(p,v),cat:'case',layout:L.layout,layoutLabel:L.label,keys:null,knob:/\bknob\b/i.test(n),mount:tidy(s.mount??published(p,/mount/i)),material:tidy(s.material??published(p,/case material|^material$/i))??caseMaterial(n,v.name),conn:'Depends on PCB',colors:colorsOf(p,v),assembled:false,kit:null,...(switchSystem?{switchSystem}:{}),fit:null,...boardFacts(p,v),
+  return {parts:{...base(p,v),cat:'case',layout:L.layout,layoutLabel:L.label,keys:null,knob:/\bknob\b/i.test(n),mount:tidy(s.mount??published(p,/mount/i)),material:tidy(s.material??published(p,/case material|^material$/i))??caseMaterial(n,v.name),conn:'Depends on PCB',colors:colorsOf(p,v),assembled:false,kit:null,...(switchSystem?{switchSystem}:{}),fit:null,...boardFacts(p,v,vs),
     blurb:'Case only. Check the store for what is included.'}};
 }
 const PCB_ACCESSORY=/socket|diode|light control|diffuser|\bhalo\b|spoof|controller|converter|adapter|connector|\busb\b|mcu|programm?er|capacitor|keycaps?\b/i;
 // Variants in a PCB or plate listing often differ by hot-swap/solder or by material, and a finder needs each: one part per distinct value.
 // A PCB or plate sold in several 60% bottom rows ("Layout: Standard / Tsangan") is one part per row too, so a Tsangan
 // plate is not lost behind a cheaper standard one. The key pairs the first value with the variant's row style.
-const ROW_STYLE={ansi:'ansi',tsangan:'tsangan',hhkb:'hhkb'};
-function variantStyle(p,v) {
-  const li=(p.options||[]).findIndex(o=>/layout|bottom row|spacebar/i.test(o.name)); if(li<0) return null;
-  const seg=String(v.name).split(' / ')[li]||'', o=layoutOptsIn(seg)||(/^standard\b|6\.25/i.test(seg)?['ansi']:[]);
-  return o.map(x=>ROW_STYLE[x]).find(Boolean)||null;
-}
+function variantStyle(p,v) {const o=rowStyles(p,v); return o.length?o.sort().join('+'):null}
 const withStyle=(p,keyOf)=>v=>{const a=keyOf(v), b=variantStyle(p,v); return a==null&&b==null?null:JSON.stringify([a,b])};
 const firstKey=({key,v})=>({key:key&&JSON.parse(key)[0],v});
 function splitBy(vs,keyOf,max=6) {
