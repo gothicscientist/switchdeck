@@ -631,10 +631,20 @@ globalThis.SWITCHDECK_SOUND_VIDEOS={
   "title": "PORTICO Keyboard Typing Sounds ASMR | KTT Sea Salt Lemon Switches",
   "creator": "hi_keebs"
  },
+ "leobogreaper": {
+  "video": "nnRa7OGj72c",
+  "title": "LEOBOG Reaper Sound Test | Cheap, Smooth and Creamy Linear Switch!",
+  "creator": "Click and Thock"
+ },
  "lichicxyogurtsilent": {
   "video": "W-PwPWaiXcQ",
   "title": "Wingtree Lichicx Yogurt silent switch - Neo Ergo sound test",
   "creator": "StickyChewy"
+ },
+ "momokaflamingo": {
+  "video": "QOpCil9AEcI",
+  "title": "Momoka Frog & Flamingo Switches (Review + Sound Test)",
+  "creator": "Lv7Kevin"
  },
  "owlablatte": {
   "video": "xQXWrGfZp8E",

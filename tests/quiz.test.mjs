@@ -26,10 +26,10 @@ test('every sound option plays a credited clip that ships with the site',async()
     assert.ok(credits.includes(`freesound.org/s/${s.freesound}/`),k+' credit');
   }
 });
-test('questions run size, feel, sound, look, use, wireless, solder, budget',()=>{
+test('questions run size, 60% layout, feel, sound, look, use, wireless, solder, budget',()=>{
   const s=html.indexOf('const QUESTIONS = [');
   const block=html.slice(s,html.indexOf('\n];',s));
-  assert.deepEqual([...block.matchAll(/\{key:'(\w+)'/g)].map(m=>m[1]),['layout','feel','sound','look','use','wireless','solder','budget']);
+  assert.deepEqual([...block.matchAll(/\{key:'(\w+)'/g)].map(m=>m[1]),['layout','style','feel','sound','look','use','wireless','solder','budget']);
   assert.doesNotMatch(step('feel'),/feel-graph/);
 });
 
@@ -100,4 +100,25 @@ test('price caps filter recommendations without biasing sound match scores',()=>
   assert.ok(html.includes('if(budget&&t>budget) continue'),'the chosen cap still excludes over-budget recommendations');
   assert.ok(html.includes('ps===top[top.length-1].ps&&t>top[top.length-1].t'),'higher price wins an exact score tie');
   assert.ok(html.includes('list.sort((a,b)=>b.sc-a.sc||b.t-a.t)'),'higher priced equal-score recommendations are surfaced first');
+});
+
+test('60% layout answers only count what a listing names',async()=>{
+  const ctx=await load();
+  const fit=(fn,parts,want)=>run(ctx,`(()=>{const ps=${JSON.stringify(parts)}; for(const p of ps) BYID[p.id]=p; return ${fn}({case:ps[0].id,pcb:ps[1]?.id,plate:ps[2]?.id},${JSON.stringify(want)})})()`);
+  const kit=(id,x)=>({id,cat:'case',layout:'60',kit:{pcb:{}},...x});
+  assert.equal(fit('styleFit',[kit('s1',{layoutOpts:['hhkb']})],'hhkb'),'yes');
+  assert.equal(fit('styleFit',[kit('s1',{layoutOpts:['hhkb']})],'ansi'),'no');
+  assert.equal(fit('styleFit',[kit('s2',{layoutOpts:['ansi','tsangan']})],'ansi'),'check');
+  assert.equal(fit('styleFit',[kit('s3',{layoutOpts:['ansi']})],'tsangan'),'check');
+  assert.equal(fit('styleFit',[kit('s4',{layout:'65',layoutOpts:['hhkb']})],'hhkb'),null);
+  // a bare case leaves the bottom row to its PCB and plate, unless it is an HHKB case
+  assert.equal(fit('styleFit',[{id:'c2',cat:'case',layout:'60',kit:null,layoutOpts:['tsangan']},{id:'p2',cat:'pcb',layoutOpts:['ansi']}],'ansi'),'yes');
+  assert.equal(fit('styleFit',[{id:'c3',cat:'case',layout:'60',kit:null,layoutOpts:['hhkb']},{id:'p3',cat:'pcb'}],'ansi'),'no');
+});
+test('a 40% board takes full keycap sets only as a check',async()=>{
+  const ctx=await load();
+  assert.equal(run(ctx,`kcCovers({covers:['60','65']},'40')`),null);
+  assert.equal(run(ctx,`kcCovers({covers:['60','65']},'60')`),true);
+  assert.equal(run(ctx,`kcCovers({covers:['full']},'40')`),false);
+  assert.equal(run(ctx,`kcCovers({covers:null},'40')`),null);
 });

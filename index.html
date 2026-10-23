@@ -794,8 +794,16 @@ a.listen.watch:hover{background:rgba(68,64,60,.16)}
    CATALOG
    ========================================================= */
 
-const LAYOUT_NAMES = {'60':'60%','65':'65%','75':'75%','tkl':'TKL','full':'Full-size'};
-const LAYOUT_KEYS  = {'60':61,'65':68,'75':84,'tkl':87,'full':104};
+const LAYOUT_NAMES = {'40':'40%','60':'60%','65':'65%','75':'75%','tkl':'TKL','full':'Full-size'};
+const LAYOUT_KEYS  = {'40':41,'60':61,'65':68,'75':84,'tkl':87,'full':104};
+/* Board facts the finder can ask about, as the stores publish them (scripts/catalog-lib.mjs): mount styles, firmware and
+   layout options. Hand-picked boards state their mount as text ("Gasket"), read the same way as a store's Mount line. */
+const MOUNT_NAMES={gasket:'Gasket','top':'Top','tray':'Tray','o-ring':'O-ring','leaf-spring':'Leaf spring',sandwich:'Sandwich',bottom:'Bottom'};
+const FIRMWARE_NAMES={qmk:'QMK',via:'VIA',vial:'Vial',zmk:'ZMK'};
+const STYLE_NAMES={ansi:'Standard',tsangan:'Tsangan',hhkb:'HHKB'};
+const LAYOUT_OPT_NAMES={ansi:'ANSI',iso:'ISO',tsangan:'Tsangan',hhkb:'HHKB','split-backspace':'Split backspace','split-space':'Split spacebar','split-rshift':'Split right Shift'};
+const MOUNT_LINE={gasket:/gasket/i,top:/\btop\b(?![- ](?:half|case|frame|plate|housing|shell|piece))|burger/i,tray:/\btray\b/i,'o-ring':/o-?ring/i,'leaf-spring':/leaf/i,sandwich:/sandwich/i,bottom:/\bbottom[- ]?mount/i};
+const mountsOf=p=>p?(p.mounts||(p.mount&&(m=>m.length?m:null)(Object.keys(MOUNT_LINE).filter(k=>MOUNT_LINE[k].test(p.mount))))||null):null;
 
 const C = (o)=>Object.assign({cat:'case'},o);
 const CASES = [
@@ -1039,6 +1047,7 @@ function cleanBuild(b){
   out.extras=[...new Set((Array.isArray(out.extras)?out.extras:[]).filter(id=>typeof id==='string'&&BYID[id]?.cat==='extras'))];
   const colors=BYID[out.case]?.colors?.length||1;
   out.color=Number.isInteger(out.color)&&out.color>=0&&out.color<colors?out.color:0;
+  if(!(out.style in STYLE_NAMES)) delete out.style;
   return out;
 }
 // Until the catalog has loaded the saved build stays as stored: its parts may not be in BYID yet, and cleaning would drop them.
@@ -1059,6 +1068,38 @@ function effPcb(b){const c=caseOf(b); if(c&&c.kit) return {...c.kit.pcb,name:c.k
 function effPlate(b){const c=caseOf(b); if(c&&c.kit) return {material:c.kit.plate,kit:true,plateStabs:true}; return BYID[b.plate]||null}
 function stabsIncluded(b){const c=caseOf(b); return !!(c&&c.kit&&c.kit.stabs)}
 const layoutOf = b=>{const c=caseOf(b); return c?c.layout:null};
+// How a build meets a 60% layout answer: 'yes' when a listing says so, 'no' when its listing names only
+// something else, 'check' when nothing is published (ranked lower, never hidden), or null when the answer is open.
+// The parts that decide a 60% board's bottom row: a kit's own listing, else the PCB and plate, and a bare case only when it
+// is an HHKB case (its blockers fix the bottom row). "ANSI" next to a Tsangan or HHKB mention could be either, so it is a check.
+function styleParts(b){const c=caseOf(b); return c.kit?[c]:[c.layoutOpts?.includes('hhkb')?c:null,BYID[b.pcb],BYID[b.plate]].filter(Boolean)}
+function styleFit(b,want){
+  const c=caseOf(b); if(!c||c.layout!=='60'||!want||want==='any') return null;
+  let yes=false;
+  for(const p of styleParts(b)){
+    const S=(p.layoutOpts||[]).filter(x=>x in STYLE_NAMES); if(!S.length) continue;
+    const fixed=S.filter(x=>x!=='ansi');
+    if(want==='ansi'){if(!S.includes('ansi')) return 'no'; if(!fixed.length) yes=true}
+    else if(S.includes(want)) yes=true;
+    else if(fixed.length) return 'no';
+  }
+  return yes?'yes':'check';
+}
+// Ranks only: a board whose listing names the 60% layout asked for leads, one that names another trails.
+const STYLE_SCORE={yes:16,check:0,no:-24};
+function factScore(b,ans){const st=styleFit(b,ans.style); return st?STYLE_SCORE[st]:0}
+// The drawn layout. A 60% shows the Tsangan or HHKB bottom row the build asks for when a part names it, or the one
+// fixed style its parts name.
+function drawLayout(b){
+  const c=caseOf(b); if(!c) return null; if(c.layout!=='60') return c.layout;
+  const named=new Set(styleParts(b).flatMap(p=>(p.layoutOpts||[]).filter(x=>x in STYLE_NAMES)));
+  if(b.style&&b.style!=='ansi'&&named.has(b.style)) return '60-'+b.style;
+  const fixed=[...named].filter(x=>x!=='ansi'); return fixed.length===1&&!named.has('ansi')?'60-'+fixed[0]:'60';
+}
+// Keycap coverage of a layout: true, false, or null when unknown (a "check" note, ranked lower). Sets list coverage from
+// their key count; a 40% uses a few odd-sized keys, so a set made for 60% and up is a check there, not a fit.
+function kcCovers(k,L){if(!k||!L||!k.covers) return null; if(k.covers.includes(L)) return true; return L==='40'&&k.covers.includes('60')?null:false}
+const STAB_COUNT=L=>L==='full'?'7':L==='40'?'2 or 3':'5';
 const keyCount = b=>{const c=caseOf(b); return c?c.keys:0};
 function switchQty(b){const n=keyCount(b); return Math.ceil((n||0)/10)*10}
 function switchCost(s,q){return s.packQuantity?Math.ceil(q/s.packQuantity)*s.packPrice:+(s.price*q).toFixed(2)}
@@ -1091,7 +1132,7 @@ function compat(b){
     else if(pl && pl.fit!==c.fit) add('fail','plate',`${pl.name} doesn't fit the ${partName(c)}`);
     if(!pl && p) add('warn','plate','No plate selected','Plateless builds flex a lot and switches can wobble. 5-pin switches help.');
   }
-  if(kc&&!kc.covers) add('info','keycaps',`Check that ${kc.name} covers a ${LAYOUT_NAMES[L]} board`,`${storeOf(kc)} doesn't list a key count for this set.`);
+  if(kc&&kcCovers(kc,L)===null) add('info','keycaps',`Check that ${kc.name} covers a ${LAYOUT_NAMES[L]} board`,kc.covers?'40% boards use a few odd-sized keys, such as a short right Shift, that full sets may not include.':`${storeOf(kc)} doesn't list a key count for this set.`);
   else if(kc){
     if(!kc.covers.includes(L)){
       if(kc.addon&&kc.addon[L]) add('warn','keycaps',`${kc.brand} ${kc.name} base kit doesn't cover ${LAYOUT_NAMES[L]}`,`Added the numpad kit (+${money(kc.addon[L])}) to the price.`);
@@ -1101,6 +1142,9 @@ function compat(b){
   if(sw && boardSystem(c)!==swSystemOf(sw)) add('fail','switches',`${partName(sw)} won't fit this board`,`It's a ${SYSTEM_NAMES[swSystemOf(sw)]} switch and the ${partName(c)} takes ${SYSTEM_NAMES[boardSystem(c)]} switches.`);
   if(sw && c.assembled && pcb?.hotswap===false) add('warn','switches','Replacing these switches needs desoldering','This assembled keyboard has soldered switches.');
   if(kc && boardSystem(c)==='low-profile') add('info','keycaps','Check the keycap stem and stabilizer fit','Low-profile keyboards need keycaps made for their switch and stabilizer system.');
+  if(L==='60'&&b.style){const f=styleFit(b,b.style), n=b.style==='ansi'?'standard':STYLE_NAMES[b.style];
+    if(f==='check') add('info','case',`Check that the ${partName(c)} comes in the ${n} layout`,`The store doesn't list which 60% bottom rows it takes.`);
+    else if(f==='no') add('warn','case',`The ${partName(c)} isn't listed in the ${n} layout`,`Its listing names a different 60% layout.`)}
   for(const [slot,id] of [['case',b.case],['pcb',b.pcb],['plate',b.plate],['switches',b.switches],['keycaps',b.keycaps],['stabs',b.stabs]]){const q=BYID[id]; if(q&&q.soldOut) add('info',slot,`${partName(q)} is sold out`,`${storeOf(q)} lists it as out of stock right now.`)}
   if(sw && pcb){
     if(sw.pins===5 && pcb.pins===3) add('warn','switches','5-pin switches on a 3-pin PCB','Clip the two plastic side legs off each switch.');
@@ -1111,7 +1155,7 @@ function compat(b){
   }
   if(pcb){
     const needStabs=!stabsIncluded(b);
-    if(needStabs && !st) add('info','stabs',c.catalogId?'Check whether stabilizers are included':'Add stabilizers',c.catalogId?`Most kits include them. If this one doesn't, a ${LAYOUT_NAMES[L]} board needs ${L==='full'?'7':'5'}.`:`A ${LAYOUT_NAMES[L]} board needs ${L==='full'?'7':'5'} stabilizers for its long keys.`);
+    if(needStabs && !st) add('info','stabs',c.catalogId?'Check whether stabilizers are included':'Add stabilizers',c.catalogId?`Most kits include them. If this one doesn't, a ${LAYOUT_NAMES[L]} board needs ${STAB_COUNT(L)}.`:`A ${LAYOUT_NAMES[L]} board needs ${STAB_COUNT(L)} stabilizers for its long keys.`);
     if(st && needStabs){
       if(st.mount==='plate'){ if(!plate) add('fail','stabs','Plate-mount stabilizers need a plate'); else if(plate.material==='PC') add('warn','stabs','Plate-mount stabs on a PC plate','PC plates often skip stab cutouts. Check the plate before buying.'); else add('ok','stabs','Plate-mount stabilizers fit the plate'); }
       else if(!pcb.stabs?.length) add('info','stabs','Check which stabilizers fit',`${storeOf(c)} doesn't list the stabilizer type for this PCB.`);
@@ -1183,6 +1227,18 @@ const LAYOUTS = {
   '75':['1 g.25 1*4 g.25 1*4 g.25 1*4 g.25 1 1','|.25','1*13 2 1','1.5 1*12 1.5 1','1.75 1*11 2.25 1','2.25 1*10 1.75 1 1','1.25*3 6.25 1*3 1*3'],
   'tkl':['1 g1 1*4 g.5 1*4 g.5 1*4 g.25 1*3','|.25','1*13 2 g.25 1*3','1.5 1*12 1.5 g.25 1*3','1.75 1*11 2.25','2.25 1*10 2.75 g1.25 1','1.25*3 6.25 1.25*4 g.25 1*3'],
   'full':['1 g1 1*4 g.5 1*4 g.5 1*4 g.25 1*3','|.25','1*13 2 g.25 1*3 g.25 1*4','1.5 1*12 1.5 g.25 1*3 g.25 1*4','1.75 1*11 2.25 g3.5 1*4','2.25 1*10 2.75 g1.25 1 g1.25 1*4','1.25*3 6.25 1.25*4 g.25 1*3 g.25 2 1 1'],
+  // A staggered 40%: no number row, letters and a few modifiers. Real boards vary; this is the common shape.
+  '40':['1.25 1*10 1.5','1.5 1*9 2.25','1.25 1*10 1.5','1.25*3 6.25 1.25 1.5'],
+  // 60% bottom-row styles: Tsangan has a 7u spacebar between wider modifiers; HHKB adds a split backspace and leaves the
+  // bottom corners blank.
+  '60-tsangan':['1*13 2','1.5 1*12 1.5','1.75 1*11 2.25','2.25 1*10 2.75','1.5 1 1.5 7 1.5 1 1.5'],
+  '60-hhkb':['1*15','1.5 1*12 1.5','1.75 1*11 2.25','2.25 1*10 1.75 1','g1.5 1 1.5 7 1.5 1'],
+};
+// Legends for layouts that don't follow the main rows below.
+const LAYOUT_LEGS={
+  '40':[['Tab','Q','W','E','R','T','Y','U','I','O','P','⌫'],['Esc','A','S','D','F','G','H','J','K','L','Enter'],['Shift','Z','X','C','V','B','N','M',',','.','/','Shift'],['Ctrl','Win','Alt','','Fn','Ctrl']],
+  '60-tsangan':[null,null,null,null,['Ctrl','Win','Alt','','Alt','Win','Ctrl']],
+  '60-hhkb':[['Esc','1','2','3','4','5','6','7','8','9','0','-','=','\\','`'],['Tab','Q','W','E','R','T','Y','U','I','O','P','[',']','⌫'],['Ctrl','A','S','D','F','G','H','J','K','L',';',"'",'Enter'],['Shift','Z','X','C','V','B','N','M',',','.','/','Shift','Fn'],['Opt','Cmd','','Cmd','Opt']],
 };
 const LEG_MAIN = [
   ['Esc','1','2','3','4','5','6','7','8','9','0','-','=','⌫'],
@@ -1193,7 +1249,7 @@ const LEG_MAIN = [
 ];
 const LEG_F = ['Esc','F1','F2','F3','F4','F5','F6','F7','F8','F9','F10','F11','F12','Del','Ins','Home','PgUp'];
 function parseLayout(key){
-  const rows=LAYOUTS[key], keys=[]; let y=0, maxX=0, mainRow=0; const hasF=key!=='60'&&key!=='65';
+  const rows=LAYOUTS[key], keys=[], legs=LAYOUT_LEGS[key]||[]; let y=0, maxX=0, mainRow=0; const hasF=rows[1]?.[0]==='|';
   rows.forEach((r,ri)=>{
     if(r[0]==='|'){y+=parseFloat(r.slice(1));return}
     let x=0, idx=0; const isF = hasF && ri===0;
@@ -1204,7 +1260,7 @@ function parseLayout(key){
         const W=parseFloat(w);
         let leg='';
         if(isF) leg=LEG_F[idx]||'';
-        else { const lr=LEG_MAIN[mainRow]||[]; leg = idx<lr.length ? lr[idx] : ''; if(mainRow===0&&idx===0&&hasF) leg='`'; }
+        else { const lr=legs[mainRow]||LEG_MAIN[mainRow]||[]; leg = idx<lr.length ? lr[idx] : ''; if(mainRow===0&&idx===0&&hasF) leg='`'; }
         keys.push({x,y,w:W,row:ri,f:isF,main:isF?-1:mainRow,idx,leg});
         x+=W; idx++;
       }
@@ -1224,11 +1280,13 @@ function shade(hex,amt){
 const lum=hex=>{const n=parseInt(hex.slice(1),16);return (0.299*(n>>16)+0.587*((n>>8)&255)+0.114*(n&255))/255};
 
 const NEUTRAL_PAL={alpha:'#D9DCDF',mod:'#B8BDC2',accent:'#8FA39A',leg:null,modleg:null,accleg:null};
-function keyRole(k,layoutKey){
+function keyRole(k,key){
+  const layoutKey=key.split('-')[0];
   if(k.f) return k.idx===0?'accent':'mod';
   if(k.leg==='Enter') return 'accent';
   if(k.main===0&&k.idx===0&&(layoutKey==='60'||layoutKey==='65')) return 'accent';
-  if(k.w===6.25) return 'alpha';
+  if(k.w===6.25||k.w===7) return 'alpha';
+  if(key==='60-hhkb'&&k.main===0) return 'alpha';
   const inNav = (layoutKey==='tkl'||layoutKey==='full') && k.x>=15.2 && k.x<18.4;
   const rightCol = (layoutKey==='65'||layoutKey==='75') && k.x>=15;
   if(k.w!==1||inNav||rightCol) return 'mod';
@@ -1353,7 +1411,7 @@ function framedPhoto(ph,alt,icon,width=400){
 function buildBoard(b,opts={}){
   const c=caseOf(b); if(!c) return null;
   const kc=BYID[b.keycaps], col=(c.colors[b.color||0]||c.colors[0])[1], pcb=effPcb(b);
-  return boardSVG({layout:c.layout,caseColor:col,pal:kc?.pal||NEUTRAL_PAL,profile:kc?kc.profile:'Cherry',legends:!!kc,knob:c.knob,glow:!!(kc&&kc.shine&&pcb&&pcb.rgb),label:`${partName(c)} with ${kc?kc.name:'no keycaps yet'}`,...opts});
+  return boardSVG({layout:drawLayout(b),caseColor:col,pal:kc?.pal||NEUTRAL_PAL,profile:kc?kc.profile:'Cherry',legends:!!kc,knob:c.knob,glow:!!(kc&&kc.shine&&pcb&&pcb.rgb),label:`${partName(c)} with ${kc?kc.name:'no keycaps yet'}`,...opts});
 }
 
 /* =========================================================
@@ -1368,11 +1426,15 @@ function partName(p){
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function money(n){return '$'+(Math.round(n*100)/100).toLocaleString('en-US',{minimumFractionDigits:n%1?2:0,maximumFractionDigits:2})}
 function shopLink(p){const l=globalThis.SwitchdeckLinks.linksFor(p)[0]; return l?l.href||l.url:null}
+// Plain labels for published mount, firmware and layout options ("Gasket mount", "QMK, VIA", "Tsangan, HHKB").
+const mountLabel=p=>{const m=mountsOf(p); return m?m.map((x,i)=>i?MOUNT_NAMES[x].toLowerCase():MOUNT_NAMES[x]).join(' or ')+' mount':null};
+const fwLabel=p=>p&&p.firmware?p.firmware.map(x=>FIRMWARE_NAMES[x]).join(', '):null;
+const optsLabel=p=>p&&p.layoutOpts?p.layoutOpts.map(x=>LAYOUT_OPT_NAMES[x]).join(', '):null;
 function specChips(p){
   const ch=[];
-  if(p.cat==='case'){ch.push(p.layoutLabel||LAYOUT_NAMES[p.layout],p.mount,p.material); if(p.kit&&!p.assembled) ch.push('Kit'); if(p.assembled) ch.push('Assembled'); if(p.kit?.pcb.hotswap) ch.push('Hot-swap'); if(/Tri|Blue|2\.4/.test(p.conn)) ch.push('Wireless')}
-  if(p.cat==='pcb'){ch.push(LAYOUT_NAMES[p.layout],p.hotswap===true?'Hot-swap':p.hotswap===false?'Solder':null,p.pins?`${p.pins}-pin`:null,p.rgb===true?`RGB${p.led?`, ${p.led}-facing`:''}`:p.rgb===false?'No RGB':null)}
-  if(p.cat==='plate'){ch.push(p.material,LAYOUT_NAMES[p.layout],PLATE_MAT[p.material]?`Flex ${flexWord(PLATE_MAT[p.material].flex).toLowerCase()}`:null)}
+  if(p.cat==='case'){ch.push(p.layoutLabel||LAYOUT_NAMES[p.layout],mountLabel(p)||p.mount,p.material,fwLabel(p),p.layout==='60'?optsLabel(p):null); if(p.kit&&!p.assembled) ch.push('Kit'); if(p.assembled) ch.push('Assembled'); if(p.kit?.pcb.hotswap) ch.push('Hot-swap'); if(/Tri|Blue|2\.4/.test(p.conn)) ch.push('Wireless')}
+  if(p.cat==='pcb'){ch.push(LAYOUT_NAMES[p.layout],p.hotswap===true?'Hot-swap':p.hotswap===false?'Solder':null,p.pins?`${p.pins}-pin`:null,p.rgb===true?`RGB${p.led?`, ${p.led}-facing`:''}`:p.rgb===false?'No RGB':null,fwLabel(p),optsLabel(p))}
+  if(p.cat==='plate'){ch.push(p.material,LAYOUT_NAMES[p.layout],PLATE_MAT[p.material]?`Flex ${flexWord(PLATE_MAT[p.material].flex).toLowerCase()}`:null,optsLabel(p))}
   if(p.cat==='switches'){ch.push(p.type,p.force?`${p.force}g`:null,p.travel?`${p.travel.toFixed(1)}mm`:null,p.pins?`${p.pins}-pin`:null); if(p.factory) ch.push('Factory lubed')}
   if(p.cat==='keycaps'){ch.push(p.profile,p.material,p.legends); if(p.shine) ch.push('Shine-through')}
   if(p.cat==='stabs'){ch.push({screw:'PCB screw-in',clip:'PCB clip-in',plate:'Plate-mount'}[p.mount])}
@@ -1612,14 +1674,22 @@ document.addEventListener('visibilitychange',()=>{if(!document.hidden&&view==='f
    FINDER: questions and matching
    ========================================================= */
 const STONE_PAL={alpha:'#E7E5E4',mod:'#A8A29E',accent:'#78716C',leg:null,modleg:null,accleg:null};
-const miniBoard=l=>boardSVG({layout:l,caseColor:'#57534E',pal:STONE_PAL,legends:false,u:12,cls:'',label:LAYOUT_NAMES[l]});
+const miniBoard=l=>boardSVG({layout:l,caseColor:'#57534E',pal:STONE_PAL,legends:false,u:12,cls:'',label:LAYOUT_NAMES[l]||STYLE_NAMES[l.split('-')[1]]+' 60%'});
+/* Questions. `when` shows a question only for some answers (the 60% layout follows a 60% answer). `since` marks
+   questions and options added after share-link version 1, which old links don't count (assets/share-code.js). */
 const QUESTIONS = [
   {key:'layout',title:'How big should it be?',opts:[
+    {v:'40',b:'40%',s:'No number row',art:()=>miniBoard('40'),since:2},
     {v:'60',b:'60%',s:'No arrows',art:()=>miniBoard('60')},
     {v:'65',b:'65%',s:'Adds arrows',art:()=>miniBoard('65')},
     {v:'75',b:'75%',s:'Adds F-keys',art:()=>miniBoard('75')},
     {v:'tkl',b:'TKL',s:'No numpad',art:()=>miniBoard('tkl')},
     {v:'full',b:'Full size',s:'Full numpad',art:()=>miniBoard('full')},
+    {v:'any',b:'No preference'}]},
+  {key:'style',title:'Which 60% layout?',when:a=>a.layout==='60',since:2,info:'The layouts differ in the bottom row and the top right. Standard has a 6.25u spacebar and a full set of modifiers. Tsangan has a longer 7u spacebar between wider keys. HHKB moves Control beside A, splits backspace and leaves the bottom corners blank.',opts:[
+    {v:'ansi',b:'Standard',s:'Full row of modifiers',art:()=>miniBoard('60')},
+    {v:'tsangan',b:'Tsangan',s:'Longer 7u spacebar',art:()=>miniBoard('60-tsangan')},
+    {v:'hhkb',b:'HHKB',s:'Blank bottom corners',art:()=>miniBoard('60-hhkb')},
     {v:'any',b:'No preference'}]},
   {key:'feel',title:'How should a key feel to press?',hint:'Feel only: how the key moves under your finger. Sound is the next step.',opts:[
     {v:'Linear',b:'Linear',s:'Smooth and even, top to bottom',art:()=>switchSVG(BYID.milkyyp)},
@@ -1786,8 +1856,11 @@ function shadowed(){
 // evalSteps is evalAns written as a generator that yields between boards: evalAns runs it straight through, evalSoon
 // runs it in slices of a few milliseconds so a warm-up never holds the page up. The result is the same either way.
 const evalJobs=new Map();
+// A 60% layout answer only counts while the size answer is 60%.
+const normAns=a=>a&&a.style!=null&&a.layout!=='60'?(({style,...r})=>r)(a):a;
 function evalAns(ans){
   if(!FULL) throw Error('The parts catalog has not loaded yet');
+  ans=normAns(ans);
   const key=JSON.stringify(ans); if(evalCache.has(key)) return evalCache.get(key);
   const it=(evalJobs.get(key)||evalJobs.set(key,evalSteps(ans,key)).get(key));
   let s; try{while(!(s=it.next()).done);} finally{evalJobs.delete(key)}
@@ -1795,6 +1868,7 @@ function evalAns(ans){
 }
 function evalSoon(ans,cb){
   if(!FULL) return;
+  ans=normAns(ans);
   const key=JSON.stringify(ans), done=()=>cb&&cb(evalCache.get(key));
   if(evalCache.has(key)) return done();
   const it=evalJobs.get(key)||evalJobs.set(key,evalSteps(ans,key)).get(key);
@@ -1838,30 +1912,31 @@ function* evalSteps(ans,key){
     if(must&&!boardHasMust(c,must)) continue;
     if(c.assembled){
       // Ships with its own switches and keycaps, which stores rarely spec, so feel and look can't be checked.
-      const b={case:c.id,color:0,pcb:null,plate:null,switches:null,keycaps:null,stabs:null,extras:[]};
+      const b={case:c.id,color:0,pcb:null,plate:null,switches:null,keycaps:null,stabs:null,extras:[],...(ans.style&&ans.style!=='any'?{style:ans.style}:{})};
       const t=total(b); if(budget&&t>budget) continue;
       const e=estimate(b);
       let sc=100 - Math.abs(e.pitch-T.p)*0.7 - Math.abs(e.vol-T.v)*0.45 - 6;
       if(feel) sc-=4; if(ans.look&&ans.look!=='any'&&!surprise) sc-=4; if(c.soldOut) sc-=10;
-      
-      if(ans.use==='gaming'&&(c.layout==='60'||c.layout==='65')) sc+=3;
+      sc+=factScore(b,ans);
+      if(ans.use==='gaming'&&(c.layout==='40'||c.layout==='60'||c.layout==='65')) sc+=3;
       if(ans.use==='work'&&(c.layout==='75'||c.layout==='tkl'||c.layout==='full')) sc+=3;
       list.push({b,sc,t,e}); continue;
     }
     // Keycap sets that fit this layout: listed coverage, a numpad add-on, or unknown coverage (a "check" note, scored lower).
-    let ks=kcs.filter(x=>!x.k.covers||x.k.covers.includes(c.layout)||(x.k.addon&&x.k.addon[c.layout]));
+    let ks=kcs.filter(x=>kcCovers(x.k,c.layout)!==false||(x.k.addon&&x.k.addon[c.layout]));
     if(surprise){let r=hashStr(`${c.id}:${ans.seed||0}`)||1; const pick=[], pool=[...ks];
       while(pick.length<SURPRISE_KC&&pool.length){r=(Math.imul(r,1664525)+1013904223)>>>0; pick.push(pool.splice(r%pool.length,1)[0])} ks=pick}
     const sws=swBy[boardSystem(c)]||[];
     if(!ks.length||!sws.length) continue;
     const cfgs=configsFor(c,ans).map(cf=>{
-      const b0={case:c.id,color:0,pcb:cf.pcb,plate:cf.plate,switches:null,keycaps:null,stabs:null,extras};
+      const b0={case:c.id,color:0,pcb:cf.pcb,plate:cf.plate,switches:null,keycaps:null,stabs:null,extras,...(ans.style&&ans.style!=='any'?{style:ans.style}:{})};
       if(!stabsIncluded(b0)){const pcb=effPcb(b0); b0.stabs=pcb?.stabs?.includes('screw')?'durockv2':pcb?.stabs?.includes('clip')?'cherryclip':null}
       const cs=caseSound(c,effPlate(b0)), pcbE=effPcb(b0);
       let adj=0;
-      if(ans.use==='gaming'&&(c.layout==='60'||c.layout==='65')) adj+=3;
+      if(ans.use==='gaming'&&(c.layout==='40'||c.layout==='60'||c.layout==='65')) adj+=3;
       if(ans.use==='work'&&(c.layout==='75'||c.layout==='tkl'||c.layout==='full')) adj+=3;
       if(pcbE.hotswap===false||(pcbE.hotswap==null&&!c.catalogId)) adj-=8; if(c.catalogId) adj-=3; if(c.soldOut) adj-=10;
+      adj+=factScore(b0,ans);
       return {b0,base:total(b0),qty:switchQty(b0)||70,p0:50+cs.p,v0:50+cs.v,adj};
     });
     boards.push({c,ks,sws,cfgs});
@@ -1870,8 +1945,8 @@ function* evalSteps(ans,key){
   const rank=(bd,useSw,useKc,n)=>{
     const top=[];
     for(const cf of bd.cfgs) for(const x of bd.ks){
-      const k=x.k, add=k.covers&&!k.covers.includes(bd.c.layout)?(k.addon&&k.addon[bd.c.layout]||0):0;
-      const kAdj=cf.adj+x.q-(add?4:0)-(k.covers?0:3)-(useKc?repeatCost(REPEAT_KC,useKc.get(x.key)):0);
+      const k=x.k, cv=kcCovers(k,bd.c.layout), add=cv===false?(k.addon&&k.addon[bd.c.layout]||0):0;
+      const kAdj=cf.adj+x.q-(add?4:0)-(cv===null?3:0)-(useKc?repeatCost(REPEAT_KC,useKc.get(x.key)):0);
       const kp=cf.p0+x.kp+xs.p, kv=(cf.v0+x.kv)*.4, kPrice=cf.base+k.price+add;
       for(const y of bd.sws){
         const t=kPrice+switchCost(y.s,cf.qty); if(budget&&t>budget) continue;
@@ -1970,7 +2045,7 @@ function comboCount(ans){
   });
   const kcs=KEYCAPS.filter(k=>!k.soldOut&&k.covers&&(!look||(k.mood||[]).includes(look)));
   const kcByLayout={}; // layout -> keycap prices (addon included), sorted ascending
-  const kcFor=lay=>kcByLayout[lay]||(kcByLayout[lay]=kcs.filter(k=>k.covers.includes(lay)||(k.addon&&k.addon[lay])).map(k=>k.price+(!k.covers.includes(lay)&&k.addon&&k.addon[lay]||0)).sort((a,b)=>a-b));
+  const kcFor=lay=>kcByLayout[lay]||(kcByLayout[lay]=kcs.filter(k=>kcCovers(k,lay)!==false||(k.addon&&k.addon[lay])).map(k=>k.price+(kcCovers(k,lay)===false&&k.addon&&k.addon[lay]||0)).sort((a,b)=>a-b));
   const swByQty=new Map(); // switch family + pack-rounded purchase size -> switch costs, sorted ascending
   const swFor=(sys,q)=>{const k=sys+':'+q; let a=swByQty.get(k); if(!a){a=sws.filter(s=>swSystemOf(s)===sys).map(s=>switchCost(s,q)).sort((x,y)=>x-y); swByQty.set(k,a)} return a};
   let n=0;
@@ -2273,13 +2348,16 @@ let qDir=1, hT, budgetCleanup=null, quizRender=0, answerBg=null;
 // Lays the field out for the card about to show. An answer that leaves the background boards where they were shuffles them once.
 function layoutForAnswer(){const before=answerBg; answerBg=null; layoutField(); if(before!=null&&lastBg===before){bgSeed=1+Math.floor(Math.random()*1e6); layoutField()}}
 function saveQuizProgress(){store.set('sy.quiz',quizAns);store.set('sy.quizStep',quizStep)}
+// A question with `when` is asked only for some earlier answers; the quiz steps over it otherwise.
+const asked=(q,a=quizAns)=>!q.when||q.when(a);
+const nextAsked=(step,dir)=>{while(step>0&&step<QUESTIONS.length&&!asked(QUESTIONS[step])) step+=dir; return step};
 function moveQuiz(step){
   clearTimeout(window.__adv); cancelAnimationFrame(answerFrame);
-  const next=Math.max(0,Math.min(QUESTIONS.length,step));
+  const next=nextAsked(Math.max(0,Math.min(QUESTIONS.length,step)),step<quizStep?-1:1);
   if(next>quizStep){
     const q=QUESTIONS[quizStep];
     if(q) window.ThockAnalytics?.answer(q.key,quizStep+1,quizAns[q.key]);
-    if(next===QUESTIONS.length&&FULL&&QUESTIONS.every(q=>quizAns[q.key]!=null)) window.ThockAnalytics?.complete({match_count:evalAns(quizAns).list.length});
+    if(next===QUESTIONS.length&&FULL&&QUESTIONS.every(q=>!asked(q)||quizAns[q.key]!=null)) window.ThockAnalytics?.complete({match_count:evalAns(quizAns).list.length});
   }
   qDir=next<quizStep?-1:1; quizStep=next; saveQuizProgress(); renderQuiz();
 }
@@ -2369,7 +2447,7 @@ let quizPhotosWarm=false;
 function warmQuizPhotos(){if(quizPhotosWarm) return; quizPhotosWarm=true; for(const [f] of Object.values(QUIZ_PHOTOS)){const i=new Image(); i.src=`assets/quiz/${f}.webp`}}
 function prewarmNext(){
   warmQuizPhotos();
-  const N=QUESTIONS[quizStep+1], res=evalAns(N&&N.budget&&quizAns.budget==null?{...quizAns,budget:300}:quizAns);
+  const N=QUESTIONS[nextAsked(quizStep+1,1)], res=evalAns(N&&N.budget&&quizAns.budget==null?{...quizAns,budget:300}:quizAns);
   const mobile=innerWidth<=760, n=lastBg?lastBg.split(',').length:0;
   let {top,rest}=fieldPool(res,mobile);
   // An answer that would leave the background as it is reshuffles it (layoutForAnswer); picking the new order now lets
@@ -2384,7 +2462,9 @@ function choose_(Q,btn){
   if(btn.disabled||QUESTIONS[quizStep]!==Q) return;
   const changed=quizAns[Q.key]!==btn.dataset.v;
   window.ThockSfx?.play('key');
-  quizAns[Q.key]=btn.dataset.v; if(changed&&btn.dataset.v==='surprise') quizAns.seed=Math.floor(Math.random()*1e6); saveQuizProgress();
+  quizAns[Q.key]=btn.dataset.v; if(changed&&btn.dataset.v==='surprise') quizAns.seed=Math.floor(Math.random()*1e6);
+  for(const q of QUESTIONS) if(!asked(q)) delete quizAns[q.key]; // a 60% layout answer goes when the size changes
+  saveQuizProgress();
   window.ThockAnalytics?.answer(Q.key,quizStep+1,quizAns[Q.key]);
   btn.closest('.opts').querySelectorAll('.opt').forEach(o=>o.setAttribute('aria-pressed',o===btn));
   // Scoring needs the whole catalog. It has almost always arrived by the first answer; if not, the pressed option stays
@@ -2533,8 +2613,9 @@ function readShare(code){
   let d; try{d=SwitchdeckShare.decode(code,QUESTIONS)}catch(e){return null}
   const missing=['case','pcb','plate','switches','stabs','keycaps'].filter(k=>d.b[k]&&BYID[d.b[k]]?.cat!==k);
   const lostExtras=d.b.extras.filter(id=>BYID[id]?.cat!=='extras').length;
-  const b=cleanBuild({...d.b,name:''}), colorReset=!missing.includes('case')&&b.color!==d.b.color;
-  return {b,ans:cleanAnswers(d.ans),missing,lostExtras,colorReset};
+  const b=cleanBuild({...d.b,name:''}), colorReset=!missing.includes('case')&&b.color!==d.b.color, ans=cleanAnswers(d.ans);
+  if(ans.style&&ans.style!=='any'&&layoutOf(b)==='60') b.style=ans.style;
+  return {b,ans,missing,lostExtras,colorReset};
 }
 function openShare(code){
   const sh=readShare(code);
@@ -2565,12 +2646,12 @@ function buildScore(b,ans=quizAns){
   if(c.assembled){sc-=6; if(feel) sc-=4; if(look) sc-=4}
   else{
     if(sw) sc+=swQuality(sw,ans);
-    if(kc){sc+=kcQuality(kc,look); if(!kc.covers) sc-=3; else if(!kc.covers.includes(c.layout)) sc-=4}
+    if(kc){sc+=kcQuality(kc,look); const cv=kcCovers(kc,c.layout); if(cv===null) sc-=3; else if(!cv) sc-=4}
     const pcb=effPcb(b); if(pcb&&(pcb.hotswap===false||(pcb.hotswap==null&&!c.catalogId))) sc-=8;
     if(c.catalogId) sc-=3;
   }
   if(c.soldOut) sc-=10;
-  if(ans.use==='gaming'&&(c.layout==='60'||c.layout==='65')) sc+=3;
+  if(ans.use==='gaming'&&(c.layout==='40'||c.layout==='60'||c.layout==='65')) sc+=3;
   if(ans.use==='work'&&(c.layout==='75'||c.layout==='tkl'||c.layout==='full')) sc+=3;
 
   if(budget&&t>budget) sc-=10+(t-budget)/budget*40;
@@ -2579,6 +2660,7 @@ function buildScore(b,ans=quizAns){
   if(L&&c.layout!==L) sc-=15;
   const wl=/tri|blue|2\.4|wireless/i.test(c.conn); if((ans.wireless==='yes'&&!wl)||(ans.wireless==='wired'&&wl)) sc-=12;
   if(ans.solder==='hotswap'&&effPcb(b)?.hotswap!==true) sc-=10;
+  sc+=factScore(b,normAns(ans));
   const iss=compat(b); sc-=iss.filter(i=>i.level==='warn').length*5+iss.filter(i=>i.level==='fail').length*25;
   const mods=(b.extras||[]).map(id=>BYID[id]).filter(m=>m&&m.mod);
   if(mods.length){const T0=SOUND_T[ans.sound], gain=(T0?soundGap(e,T0)-soundGap(estimate(b),T0):0)+(mods.some(m=>m.fx?.rattle)&&!c.assembled?1.6:0);
@@ -2656,7 +2738,7 @@ function swapCands(r0,b,slot,curId){
   for(const p of pool){
     if(p.id===curId) continue;
     if(slot==='switches'&&swSystemOf(p)!==boardSystem(c)) continue;
-    if(slot==='keycaps'&&p.covers&&!p.covers.includes(c.layout)&&!(p.addon&&p.addon[c.layout])) continue;
+    if(slot==='keycaps'&&kcCovers(p,c.layout)===false&&!(p.addon&&p.addon[c.layout])) continue;
     if((slot==='pcb'||slot==='plate')&&c.fit&&p.fit!=null&&p.fit!==c.fit) continue;
     if(slot==='extras'&&((b.extras||[]).includes(p.id)||(p.mod&&modFit(p,c)===false))) continue;
     let b2;
@@ -2710,7 +2792,7 @@ function redrawSwap(r0,was,said,to){
   const d=document.getElementById('rdetail');
   (d.querySelector('.swaps .swopt')||d.querySelector('#rundo:not(:disabled)')||d.querySelector('#rreset')||d.querySelector('#rbuild'))?.focus({preventScroll:true});
 }
-const partDesc=p=>p.cat==='case'?[LAYOUT_NAMES[p.layout],p.material,p.mount&&(/mount$/i.test(p.mount)?p.mount:p.mount+' mount'),p.assembled?'sold assembled':p.kit&&'kit'].filter(Boolean).join(', '):p.cat==='switches'?[p.type,p.force&&`${p.force} g`,p.pins&&`${p.pins}-pin`].filter(Boolean).join(', '):p.cat==='keycaps'?[p.profile&&`${p.profile} profile`,p.material,p.legends].filter(Boolean).join(', '):p.cat==='pcb'?[p.hotswap===true?'Hot-swap':p.hotswap===false?'Solder':null,p.pins&&`${p.pins}-pin`].filter(Boolean).join(', '):p.cat==='plate'?p.material||'':p.blurb||'';
+const partDesc=p=>p.cat==='case'?[LAYOUT_NAMES[p.layout],p.material,mountLabel(p)?.toLowerCase()||p.mount&&(/mount$/i.test(p.mount)?p.mount:p.mount+' mount'),fwLabel(p),p.assembled?'sold assembled':p.kit&&'kit'].filter(Boolean).join(', '):p.cat==='switches'?[p.type,p.force&&`${p.force} g`,p.pins&&`${p.pins}-pin`].filter(Boolean).join(', '):p.cat==='keycaps'?[p.profile&&`${p.profile} profile`,p.material,p.legends].filter(Boolean).join(', '):p.cat==='pcb'?[p.hotswap===true?'Hot-swap':p.hotswap===false?'Solder':null,p.pins&&`${p.pins}-pin`].filter(Boolean).join(', '):p.cat==='plate'?p.material||'':p.blurb||'';
 function renderRDetail(opts={}){
   const r0=resList[resIdx], r=resView(r0), b=r.b, c=caseOf(b), s=BYID[b.switches], note=(n=>n&&n.sh?shareNote(n.sh,b):n)(resNotes.get(r0.b.case)), ed=resCustom.get(r0.b.case);
   const items=lineItems(b), SL=k=>SLOTS.find(x=>x.key===k).label;
@@ -2910,9 +2992,9 @@ document.getElementById('clearbuild').onclick=(e)=>{
 const POOLS={case:CASES,pcb:PCBS,plate:PLATES,switches:SWITCHES,stabs:STABS,keycaps:KEYCAPS,extras:EXTRAS};
 const storeOf=p=>p.retailers?.[0]?.name||'Thock picks';
 const FACETS={
-  case:[['layout','Layout',p=>p.layoutLabel||LAYOUT_NAMES[p.layout]],['type','Type',p=>p.assembled?'Sold assembled':p.kit?'Kit (PCB + plate included)':'Case only'],['conn','Connection',p=>/Tri|Blue|2\.4/.test(p.conn)?'Wireless':p.conn==='Not listed'?'Not listed':'Wired'],['hs','PCB',p=>p.kit?(p.kit.pcb.hotswap===true?'Hot-swap':p.kit.pcb.hotswap===false?'Solder':'Not listed'):'Separate'],['mount','Mount',p=>p.mount?p.mount.split(' ')[0].replace(/^\w/,c=>c.toUpperCase()):'Not listed'],['store','Store',storeOf],['brand','Brand',p=>p.brand]],
-  pcb:[['hs','Install',p=>p.hotswap?'Hot-swap':'Solder'],['rgb','Lighting',p=>p.rgb?'RGB':'None'],['brand','Brand',p=>p.brand]],
-  plate:[['material','Material',p=>p.material],['layout','Layout',p=>LAYOUT_NAMES[p.layout]]],
+  case:[['layout','Layout',p=>p.layoutLabel||LAYOUT_NAMES[p.layout]],['type','Type',p=>p.assembled?'Sold assembled':p.kit?'Kit (PCB + plate included)':'Case only'],['conn','Connection',p=>/Tri|Blue|2\.4/.test(p.conn)?'Wireless':p.conn==='Not listed'?'Not listed':'Wired'],['hs','PCB',p=>p.kit?(p.kit.pcb.hotswap===true?'Hot-swap':p.kit.pcb.hotswap===false?'Solder':'Not listed'):'Separate'],['mount','Mount',p=>mountsOf(p)?.map(x=>MOUNT_NAMES[x])||'Not listed'],['fw','Firmware',p=>p.firmware?.map(x=>FIRMWARE_NAMES[x])||'Not listed'],['opts','Layout options',p=>p.layoutOpts?.map(x=>LAYOUT_OPT_NAMES[x])||'Not listed'],['store','Store',storeOf],['brand','Brand',p=>p.brand]],
+  pcb:[['hs','Install',p=>p.hotswap?'Hot-swap':'Solder'],['rgb','Lighting',p=>p.rgb?'RGB':'None'],['fw','Firmware',p=>p.firmware?.map(x=>FIRMWARE_NAMES[x])||'Not listed'],['opts','Layout options',p=>p.layoutOpts?.map(x=>LAYOUT_OPT_NAMES[x])||'Not listed'],['brand','Brand',p=>p.brand]],
+  plate:[['material','Material',p=>p.material],['layout','Layout',p=>LAYOUT_NAMES[p.layout]],['opts','Layout options',p=>p.layoutOpts?.map(x=>LAYOUT_OPT_NAMES[x])||'Not listed']],
   switches:[['type','Type',p=>p.type],['pins','Pins',p=>p.pins?p.pins+'-pin':'Not listed'],['factory','Lube',p=>p.factory==null?'Not published':p.factory?'Factory lubed':'Unlubed'],['store','Store',storeOf],['brand','Brand',p=>p.brand]],
   keycaps:[['profile','Profile',p=>p.profile||'Not listed'],['material','Material',p=>p.material||'Not listed'],['legends','Legends',p=>p.legends||'Not listed'],['store','Store',storeOf],['brand','Brand',p=>p.brand]],
   stabs:[['mount','Mount',p=>({screw:'PCB screw-in',clip:'PCB clip-in',plate:'Plate-mount'}[p.mount])],['store','Store',storeOf],['brand','Brand',p=>p.brand]],
@@ -2951,7 +3033,7 @@ function openPicker(slot){
   fh+=`<fieldset><legend>Max price</legend><input type="range" id="pkprice" min="0" max="${maxP}" step="${maxP>100?5:1}" value="${maxP}" aria-label="Maximum price"><span class="mono note" id="pkpriceout">${money(maxP)}</span></fieldset>`;
   if(slot==='switches') fh+=`<fieldset><legend>Actuation force</legend><span class="mono note">Up to <b id="pkforceout">80</b> g</span><input type="range" id="pkforce" min="35" max="80" value="80" aria-label="Maximum actuation force"></fieldset>`;
   for(const [k,label,fn] of facets){
-    const n=new Map(); for(const p of pool){const v=fn(p); n.set(v,(n.get(v)||0)+1)}
+    const n=new Map(); for(const p of pool) for(const v of [].concat(fn(p))) n.set(v,(n.get(v)||0)+1)
     const vals=[...n].sort((a,b)=>b[1]-a[1]||String(a[0]).localeCompare(String(b[0]))), top=vals.slice(0,12);
     fh+=`<fieldset><legend>${label}</legend>${top.map(([v,c])=>`<label><input type="checkbox" data-facet="${k}" value="${esc(v)}"> ${esc(v)} <span class="note">(${c})</span></label>`).join('')}${vals.length>12?`<span class="note">${vals.length-12} more. Use search to find them.</span>`:''}</fieldset>`}
   fs.innerHTML=fh;
@@ -2980,7 +3062,7 @@ function renderPickList(){
     if(pk.q && !pk.q.split(/\s+/).every(w=>`${p.brand} ${p.name} ${p.sourceName||''} ${p.profile||''} ${p.type||''} ${p.layoutLabel||''} ${storeOf(p)}`.toLowerCase().includes(w))) return false;
     if(price>pk.maxPrice+0.001) return false;
     if(slot==='switches'&&p.force>pk.maxF) return false;
-    for(const [k,,fn] of facets){const sel=pk.f[k]; if(sel&&sel.length&&!sel.includes(fn(p))) return false}
+    for(const [k,,fn] of facets){const sel=pk.f[k]; if(sel&&sel.length&&![].concat(fn(p)).some(v=>sel.includes(v))) return false}
     return true;
   });
   const hidden = pk.compat? rows.filter(r=>r.pr.bad.length).length : 0;
@@ -3125,11 +3207,12 @@ function cleanAnswers(a){
     if(key==='seed'){if(!Number.isFinite(a[key]))delete a[key];continue}
     if(!q||(q.budget?!((Number.isFinite(a[key])&&a[key]>=B_MIN&&a[key]<=B_MAX)||a[key]==='any'):!q.opts.some(o=>o.v===a[key])))delete a[key];
   }
+  for(const q of QUESTIONS) if(!asked(q,a)) delete a[q.key];
   return a;
 }
 cleanAnswers(quizAns);
 {const step=store.get('sy.quizStep',0);quizStep=Number.isInteger(step)&&step>=0&&step<=QUESTIONS.length?step:0;
-  const firstMissing=QUESTIONS.findIndex(q=>quizAns[q.key]==null);if(firstMissing>=0)quizStep=Math.min(quizStep,firstMissing)}
+  const firstMissing=QUESTIONS.findIndex(q=>asked(q)&&quizAns[q.key]==null);if(firstMissing>=0)quizStep=Math.min(quizStep,firstMissing);quizStep=nextAsked(quizStep,1)}
 {const n=document.getElementById('affnote'); if(globalThis.SwitchdeckLinks.hasAffiliates()){n.textContent=AFF_NOTE; n.hidden=false}}
 upgradeLegacyHash();
 if(/\.html$/.test(location.pathname)){try{history.replaceState(null,'',viewPath(pathView())+location.search)}catch(e){}}

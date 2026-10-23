@@ -20,6 +20,11 @@ export const SOURCES = [
   {id:'kineticlabs',name:'Kinetic Labs',url:'https://kineticlabs.com',currency:'USD',optional:true},
   {id:'dangkeebs',name:'Dangkeebs',url:'https://dangkeebs.com',currency:'USD',optional:true},
   {id:'milktooth',name:'Milktooth',url:'https://milktooth.com',currency:'USD',optional:true},
+  // Added for 40%, HHKB/Tsangan 60% and ZMK boards the stores above barely stock.
+  {id:'whatgeek',name:'WhatGeek',url:'https://www.whatgeek.com',currency:'USD',optional:true},
+  {id:'kono',name:'Kono Store',url:'https://kono.store',currency:'USD',optional:true},
+  {id:'keebmonkey',name:'KeebMonkey',url:'https://www.keebmonkey.com',currency:'USD',optional:true},
+  {id:'dixiemech',name:'Dixie Mech',url:'https://dixiemech.store',currency:'USD',optional:true},
 ];
 export const CATEGORIES = {keyboards:'Keyboards & kits',cases:'Cases',pcb:'PCBs',plate:'Plates',switches:'Switches',keycaps:'Keycaps',stabs:'Stabilizers',extras:'Mods, tools & cables',deskmats:'Deskmats'};
 export function plain(value='') {
@@ -53,6 +58,40 @@ export function category(p) {
 }
 const first=(s,r)=>s.match(r)?.[1]?.trim()||null;
 const number=(s,r)=>{const v=first(s,r);return v===null?null:Number(v)};
+// Board facts the finder can ask about. Each is read only from wording the store publishes; nothing is inferred
+// from the brand, price or photos, and a board that names none of them gets no value.
+// Mount styles. Running text must name the style as a mount ("gasket mount", "top-mounted", "gummy o-ring"),
+// because "gasket" or "top" alone also describe foam strips and case halves. A stated "Mount: ..." line is
+// read more loosely, since every word in it is about the mount.
+export const MOUNT_STYLES=['gasket','top','tray','o-ring','leaf-spring','sandwich','bottom'];
+const MOUNT_TEXT={gasket:/\bgaskets?[- ]?(?:mount(?:ed|ing|s)?|structure|design|isolat\w*)\b|\b(?:pcb|plate|silicone|poron)[- ]gaskets?[- ]?(?:mount\w*)?\b/i,
+  top:/\b(?:top|burger)[- ]?mount(?:ed|ing|s)?\b/i, tray:/\btray[- ]?mount(?:ed|ing|s)?\b/i,
+  'o-ring':/\bo-?ring[- ]?mount(?:ed|ing|s)?\b|\bgummy[- ]o-?rings?\b/i, 'leaf-spring':/\bleaf[- ]?spring(?:[- ]?mount\w*)?\b/i,
+  sandwich:/\bsandwich[- ]?mount(?:ed|ing|s)?\b/i, bottom:/\bbottom[- ]?mount(?:ed|ing|s)?\b/i};
+const MOUNT_LINE={gasket:/gasket/i,top:/\btop\b(?![- ](?:half|case|frame|plate|housing|shell|piece))|burger/i,tray:/\btray\b/i,'o-ring':/o-?ring/i,'leaf-spring':/leaf/i,sandwich:/sandwich/i,bottom:/\bbottom[- ]?mount/i};
+export function mountsIn(text,line='') {
+  const t=String(text||''), l=String(line||'');
+  const out=MOUNT_STYLES.filter(m=>MOUNT_TEXT[m].test(t)||MOUNT_LINE[m].test(l));
+  return out.length?out:null;
+}
+// Firmware the listing names. VIA is matched in capitals (or as usevia.app), since "via" is also an English word.
+export const FIRMWARES=['qmk','via','vial','zmk'];
+const FIRMWARE_TEXT={qmk:[/\bqmk\b/i],via:[/\bVIA\b/,/usevia|\bvia[- ](?:compatible|supported|support|enabled|configurator)\b|\bqmk\s*[/&+]\s*via\b/i],vial:[/\bVial\b/,/vial\.rocks|\bvial[- ](?:compatible|supported|support|enabled)\b/i],zmk:[/\bzmk\b/i]};
+export function firmwareIn(text) {
+  const t=String(text||''), out=FIRMWARES.filter(f=>FIRMWARE_TEXT[f].some(r=>r.test(t)));
+  return out.length?out:null;
+}
+// Layout options the listing names: the bottom-row style (standard ANSI, Tsangan/WKL, HHKB), ISO, and split keys.
+export const LAYOUT_OPTS=['ansi','iso','tsangan','hhkb','split-backspace','split-space','split-rshift'];
+const LAYOUT_OPT_TEXT={ansi:/\bANSI\b|\bWK\b/,iso:/\bISO\b/,tsangan:/tsangan|\bWKL\b|winkeyless/i,hhkb:/\bHHKB\b/i,'split-backspace':/split[- ]backspace/i,
+  'split-space':/split[- ]space(?:[- ]?bar)?\b/i,'split-rshift':/split[- ](?:right[- ])?shift/i};
+// Running descriptions mention other layouts in passing ("a Tsangan version is also available"), so only the title and
+// short lines about layout support count.
+export const layoutLines=text=>String(text||'').split('\n').filter(l=>l.length<=160&&/layout|support|compatib|bottom row|spacebar|plate option/i.test(l)).join('\n');
+export function layoutOptsIn(text) {
+  const t=String(text||''), out=LAYOUT_OPTS.filter(k=>LAYOUT_OPT_TEXT[k].test(t));
+  return out.length?out:null;
+}
 export function extractSpecs(p,cat) {
   const title=plain(p.title), text=plain(p.body_html), tags=(p.tags||[]).join(' '), all=title+'\n'+text+'\n'+tags;
   const result={}; const set=(k,v)=>{if(v!==null&&v!==undefined&&v!=='') result[k]=v;};
@@ -82,6 +121,9 @@ export function extractSpecs(p,cat) {
     set('layout',first(title+' '+text,/\b(40|60|65|70|75|80|85|90|95|96|98|100)\s*(?:%|percent)/i)||(/\bTKL\b/i.test(title)?'80':null));
     set('material',first(text,/(?:case material|plate material|material)\s*:\s*([^\n;]{2,65})/i));
     set('mount',first(text,/(?:mounting style|mounting type|mounting method|mount)\s*:\s*([^\n;]{2,65})/i));
+    set('mounts',mountsIn(title+'\n'+text,result.mount));
+    set('firmware',firmwareIn(all));
+    set('layoutOpts',layoutOptsIn(title+'\n'+layoutLines(text)));
     if(/hot[ -]?swap/i.test(all)) result.hotswap=true;
     if(/\bsolder(?:ed)? (?:pcb|version)|solder only/i.test(all)) result.hotswap=false;
     set('connection',/tri[ -]?mode/i.test(all)?'Tri-mode':/bluetooth/i.test(all)?'Bluetooth':/wired/i.test(title)?'Wired':null);
@@ -252,10 +294,12 @@ export function boardName(title,brand,retailer='') {
 const cheapest=vs=>vs.slice().sort((a,b)=>a.price-b.price)[0];
 // Kept compact: the site fills catalogId, photo.page and checkedAt back in when it loads the file.
 const base=(p,v,extra)=>({id:p.id,brand:cleanBrand(p),name:shortName(p.name,cleanBrand(p)),price:v.price,photo:{img:v.image||p.images[0]},retailers:[{name:p.retailer,url:v.url,available:true}],...extra});
-// Builder layouts are 60, 65, 75, TKL and full-size. Other published layouts stay in the directory only.
+// Builder layouts are 40, 60, 65, 75, TKL and full-size. Other published layouts stay in the directory only.
+// A staggered 40% (40 to 49%) is drawn as one 40% board; ortholinear and split boards stay out (NO_DRAW).
 export function builderLayout(raw,name='') {
   if(/\bTKL\b|tenkeyless/i.test(name)) return {layout:'tkl',label:'TKL'};
   const n=Number(raw); if(!n) return null;
+  if(n>=40&&n<=49) return {layout:'40',label:'40%'};
   if(n===60||n===65||n===75) return {layout:String(n),label:n+'%'};
   if(n===70) return {layout:'75',label:'70%'};
   if(n===80) return {layout:'tkl',label:'TKL'};
@@ -270,12 +314,15 @@ export function layoutsInName(name) {
   const found=new Set(), t=String(name);
   if(/\btkl\b|tenkeyless/i.test(t)||/(?<=[a-z0-9])TKL(?![a-z])/.test(t)) found.add('tkl');
   if(/full[- ]?size/i.test(t)||/(?<![\d.])1800(?!\d)/.test(t)) found.add('full');
+  if(/(?<![\d.])4\d\s?(?:%|percent)/i.test(t)) found.add('40');
   for(const m of t.matchAll(/(?<![\d.])(60|61|64|65|66|67|68|70|75|80|81|82|83|84|87|96|98|100|104|108)(?:\s?(?:%|percent)|(?![\d.]))(?!\s?(?:g|gf|mm|hz|mah|k|keycaps?|pcs|switch|pin)\b)/gi)) found.add(layoutFromName(m[1]+'%').layout);
   return [...found];
 }
 export function layoutFromName(name) {
   if(/\btkl\b|tenkeyless/i.test(name)||/(?<=[a-z0-9])TKL(?![a-z])/.test(name)) return {layout:'tkl',label:'TKL'};
   if(/full[- ]?size/i.test(name)||/(?<![\d.])1800(?!\d)/.test(name)) return {layout:'full',label:'Full-size'};
+  // A 40% is only read from an explicit percentage: a bare 40 in a name is as often a key count or a model number.
+  if(/(?<![\d.])4\d\s?(?:%|percent)/i.test(name)) return {layout:'40',label:'40%'};
   // The size can be glued to the model name ("Zoom75", "Stacked65", "Rekt1800"), so only a digit or dot may not come before it.
   const m=String(name).match(/(?<![\d.])(60|61|64|65|66|67|68|70|75|80|81|82|83|84|87|96|98|100|104|108)(?:\s?(?:%|percent)|(?![\d.]))(?!\s?(?:g|gf|mm|hz|mah|k|keycaps?|pcs|switch|pin)\b)/i);
   if(!m) return null; const n=+m[1];
@@ -300,8 +347,35 @@ export function switchSystemOf(text) {
 }
 const MX_STATED=/\bmx\b|cherry mx|mx[- ]stem|\b[35]\s?-?pins?\b/i;
 const UNSUPPORTED_SYSTEM=/topre|\bEC\b|electro.?capacitive|\balps\b/i;
-const NO_DRAW=/ortho|\bsplit\b|alice|\bnumpad\b|number ?pad|key ?pad|macro ?pad|\bpad\b|ergo|one[- ]handed|foldable|(?<![\d.])(?:[1-9]|[1-4]\d|5[0-5])\s?%|(?<![\d.])(?:2[0-9]|3[0-9]|4[0-9])[- ]?keys?\b|(?<![\d.])4\d(?![\d.])(?!\s?(?:g|gf|mm|hz|mah|k|m|keycaps?|pcs|switch))|\b(?:xd24|bm16\w*|bm43\w*|jj\d+\w*|cospad|planck|preonic|corne|lily58|kyria|ergodox|dactyl|sofle|ergodone)\b/i;
+// Staggered 40% boards (40 to 49%, or 40 to 49 keys) are drawn; smaller boards, 50% boards (nearly all ortholinear),
+// ortholinear, split and ergonomic boards are not.
+const NO_DRAW=/ortho|\bsplit\b(?![- ](?:space|backspace|right|shift|bar|plate|top|cut))|alice|\bnumpad\b|number ?pad|key ?pad|macro ?pad|\bpad\b|ergo|one[- ]handed|foldable|(?<![\d.])(?:[1-9]|[1-3]\d|5[0-5])\s?%|(?<![\d.])(?:2[0-9]|3[0-9])[- ]?keys?\b|\b(?:xd24|bm16\w*|bm40\w*|jj\d+\w*|cstc40|cospad|planck|preonic|corne|lily58|kyria|ergodox|dactyl|sofle|ergodone|pi40|levinson|nori|lets split)\b/i;
 const drawable=(raw,name)=>builderLayout(raw,name)||layoutFromName(name);
+// The 60% bottom rows a variant names in any of its options ("Layout: Tsangan", "Blocker: WKL", "Plate: 7U",
+// "Version: Hotswap 6.25U"). "Standard" counts only under a layout, bottom row, spacebar or blocker option.
+const ROW_STYLE={ansi:'ansi',tsangan:'tsangan',hhkb:'hhkb'};
+function rowStyles(p,v) {
+  const names=(p.options||[]).map(o=>o.name), out=new Set();
+  String(v&&v.name!=='Default Title'?v.name:'').split(' / ').forEach((seg,i)=>{
+    for(const x of layoutOptsIn(seg)||[]) if(ROW_STYLE[x]) out.add(x);
+    if(/6\.25\s?u\b/i.test(seg)) out.add('ansi');
+    if(/(?<![\d.])7\s?u\b/i.test(seg)) out.add('tsangan');
+    if(/^standard\b/i.test(seg)&&/layout|bottom row|spacebar|blocker/i.test(names[i]||'')) out.add('ansi');
+  });
+  return [...out];
+}
+// Mount, firmware and layout options for a board part (a kit, case, PCB or plate), from the description when the refresh
+// read one, else from the name and published spec lines. The variants a part stands for (one for a PCB or plate,
+// every variant on sale for a kit or case) decide its layout options when any of them names one, so a listing's
+// description never adds a row its variants don't offer. Keys with no published value are left out.
+function boardFacts(p,v,vs=[v]) {
+  const s=p.specs, pub=Object.entries(p.publishedSpecs||{}).map(([k,x])=>k+': '+x).join('\n'), vn=v&&v.name!=='Default Title'?v.name:'';
+  const named=[...new Set(vs.flatMap(x=>[...rowStyles(p,x),...(layoutOptsIn(x&&x.name!=='Default Title'?x.name:'')||[])]))];
+  const lo=named.length?[...new Set([...named,...(layoutOptsIn(p.name)||[])])]:[...new Set([...(s.layoutOpts||[]),...(layoutOptsIn(p.name+'\n'+layoutLines(pub))||[])])];
+  const out={mounts:s.mounts??mountsIn(p.name+'\n'+pub,s.mount??published(p,/mount/i)),firmware:s.firmware??firmwareIn(p.name+'\n'+vn+'\n'+pub),layoutOpts:lo.length?LAYOUT_OPTS.filter(k=>lo.includes(k)):null};
+  for(const k in out) if(!out[k]) delete out[k];
+  return out;
+}
 const hotOf=t=>{t=String(t||'');const h=/hot[- ]?swap/i.test(t),s=/\bsolder(?:ed|able)?\b|soldering/i.test(t);return h&&!s?true:s&&!h?false:null};
 const connOf=t=>{t=String(t||'');return /tri[- ]?mode/i.test(t)?'Tri-mode':/bluetooth/i.test(t)?'Bluetooth':/2\.4\s?g/i.test(t)?'2.4G':/wireless|dual[- ]?mode/i.test(t)?'Wireless':/\bwired\b/i.test(t)?'Wired':null};
 const MATERIALS=[['Carbon fiber',/carbon|\bcf\b/i],['FR4',/fr-?4/i],['Brass',/brass/i],['Aluminum',/alumin(?:i)?um|\balu\b|\bal\b/i],['POM',/\bpom\b|delrin/i],['PC',/polycarbonate|\bpc\b/i]];
@@ -552,7 +626,7 @@ function keyboardsRule(p) {
   if(NO_DRAW.test(n)) return {reason:"layout the builder can't draw"};
   if(LOCALE.test(n)) return {reason:'non-ANSI layout'};
   const L=drawable(s.layout,n)||layoutFromName(published(p,/layout|^size$/i)||'');
-  if(!L) return {reason:[40,85,90,95].includes(+s.layout)?"layout the builder can't draw":'no layout'};
+  if(!L) return {reason:[85,90,95].includes(+s.layout)?"layout the builder can't draw":'no layout'};
   const vs0=pool(p); if(!vs0.length) return {reason:'no board variant'};
   const vs=vs0.filter(v=>!LOCALE.test(v.name)).length?vs0.filter(v=>!LOCALE.test(v.name)):vs0;
   const bare=cheapest(vs.filter(v=>boardVariant(v)&&/bare ?bones?|barebone|\bkit\b|no switch|without switch|\bdiy\b/i.test(v.name)));
@@ -560,7 +634,7 @@ function keyboardsRule(p) {
   const boards=vs.filter(boardVariant); if(!boards.length) return {reason:'no board variant'};
   const v=bare||cheapest(boards);
   const board=boardName(n,cleanBrand(p),p.retailer), switchSystem=switchSystemOf(n)||s.switchSystem||(LOW_PROFILE_MODELS.test(n)?'low-profile':null);
-  return {parts:{...base(p,v),cat:'case',brand:board.brand,name:board.name,layout:L.layout,layoutLabel:L.label,keys:null,knob:/\bknob\b/i.test(n),mount:tidy(s.mount??published(p,/mount/i)),material:tidy(s.material??published(p,/case material|^material$/i)),conn:s.connection||connOf(n)||connOf(v.name)||'Not listed',colors:colorsOf(p,v),assembled,...(switchSystem?{switchSystem}:{}),
+  return {parts:{...base(p,v),cat:'case',brand:board.brand,name:board.name,layout:L.layout,layoutLabel:L.label,keys:null,knob:/\bknob\b/i.test(n),mount:tidy(s.mount??published(p,/mount/i)),material:tidy(s.material??published(p,/case material|^material$/i)),conn:s.connection||connOf(n)||connOf(v.name)||'Not listed',colors:colorsOf(p,v),assembled,...(switchSystem?{switchSystem}:{}),...boardFacts(p,v,boards),
     kit:{pcb:{hotswap:s.hotswap??hotOf(n+' '+v.name),pins:null,led:null,rgb:null,stabs:[]},plate:null,stabs:null},
     blurb:assembled?'Sold assembled. Switches and keycaps you pick here are swaps or upgrades.':'Kit listing. Check the store for exactly what is included.'}};
 }
@@ -577,15 +651,20 @@ function casesRule(p) {
   if(NO_DRAW.test(n)) return {reason:"layout the builder can't draw"};
   if(LOCALE.test(n)) return {reason:'non-ANSI layout'};
   const L=drawable(s.layout,n);
-  if(!L) return {reason:[40,85,90,95].includes(+s.layout)?"layout the builder can't draw":'no layout'};
+  if(!L) return {reason:[85,90,95].includes(+s.layout)?"layout the builder can't draw":'no layout'};
   const vs0=pool(p); if(!vs0.length) return {reason:'no case variant'};
   const vs=vs0.filter(v=>!LOCALE.test(v.name)).length?vs0.filter(v=>!LOCALE.test(v.name)):vs0;
   const v=cheapest(vs), switchSystem=switchSystemOf(n)||s.switchSystem||null;
-  return {parts:{...base(p,v),cat:'case',layout:L.layout,layoutLabel:L.label,keys:null,knob:/\bknob\b/i.test(n),mount:tidy(s.mount??published(p,/mount/i)),material:tidy(s.material??published(p,/case material|^material$/i))??caseMaterial(n,v.name),conn:'Depends on PCB',colors:colorsOf(p,v),assembled:false,kit:null,...(switchSystem?{switchSystem}:{}),fit:null,
+  return {parts:{...base(p,v),cat:'case',layout:L.layout,layoutLabel:L.label,keys:null,knob:/\bknob\b/i.test(n),mount:tidy(s.mount??published(p,/mount/i)),material:tidy(s.material??published(p,/case material|^material$/i))??caseMaterial(n,v.name),conn:'Depends on PCB',colors:colorsOf(p,v),assembled:false,kit:null,...(switchSystem?{switchSystem}:{}),fit:null,...boardFacts(p,v,vs),
     blurb:'Case only. Check the store for what is included.'}};
 }
 const PCB_ACCESSORY=/socket|diode|light control|diffuser|\bhalo\b|spoof|controller|converter|adapter|connector|\busb\b|mcu|programm?er|capacitor|keycaps?\b/i;
 // Variants in a PCB or plate listing often differ by hot-swap/solder or by material, and a finder needs each: one part per distinct value.
+// A PCB or plate sold in several 60% bottom rows ("Layout: Standard / Tsangan") is one part per row too, so a Tsangan
+// plate is not lost behind a cheaper standard one. The key pairs the first value with the variant's row style.
+function variantStyle(p,v) {const o=rowStyles(p,v); return o.length?o.sort().join('+'):null}
+const withStyle=(p,keyOf)=>v=>{const a=keyOf(v), b=variantStyle(p,v); return a==null&&b==null?null:JSON.stringify([a,b])};
+const firstKey=({key,v})=>({key:key&&JSON.parse(key)[0],v});
 function splitBy(vs,keyOf,max=6) {
   const groups=new Map();
   for(const v of vs) {const k=keyOf(v); if(!groups.has(k)||v.price<groups.get(k).price) groups.set(k,v)}
@@ -609,8 +688,8 @@ function pcbRule(p) {
   if(!vs.length) return {accessory:true};
   const L=layoutsInName(n).length>1?null:layoutFromName(n)||builderLayout(s.layout,n), switchSystem=switchSystemOf(n)||s.switchSystem||null;
   const hot=v=>hotOf(v.name)??hotOf(n)??s.hotswap??null;
-  const groups=splitBy(vs,hot);
-  const parts=groups.map(({key,v})=>({...base(p,v),id:groups.length>1?p.id+'~'+v.id:p.id,name:shortName(n,cleanBrand(p))+(vs.length>1&&v.name!=='Default Title'?' · '+v.name:''),cat:'pcb',layout:L?L.layout:null,hotswap:key,pins:null,led:null,rgb:null,stabs:null,conn:connOf(v.name)||s.connection||connOf(n)||'Not listed',fit:null,...(switchSystem?{switchSystem}:{}),
+  const groups=splitBy(vs,withStyle(p,hot));
+  const parts=groups.map(firstKey).map(({key,v})=>({...base(p,v),id:groups.length>1?p.id+'~'+v.id:p.id,name:shortName(n,cleanBrand(p))+(vs.length>1&&v.name!=='Default Title'?' · '+v.name:''),cat:'pcb',layout:L?L.layout:null,hotswap:key,pins:null,led:null,rgb:null,stabs:null,conn:connOf(v.name)||s.connection||connOf(n)||'Not listed',fit:null,...(switchSystem?{switchSystem}:{}),...boardFacts(p,v),
     blurb:'Published retailer listing. Check the store for the exact layout and firmware.'}));
   return {soldOut,parts:parts.length===1?parts[0]:parts};
 }
@@ -623,8 +702,8 @@ function plateRule(p) {
   const vs=vs0.filter(v=>!LOCALE.test(v.name)).length?vs0.filter(v=>!LOCALE.test(v.name)):vs0;
   const L=layoutsInName(n).length>1?null:layoutFromName(n)||builderLayout(s.layout,n), switchSystem=switchSystemOf(n)||s.switchSystem||(/magnetic/i.test(vs.map(v=>v.name).join(' '))?'hall-effect':null);
   const mat=v=>plateMaterial(v.name,n,s.material,published(p,/plate material|^material$/i));
-  const groups=splitBy(vs,mat);
-  const parts=groups.map(({key,v})=>({...base(p,v),id:groups.length>1?p.id+'~'+v.id:p.id,name:shortName(n,cleanBrand(p))+(vs.length>1&&v.name!=='Default Title'?' · '+v.name:''),cat:'plate',layout:L?L.layout:null,material:key,plateStabs:null,fit:null,...(switchSystem?{switchSystem}:{}),
+  const groups=splitBy(vs,withStyle(p,mat));
+  const parts=groups.map(firstKey).map(({key,v})=>({...base(p,v),id:groups.length>1?p.id+'~'+v.id:p.id,name:shortName(n,cleanBrand(p))+(vs.length>1&&v.name!=='Default Title'?' · '+v.name:''),cat:'plate',layout:L?L.layout:null,material:key,plateStabs:null,fit:null,...(switchSystem?{switchSystem}:{}),...(({mounts,firmware,...f})=>f)(boardFacts(p,v)),
     blurb:'Published retailer listing. Check the store for the exact cutout and stabilizer fit.'}));
   return {parts:parts.length===1?parts[0]:parts};
 }

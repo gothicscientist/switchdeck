@@ -24,7 +24,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: main
+          # main on the schedule and on pushes; a manual run on a branch refreshes that branch's data
+          ref: ${{ github.ref_name }}
           fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
@@ -59,8 +60,8 @@ jobs:
           git add -A data/
           if ! git diff --cached --quiet; then
             git commit -m "Refresh sourced keyboard parts catalog"
-            git pull --rebase origin main
-            git push
+            git pull --rebase origin "$GITHUB_REF_NAME"
+            git push origin HEAD:"$GITHUB_REF_NAME"
           fi
       - name: Refresh summary
         if: always()
