@@ -339,6 +339,11 @@ globalThis.SWITCHDECK_SOUND_VIDEOS={
   "video": "EyYchlAqU3w",
   "title": "Gateron Oil King Switches Sound Test"
  },
+ "gateronoilkingpinksilent": {
+  "video": "9VwGG_0NVj4",
+  "title": "Gateron Oil King Pink Sound Test - Amazing Silent Linear switches!",
+  "creator": "Click and Thock"
+ },
  "gateronoilkingv2": {
   "video": "WF3WHzxA2fU",
   "title": "Gateron Oil King | Lucky65 V2 | sound test",
