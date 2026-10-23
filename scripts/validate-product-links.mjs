@@ -29,5 +29,5 @@ assert.equal(report.catalogProducts,count);
 assert.deepEqual(report.missing.map(p=>p.id).sort(),curated.filter(p=>!linksFor(p,registry).length).map(p=>p.id).sort());
 const html=await readFile(new URL('index.html',root),'utf8');
 assert.doesNotMatch(html,/const SHOPS|const STORES_FOR|amazon\.com\/s\?k=|function searchLink/);
-assert.ok(html.indexOf('assets/product-links.js')<html.indexOf('assets/directory.js'));
+assert.ok(html.indexOf('assets/product-links.js')<html.indexOf('<script>'));
 console.log(`Checked ${count} product listings and ${Object.keys(registry).length} link groups; ${report.amazonProducts} Amazon-first products. ${report.missing.length} older generic/historical parts explicitly have no confirmed purchase link.`);

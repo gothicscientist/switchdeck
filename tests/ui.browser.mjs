@@ -153,6 +153,8 @@ try {
   const sharePage=await context.newPage();
   sharePage.on('pageerror',error=>errors.push(error.message));
   await sharePage.goto(shareURL,{waitUntil:'domcontentloaded'});
+  // The results open as soon as the catalog has loaded, which is after DOMContentLoaded.
+  await sharePage.waitForFunction(()=>!document.getElementById('results').hidden);
   assert.equal(await sharePage.evaluate(()=>buildKey(resView(resList[resIdx]).b)),exactBuild);
   assert.equal(await sharePage.evaluate(()=>document.activeElement.id),'rclose');
   await sharePage.evaluate(()=>openShare(SwitchdeckShare.encode(resView(resList[resIdx]).b,quizAns,QUESTIONS)));

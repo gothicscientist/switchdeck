@@ -29,7 +29,7 @@ There is no brand blue. Status colours are muted so they sit next to product pho
 
 ## Type
 
-- Host Grotesk (Google Fonts, 400 to 800) for everything: UI, headings, prices and the drawn keycap legends. It keeps Inter's neutral, legible shape with a little more character in the curves and terminals.
+- Host Grotesk (variable, 400 to 800, self-hosted in assets/fonts so first paint never waits on another site) for everything: UI, headings, prices and the drawn keycap legends. It keeps Inter's neutral, legible shape with a little more character in the curves and terminals.
 - Prices and counts use tabular figures. Monospace only appears where the text is literally code (the build code box).
 - Sentence case everywhere. No all-caps labels and no eyebrow labels above headings.
 

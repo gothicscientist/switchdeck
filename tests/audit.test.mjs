@@ -4,12 +4,14 @@ import {readFile,readdir} from 'node:fs/promises';
 import vm from 'node:vm';
 import {getJSON,feedAllowed} from '../scripts/catalog-network.mjs';
 import {admit,normalize,SOURCES} from '../scripts/catalog-lib.mjs';
+import {loadFullCatalog} from '../scripts/catalog-pack.mjs';
 
 const html=await readFile(new URL('../index.html',import.meta.url),'utf8');
 const inline=[...html.matchAll(/<script(?![^>]*application\/ld\+json)(?:\s[^>]*)?>([\s\S]*?)<\/script>/g)].map(m=>m[1]).filter(Boolean).join('\n');
 async function engine(storage={}){
   const ctx={URL,window:{},localStorage:{getItem:k=>storage[k]??null},innerWidth:1300,btoa:s=>Buffer.from(s,'binary').toString('base64'),atob:s=>Buffer.from(s,'base64').toString('binary')};vm.createContext(ctx);
-  for(const f of ['assets/product-links.js','data/product-links.js','assets/part-names.js','data/builder-catalog.js'])vm.runInContext(await readFile(new URL('../'+f,import.meta.url),'utf8'),ctx);
+  for(const f of ['assets/product-links.js','data/product-links.js','assets/part-names.js'])vm.runInContext(await readFile(new URL('../'+f,import.meta.url),'utf8'),ctx);
+  ctx.window.SWITCHDECK_CATALOG=await loadFullCatalog(new URL('../data/',import.meta.url));
   vm.runInContext(inline.slice(0,inline.indexOf('const LAYOUTS =')),ctx);
   vm.runInContext(inline.slice(inline.indexOf('function partName('),inline.indexOf('let toastT;'))+inline.match(/function decodeBuild\(code\)\{[^\n]+/)[0]+'\n'+inline.match(/const storeOf[^\n]+/)[0],ctx);
   vm.runInContext(inline.slice(inline.indexOf('const B_MIN='),inline.indexOf('/*COMBOS-END*/')),ctx);

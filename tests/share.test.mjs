@@ -2,13 +2,13 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import vm from 'node:vm';
+import {loadFullCatalog} from '../scripts/catalog-pack.mjs';
 
 const read=f=>readFile(new URL('../'+f,import.meta.url),'utf8');
 const html=await read('index.html');
 const ctx={};vm.createContext(ctx);
 vm.runInContext(await read('assets/share-code.js'),ctx);
-vm.runInContext(await read('data/builder-catalog.js').then(s=>s.replace(/^window\./m,'globalThis.')),ctx);
-const S=ctx.SwitchdeckShare, CAT=ctx.SWITCHDECK_CATALOG;
+const S=ctx.SwitchdeckShare, CAT=await loadFullCatalog(new URL('../data/',import.meta.url));
 const parts=['cases','pcbs','plates','switches','keycaps','stabs','extras'].flatMap(k=>CAT[k]||[]);
 // The finder questions as the page defines them: keys, option values and which one is the budget.
 const qsrc=html.slice(html.indexOf('const QUESTIONS = ['),html.indexOf('\n];',html.indexOf('const QUESTIONS = ['))+3);

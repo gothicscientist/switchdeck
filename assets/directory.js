@@ -88,5 +88,7 @@
       const add=$('#directory-add');if(add)add.onclick=()=>{dialog.close();window.SwitchdeckBuilder.add(p.id,v.url)};wireImages(dialog);
     }catch(e){if(request!==detailRequest)return;dialog.innerHTML=`<button class="btn directory-close">Close</button><p role="alert">Details couldn’t load. You can still view the original listing.</p><a class="btn primary" href="${esc(globalThis.SwitchdeckLinks.affiliateFor(safeURL(item.url)))}" target="_blank" rel="noopener noreferrer">Visit retailer ↗</a>`;dialog.querySelector('button').onclick=()=>dialog.close();dialog.querySelector('button').focus({preventScroll:true})}
   }
-  window.SwitchdeckDirectory={open};
+  // Starts the downloads open() needs, so the page is ready by the time the link is used.
+  function prefetch(){state.loading ||= Promise.all([json('catalog-index.json'),json('catalog-manifest.json')]);state.loading.catch(()=>{state.loading=null})}
+  window.SwitchdeckDirectory={open,prefetch};
 })();

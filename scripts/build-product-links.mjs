@@ -1,5 +1,5 @@
 import {readFile,writeFile} from 'node:fs/promises';
-import vm from 'node:vm';
+import {loadFullCatalog} from './catalog-pack.mjs';
 import {fileURLToPath} from 'node:url';
 import path from 'node:path';
 import '../assets/affiliates.js';
@@ -24,8 +24,7 @@ export async function buildProductLinks(){
   }
   for(const p of products){const links=orderLinks(groups.get(identity(p)));if(links.length>1)registry[p.id]=links}
   const byId=new Map(products.map(p=>[p.id,p]));
-  const catalogCtx={window:{}};vm.runInNewContext(await readFile(new URL('data/builder-catalog.js',root),'utf8'),catalogCtx);
-  const cat=catalogCtx.window.SWITCHDECK_CATALOG;
+  const cat=await loadFullCatalog(new URL('data/',root));
   for(const p of curated){
     const meta=cat.curated?.[p.id];
     registry[p.id]=orderLinks([...(meta?.retailers||[]),...(p.photo?.page?[{name:p.brand,url:p.photo.page}]:[])]);

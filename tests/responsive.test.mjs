@@ -12,7 +12,7 @@ test('featured keyboards remain visible and separated above the card across view
     const rect={width:W,height:H,top:0};
     const card={getBoundingClientRect:()=>({top:cardTop,left:20,right:W-20})};
     const boards={a:{layout:'65',photo:{ar:2.8}},b:{layout:'75',photo:{ar:3}},c:{layout:'tkl',photo:{ar:2.6}}};
-    const ctx={view:'finder',initField(){},introDone:true,shownCombos:null,evalAns:()=>({list:[],byCase:new Map()}),quizAns:{},
+    const ctx={view:'finder',initField(){},introDone:true,shownCombos:null,fieldReady:()=>true,fieldRes:()=>({list:[],byCase:new Map()}),quizAns:{},
       document:{getElementById:id=>id==='qwrap'?card:{getBoundingClientRect:()=>rect,classList:{add(){},remove(){}},offsetWidth:W},querySelector:s=>s==='.top .bar'?{getBoundingClientRect:()=>({bottom:topBar})}:null},
       FEAT_SCALE:1,MFEAT_SCALE:2.2,LW:{'65':.72,'75':.78,tkl:.9},BYID:boards,FEAT_BOOST:{},FEATURED_IDS:['a','b','c'],
       cutoutIds:()=>new Set(['a','b','c']),MAX_BG:12,MAX_BG_MOBILE:6,MSLOTS:[],FIELD_SLOTS:[],bgSeed:0,fieldEls:{},lastBg:'',featHold:null,performance,

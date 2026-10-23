@@ -3,9 +3,10 @@ import {createHash} from 'node:crypto';
 import {fileURLToPath} from 'node:url';
 import path from 'node:path';
 import {FAQ} from './seo-content.mjs';
+import {buildBoot,fieldPhotoUrl} from './boot-data.mjs';
 
 const root=fileURLToPath(new URL('../',import.meta.url));
-const dist=path.join(root,'dist');
+const dist=process.env.THOCK_DIST?path.resolve(process.env.THOCK_DIST):path.join(root,'dist');
 await rm(dist,{recursive:true,force:true});
 await mkdir(dist,{recursive:true});
 // Publish only browser assets. Importer caches, tooling, dependencies and tests stay off the public site.
@@ -13,7 +14,7 @@ for(const file of ['index.html','CNAME','assets','data','robots.txt','manifest.w
 const manifest=JSON.parse(await readFile(path.join(dist,'data/catalog-manifest.json'),'utf8'));
 let html=await readFile(path.join(dist,'index.html'),'utf8');
 // Every deploy gets content-addressed browser assets, avoiding mixed old/new scripts in a warm browser cache.
-const refs=[...html.matchAll(/(?:src|href)=["']((?:assets|data)\/[^"'?]+\.(?:js|css|svg))["']/g)].map(m=>m[1]);
+const refs=[...html.matchAll(/(?:src|href)=["']((?:assets|data)\/[^"'?]+\.(?:js|css|svg|json|woff2))["']/g)].map(m=>m[1]);
 for(const file of new Set(refs)){
   const hash=createHash('sha256').update(await readFile(path.join(dist,file))).digest('hex').slice(0,12);
   html=html.replaceAll('"'+file+'"','"'+file+'?v='+hash+'"').replaceAll("'"+file+"'","'"+file+'?v='+hash+"'");
@@ -69,8 +70,17 @@ const directoryIntro=`<header class="directory-head"><h1>Parts directory</h1></h
 
 // Clean view URLs: GitHub Pages serves /build from build.html, so each view gets a copy of the page and a direct link
 // or reload opens it with a 200. Any other path falls back to 404.html, which sends it to the nearest real page.
-html=headFor('finder');
-await writeFile(path.join(dist,'index.html'),html);
+// The finder page also carries what it paints from before the parts catalog has loaded (scripts/boot-data.mjs) and asks
+// for its first pictures at once. The other views need the whole catalog before they show anything, so they skip both.
+const boot=await buildBoot(root);
+const photos=boot.pool.slice(0,3).map(id=>boot.cat.cases.find(c=>c.id===id)?.photo).filter(Boolean);
+const preload=[...new Set(photos.map(p=>new URL(p.img).origin))].map(o=>`<link rel="preconnect" href="${o}">`).join('\n')+'\n'+
+  photos.map(p=>`<link rel="preload" as="image" href="${escHtml(fieldPhotoUrl(p))}" fetchpriority="high">`).join('\n');
+const bootTag=`<script>window.THOCK_BOOT=${JSON.stringify(boot).replace(/</g,'\\u003c')}</script>`;
+const bare=h=>h.replace('<!--thock-preload-->','').replace('<!--thock-boot-->','');
+const finder=headFor('finder').replace('<!--thock-preload-->',()=>preload).replace('<!--thock-boot-->',()=>bootTag);
+html=bare(html);
+await writeFile(path.join(dist,'index.html'),finder);
 for(const view of ['build','saved','directory']){
   let h=headFor(view);
   if(view==='directory')h=h.replace('<div class="wrap" id="directory-root"></div>','<div class="wrap" id="directory-root">'+directoryIntro+'</div>');
