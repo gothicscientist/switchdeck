@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import vm from 'node:vm';
-import {normalize,extractSpecs,category,packQuantity,builderPart,boardName,SOURCES} from '../scripts/catalog-lib.mjs';
+import {normalize,extractSpecs,category,packQuantity,builderPart,boardName,SOURCES,mountsIn,firmwareIn,layoutOptsIn} from '../scripts/catalog-lib.mjs';
 import {loadFullCatalog} from '../scripts/catalog-pack.mjs';
 
 const source=SOURCES[1];
@@ -73,7 +73,11 @@ test('site scripts compile and builder rounds switch purchases to whole packs',a
 test('builder admits kits, keycap sets and stabilizers only with the facts it needs',()=>{
   const kb=(changes={})=>normalize(raw({title:'Example65 Barebones Keyboard Kit',product_type:'Keyboard Kit',vendor:'Example',body_html:'<li>Layout: 65%</li><li>Hot-swap PCB</li><li>Mount: Gasket</li>',options:[{name:'Color',values:['Black','White']}],variants:[{id:1,title:'Black',price:'129',available:true},{id:2,title:'White',price:'129',available:true}],...changes}),source,'2026-10-19T00:00:00Z');
   const k=builderPart(kb());assert.equal(k.cat,'case');assert.equal(k.layout,'65');assert.equal(k.kit.pcb.hotswap,true);assert.equal(k.kit.plate,null);assert.equal(k.kit.stabs,null);assert.deepEqual(k.colors.map(c=>c[0]),['Black','White']);
-  assert.equal(builderPart(kb({title:'Example40 Keyboard Kit',body_html:'40% layout'})),null);
+  // A staggered 40% is drawn; a 50% (nearly always ortholinear) and ortholinear 40% boards are not.
+  assert.equal(builderPart(kb({title:'Example40 Keyboard Kit',body_html:'40% layout'})).layout,'40');
+  assert.equal(builderPart(kb({title:'Example50 Keyboard Kit',body_html:'50% layout'})),null);
+  assert.equal(builderPart(kb({title:'Example40 Ortho Keyboard Kit',body_html:'40% layout'})),null);
+  assert.equal(builderPart(kb({title:'Planck Keyboard Kit',body_html:'40% layout'})),null);
   // Behavior change: HE boards are admitted with switchSystem set (they were excluded before).
   assert.equal(builderPart(kb({title:'Example65 Magnetic HE Keyboard'})).switchSystem,'hall-effect');
   assert.equal(builderPart(kb({title:'Example65 Keyboard Kit (UK ISO Layout)'})),null);
@@ -157,4 +161,35 @@ test('switch sound character comes only from published housing and stem material
   assert.equal(f('PC','Nylon','POM'),null,'classic mixed housing stays balanced');
   assert.equal(f(null,null,null),null,'nothing published, nothing guessed');
   assert.equal(f('Proprietary ink','Proprietary ink','P3'),null,'unknown materials stay unknown');
+});
+
+test('mount styles are read only where the store names them as a mount',()=>{
+  assert.deepEqual(mountsIn('Gasket-mounted with poron gaskets and a top mount option'),['gasket','top']);
+  assert.deepEqual(mountsIn('The plate sits on gummy o-rings'),['o-ring']);
+  assert.deepEqual(mountsIn('Leaf spring structure for a soft bottom out'),['leaf-spring']);
+  assert.equal(mountsIn('Includes gasket strips and a top case in aluminum'),null);
+  assert.deepEqual(mountsIn('','Top Mount, Silicone PCB Gasket'),['gasket','top']);
+  assert.equal(mountsIn('','There is no pressure from the top half of the case'),null);
+});
+test('firmware is read from the names stores use, and "via" as a word is not VIA',()=>{
+  assert.deepEqual(firmwareIn('QMK/VIA compatible, remap with usevia.app'),['qmk','via']);
+  assert.deepEqual(firmwareIn('Runs ZMK firmware over Bluetooth'),['zmk']);
+  assert.deepEqual(firmwareIn('Supports Vial for live remapping'),['vial']);
+  assert.equal(firmwareIn('Connect via Bluetooth or via the USB-C cable'),null);
+});
+test('60% layout options come from the listing, and a variant names its own',()=>{
+  assert.deepEqual(layoutOptsIn('Supports ANSI, Tsangan and HHKB with split backspace and split spacebar'),['ansi','tsangan','hhkb','split-backspace','split-space']);
+  assert.deepEqual(layoutOptsIn('WKL bottom row'),['tsangan']);
+  const pcb=normalize(raw({title:'Example60 PCB',product_type:'PCB',vendor:'Example',body_html:'<p>Hot-swap PCB. Supports ANSI and Tsangan bottom rows. QMK and VIA.</p>',options:[{name:'Layout',values:['ANSI','HHKB']}],
+    variants:[{id:1,title:'HHKB',price:'60',available:true}]}),source,'2026-10-19T00:00:00Z');
+  const part=builderPart(pcb);
+  assert.deepEqual(part.layoutOpts,['hhkb']);
+  assert.deepEqual(part.firmware,['qmk','via']);
+});
+test('a board names its mount, firmware and layout options when the store does, and has none of them otherwise',()=>{
+  const kb=(changes={})=>normalize(raw({title:'Example60 Barebones Keyboard Kit',product_type:'Keyboard Kit',vendor:'Example',options:[{name:'Color',values:['Black']}],variants:[{id:1,title:'Black',price:'129',available:true}],...changes}),source,'2026-10-19T00:00:00Z');
+  const a=builderPart(kb({body_html:'<li>Layout: 60%</li><li>Mount: Gasket</li><p>Tsangan layout. QMK/VIA supported.</p>'}));
+  assert.deepEqual([a.mounts,a.firmware,a.layoutOpts],[['gasket'],['qmk','via'],['tsangan']]);
+  const b=builderPart(kb({body_html:'<li>Layout: 60%</li>'}));
+  assert.ok(!('mounts' in b)&&!('firmware' in b)&&!('layoutOpts' in b));
 });

@@ -4,7 +4,7 @@ if(process.env.GITHUB_ACTIONS) process.on('uncaughtException',e=>{console.log(':
 import {readFile} from 'node:fs/promises';
 import {loadFullCatalog} from './catalog-pack.mjs';
 import {parseVideosFile} from './sound-videos.mjs';
-import {digest,requiredFields,EXTRA_KINDS,SWITCH_SYSTEMS,soundFromMaterials,MOD_TYPES} from './catalog-lib.mjs';
+import {digest,requiredFields,EXTRA_KINDS,SWITCH_SYSTEMS,soundFromMaterials,MOD_TYPES,MOUNT_STYLES,FIRMWARES,LAYOUT_OPTS} from './catalog-lib.mjs';
 const base=new URL('../data/',import.meta.url);
 const load=async name=>JSON.parse(await readFile(new URL(name,base),'utf8'));
 const manifest=await load('catalog-manifest.json'),index=await load('catalog-index.json');
@@ -43,12 +43,18 @@ for(const b of [...catalog.switches,...catalog.extras,...(catalog.cases||[]),...
 for(const b of catalog.switches){const p=byId.get(b.id.split('~')[0]);assert.ok(b.switchSystem===undefined||b.switchSystem===null||SWITCH_SYSTEMS.includes(b.switchSystem),b.id);if(!b.switchSystem)assert.ok(!p.specs.system||p.specs.system==='mx-mechanical',b.id);// A spec is either extracted from the retailer's text or read from its published spec table; it is never invented.
   const stated=(v,x)=>x===null||x===v||Object.values(p.publishedSpecs||{}).some(t=>String(t).includes(String(x)));
   if(!b.id.includes('~'))assert.ok(stated(p.specs.actuationForceG,b.force),b.id+' force');assert.ok(stated(p.specs.totalTravelMm,b.travel),b.id+' travel');assert.ok(b.packQuantity&&b.packPrice);assert.ok(b.sound===null||b.sound===soundFromMaterials(p.specs.topHousing,p.specs.bottomHousing,p.specs.stemMaterial),b.id+' sound must come from published materials')}
-for(const b of catalog.cases||[]){const p=byId.get(b.id.split('~')[0]);assert.ok(['60','65','75','tkl','full'].includes(b.layout));if(b.kit)assert.ok(b.kit.pcb.hotswap===null||typeof b.kit.pcb.hotswap==='boolean');assert.ok(b.switchSystem===undefined||SWITCH_SYSTEMS.includes(b.switchSystem),b.id);assert.ok(b.fit==null||b.fit.startsWith(p.sourceId+':'),b.id)}
+const LAYOUTS=['40','60','65','75','tkl','full'];
+// Mount, firmware and layout options are lists of known values read from the listing, or absent.
+const facts=(b,keys)=>{for(const [k,ok] of [['mounts',MOUNT_STYLES],['firmware',FIRMWARES],['layoutOpts',LAYOUT_OPTS]]){if(b[k]===undefined) continue; assert.ok(keys.includes(k),b.id+' '+k); assert.ok(Array.isArray(b[k])&&b[k].length&&b[k].every(v=>ok.includes(v))&&new Set(b[k]).size===b[k].length,b.id+' '+k)}};
+for(const b of catalog.cases||[]) facts(b,['mounts','firmware','layoutOpts']);
+for(const b of catalog.pcbs||[]) facts(b,['mounts','firmware','layoutOpts']);
+for(const b of catalog.plates||[]) facts(b,['layoutOpts']);
+for(const b of catalog.cases||[]){const p=byId.get(b.id.split('~')[0]);assert.ok(LAYOUTS.includes(b.layout));if(b.kit)assert.ok(b.kit.pcb.hotswap===null||typeof b.kit.pcb.hotswap==='boolean');assert.ok(b.switchSystem===undefined||SWITCH_SYSTEMS.includes(b.switchSystem),b.id);assert.ok(b.fit==null||b.fit.startsWith(p.sourceId+':'),b.id)}
 for(const b of catalog.keycaps||[]){const p=byId.get(b.id.split('~')[0]);assert.ok(b.profile===null||typeof b.profile==='string',b.id)}
 // The admission-report format marks a catalog built by the current rules: extras there carry a known kind and no sound or feel effect.
 if(manifest.builderAdmission)for(const b of catalog.extras){assert.ok(EXTRA_KINDS.includes(b.kind),b.id+' kind');assert.ok(b.mod===undefined||MOD_TYPES[b.mod],b.id+' mod type'); assert.equal(JSON.stringify(b.fx),JSON.stringify(b.mod?MOD_TYPES[b.mod].fx:{}),b.id+' fx comes only from its mod type')}
-for(const b of catalog.pcbs||[]){assert.ok(b.layout===null||['60','65','75','tkl','full'].includes(b.layout),b.id);assert.ok(b.hotswap===null||typeof b.hotswap==='boolean',b.id);assert.ok(b.fit==null||b.fit.startsWith(byId.get(b.id.split('~')[0]).sourceId+':'),b.id)}
-for(const b of catalog.plates||[]){assert.ok(b.layout===null||['60','65','75','tkl','full'].includes(b.layout),b.id);assert.ok(b.material===null||typeof b.material==='string',b.id)}
+for(const b of catalog.pcbs||[]){assert.ok(b.layout===null||LAYOUTS.includes(b.layout),b.id);assert.ok(b.hotswap===null||typeof b.hotswap==='boolean',b.id);assert.ok(b.fit==null||b.fit.startsWith(byId.get(b.id.split('~')[0]).sourceId+':'),b.id)}
+for(const b of catalog.plates||[]){assert.ok(b.layout===null||LAYOUTS.includes(b.layout),b.id);assert.ok(b.material===null||typeof b.material==='string',b.id)}
 // Every listing is admitted or excluded for a named reason.
 if(manifest.builderAdmission)for(const [cat,r] of Object.entries(manifest.builderAdmission)){assert.equal(r.total,manifest.categories[cat].count,cat);assert.equal(r.admitted+r.soldOutAdmitted+Object.values(r.excluded).reduce((a,b)=>a+b,0),r.total,cat+' admission');assert.ok(Object.keys(r.excluded).every(k=>k.length>3),cat+' reason')}
 for(const b of catalog.stabs||[])assert.ok(['screw','clip','plate'].includes(b.mount),b.id)

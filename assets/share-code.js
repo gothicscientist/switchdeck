@@ -1,16 +1,20 @@
 /* Shareable build links. A build and the finder answers travel in the URL's query string (?b=), so a link works on
    any static host (GitHub Pages included) with no server, account or storage. Older links used #b= and still open.
 
-   Version 1:  ?b=1.<case>.<color>.<pcb>.<plate>.<switches>.<stabs>.<keycaps>.<extras>.<answers>
+   Version 2:  ?b=2.<case>.<color>.<pcb>.<plate>.<switches>.<stabs>.<keycaps>.<extras>.<answers>
    - Parts use the catalog's stable IDs. A store listing ID ("store-<product>" or "store-<product>~<variant>") is
      shortened to the store's letter plus base-36 numbers; any other ID is written as it is. Extras are joined with "_".
    - Empty fields stay blank and trailing blanks are dropped. Color 0 is blank.
    - Answers: one character per finder question in QUESTIONS order (the option's index in base 36, "-" unanswered),
      then "_" and the budget ("n" for no limit, or whole dollars), then "~" and the shuffle seed in base 36.
    STORES is append-only: changing or reordering a letter breaks every link already shared. Changing the option
-   order of a finder question also changes what old links mean, so it needs a new version (tests/share.test.mjs). */
+   order of a finder question also changes what old links mean, so it needs a new version (tests/share.test.mjs).
+   Version 1 links (before the 40% size and the 60% layout, mount and firmware questions) still open: questions and
+   options marked `since: 2` are left out when reading them. */
 (function(){
-  const VERSION='1';
+  const VERSION='2';
+  // The questions as a version saw them: a question or option added later (since) is not in an older link.
+  const asOf=(questions,v)=>questions.filter(q=>!(q.since>v)).map(q=>q.opts?{...q,opts:q.opts.filter(o=>!(o.since>v))}:q);
   const STORES=['cannonkeys','dangkeebs','divinikey','epomaker','kbdfans','keebsforall','keychron','kprepublic',
     'mechanicalkeyboards','meletrix','mode','novelkeys','qwertykeys','wobkey'];
   const LETTERS='ABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -75,7 +79,7 @@
     try{ code=decodeURIComponent(code) }catch(e){ throw Error('Bad build link') }
     if(code.length>1500) throw Error('Build link too long');
     const f=code.split('.');
-    if(f[0]!==VERSION) throw Error('Unsupported build link');
+    if(f[0]!==VERSION&&f[0]!=='1') throw Error('Unsupported build link');
     if(f.length<2||f.length>SLOTS.length+1) throw Error('Bad build link');
     const v=Object.fromEntries(SLOTS.map((k,i)=>[k,f[i+1]||'']));
     if(!v.case) throw Error('Build link has no keyboard');
@@ -84,7 +88,7 @@
       b:{case:unpackId(v.case),color:v.color?Number(v.color):0,pcb:unpackId(v.pcb),plate:unpackId(v.plate),
         switches:unpackId(v.switches),stabs:unpackId(v.stabs),keycaps:unpackId(v.keycaps),
         extras:v.extras?v.extras.split('_').map(unpackId):[]},
-      ans:unpackAnswers(v.answers,questions)
+      ans:unpackAnswers(v.answers,asOf(questions,+f[0]))
     };
   }
   globalThis.SwitchdeckShare={encode,decode,packId,unpackId,STORES};
