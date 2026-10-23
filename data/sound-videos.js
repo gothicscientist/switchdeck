@@ -424,9 +424,19 @@ globalThis.SWITCHDECK_SOUND_VIDEOS={
   "video": "EyYchlAqU3w",
   "title": "Gateron Oil King Switches Sound Test"
  },
+ "gateronoilkingpinklinearsilent": {
+  "video": "M3pU3N8tQNI",
+  "title": "Gateron Oil King Pink Sound Test | Silent Linear Done Right?",
+  "creator": "Click and Thock"
+ },
  "gateronoilkingpinksilent": {
   "video": "9VwGG_0NVj4",
   "title": "Gateron Oil King Pink Sound Test - Amazing Silent Linear switches!",
+  "creator": "Click and Thock"
+ },
+ "gateronoilkingpurpletactilesilent": {
+  "video": "PKoHAYf9iEw",
+  "title": "Gateron Oil King Purple Silent Tactile switches Sound Test",
   "creator": "Click and Thock"
  },
  "gateronoilkingv2": {
@@ -435,6 +445,11 @@ globalThis.SWITCHDECK_SOUND_VIDEOS={
   "creator": "Jur1cek"
  },
  "gateronoilkingyellowheavy": {
+  "video": "bz5fnv6ZwVE",
+  "title": "Gateron Oil King Yellow Heavy Tactile switch Sound Test!",
+  "creator": "Click and Thock"
+ },
+ "gateronoilkingyellowheavytactile": {
   "video": "bz5fnv6ZwVE",
   "title": "Gateron Oil King Yellow Heavy Tactile switch Sound Test!",
   "creator": "Click and Thock"
@@ -491,6 +506,11 @@ globalThis.SWITCHDECK_SOUND_VIDEOS={
  "gateronsmoothie": {
   "video": "IlnVDqxA-qw",
   "title": "Gateron Smoothie Sound Test"
+ },
+ "gateronsmoothiepinksilent": {
+  "video": "xef2cFX3cK4",
+  "title": "Gateron Smoothie Pink Silent Review | One of the Quietest Switches!",
+  "creator": "Click and Thock"
  },
  "gateronsmoothiesilver": {
   "video": "ukoFofu5MNc",
