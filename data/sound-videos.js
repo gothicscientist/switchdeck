@@ -24,6 +24,11 @@ globalThis.SWITCHDECK_SOUND_VIDEOS={
   "title": "EAU by CHAOSERA with Klein Blue Typing Sounds ASMR custom keyboard Mechanicalkeyboard",
   "creator": "PeppRr's Gear"
  },
+ "cherryblackmxhyperglide": {
+  "video": "vEZ-KqE_7is",
+  "title": "Cherry MX Black Hyperglide Sound Test with GMK, MT3 and SA Keycaps",
+  "creator": "Click and Thock"
+ },
  "cherryhyperglidebrown": {
   "video": "BYLqwprf3hk",
   "title": "Cherry MX Hyperglide Brown Sound Test #mechanicalkeyboard #keyboard #keyboardasmr #keycaps",
@@ -162,9 +167,59 @@ globalThis.SWITCHDECK_SOUND_VIDEOS={
   "video": "LFS1OHe0guM",
   "title": "THOCKY! EPOMAKER Creamy Jade Sound Test on AULA F75"
  },
+ "epomakercreamyjademagnetic": {
+  "video": "NFhveqG9s-4",
+  "title": "Creamy Jade Switch Sounds Great In Magnetic",
+  "creator": "Epomaker Keyboard"
+ },
+ "epomakercrystaltactilesilent": {
+  "video": "ui0dglP-uhY",
+  "title": "Sssssweet | Epomaker Crystal silent tactile switch sound test review",
+  "creator": "The Switch Journal"
+ },
+ "epomakerlilacsilent": {
+  "video": "9JDHuFinMhU",
+  "title": "The Tactile Switch for Quiet Typing | EPOMAKER Lilac Silent Review!",
+  "creator": "Rx003"
+ },
  "epomakernuderosasilent": {
   "video": "Ed_H1t0yh7c",
   "title": "Nude Rosa Silent Switches: Best Silent Switch? by Epomaker: Full Review and Soundtest!"
+ },
+ "epomakerroseveilsilent": {
+  "video": "GHj2WBZ4qw0",
+  "title": "Best Silent Switches? Epomaker Roseveil Switches (Full Review and Soundtest)",
+  "creator": "Rx003"
+ },
+ "epomakerseasaltv2": {
+  "video": "5vKxoUN-nn4",
+  "title": "Epomaker TH87 Sea Salt Silent v2 Switches Typing Test",
+  "creator": "FYRTEK"
+ },
+ "epomakersoranesilent": {
+  "video": "C4OfgKYuv6w",
+  "title": "[Unboxing] Epomaker Sorane Silent Switch | Unboxing, Sound test",
+  "creator": "Epomaker Keyboard"
+ },
+ "epomakerstomp": {
+  "video": "ObsKwyUmfjk",
+  "title": "Best Tactile Switch of 2026? Stomp Tactiles by Epomaker! (Full Review)",
+  "creator": "Rx003"
+ },
+ "epomakerwisteriaepomakerwisterialinear": {
+  "video": "xhs9PuWwUcM",
+  "title": "Epomaker Wisteria Linear Switch Review | Smooth and Snappy",
+  "creator": "Merkeebs"
+ },
+ "epomakerwisteriaepomakerwisteriatactile": {
+  "video": "PQpTTtBiJ68",
+  "title": "Epomaker Wisteria Tactile Soud Test | Smooth and Thocky Switch!",
+  "creator": "Click and Thock"
+ },
+ "epomakerzebra": {
+  "video": "r6i_74dI4To",
+  "title": "Epomaker Zebra | Epomaker Galaxy70 | sound test",
+  "creator": "Jur1cek"
  },
  "everfreecedar": {
   "video": "VjaQjxsF_oQ",
@@ -245,6 +300,16 @@ globalThis.SWITCHDECK_SOUND_VIDEOS={
   "title": "Gateron Dual-rail Lunar Probe Linear Switch - Full Review Sound Test Compare with Gateron Oil King",
   "creator": "LumeKeebs"
  },
+ "gaterongpro30black": {
+  "video": "_y-E2nrV8Tk",
+  "title": "GMK67 | Gateron G Pro 3.0 Switch (Black) Sound Test",
+  "creator": "KeyboardKev"
+ },
+ "gaterongpro30red": {
+  "video": "Fa481u1nlHU",
+  "title": "Gateron G Pro 3.0 Red unboxing sound test",
+  "creator": "SPEC"
+ },
  "gaterongpro30yellow": {
   "video": "GydLR6Ch4gg",
   "title": "Gateron G Pro 3.0 Yellow sound test"
@@ -254,9 +319,19 @@ globalThis.SWITCHDECK_SOUND_VIDEOS={
   "title": "Gateron INK v2 Black Baltic Edition Linear Switch - Quick Sound Test (Stock - Factory Lubed)",
   "creator": "2shycats"
  },
+ "gateroninkv2black": {
+  "video": "Gglo3Jk5xHE",
+  "title": "Lubed Gateron Silent Ink Black V2 Typing Sound Test",
+  "creator": "Jaeyou Park"
+ },
  "gateroninkv2problack": {
   "video": "lF73kwneHLA",
   "title": "Switch Sound Test: Gateron Ink V2 Pro Black, Gateron EverFree Silent Yellow, Nuphy Rose Glacier"
+ },
+ "gateroninkv2silentblack": {
+  "video": "Gglo3Jk5xHE",
+  "title": "Lubed Gateron Silent Ink Black V2 Typing Sound Test",
+  "creator": "Jaeyou Park"
  },
  "gateronkhonsu": {
   "video": "td3nVDOmGdQ",
@@ -290,6 +365,11 @@ globalThis.SWITCHDECK_SOUND_VIDEOS={
   "video": "K0fWyUBMqb4",
   "title": "Gateron Magnetic Jade Pro HE Switch Sound Test & Close-Up",
   "creator": "KeebPilot"
+ },
+ "gateronmagneticjadesilenthe": {
+  "video": "n3J0R730UWM",
+  "title": "Gateron Magnetic Jade Silent HE Linear Switches | Sound Test",
+  "creator": "Divinikey"
  },
  "gateronmagneticorange": {
   "video": "8TRLiIrqa1E",
@@ -329,6 +409,11 @@ globalThis.SWITCHDECK_SOUND_VIDEOS={
   "video": "Jj9usUf70Dg",
   "title": "Gateron Mountain Top: Peak of typing comfort",
   "creator": "Milktooth"
+ },
+ "gateronnorthpole": {
+  "video": "NjrDoEzHAUo",
+  "title": "Gateron North Pole Sound Test with GMK, MT3 and SA Keycaps",
+  "creator": "Click and Thock"
  },
  "gateronnorthpolev2": {
   "video": "77KWfvxWdlQ",
@@ -504,9 +589,34 @@ globalThis.SWITCHDECK_SOUND_VIDEOS={
   "video": "9WRARjjKKUI",
   "title": "Typing on HMX Retro T"
  },
+ "hmxrosacentifolia": {
+  "video": "1BRJf6PrNbs",
+  "title": "HMX Rosa Centifolia sound test",
+  "creator": "DadTech1981"
+ },
  "hmxsaruv2": {
   "video": "7CB0VBNsfXo",
   "title": "NEW HMX Saru v2 Sound Test"
+ },
+ "hmxsiliworkssonjasonja": {
+  "video": "Wsy-90PqVtE",
+  "title": "The Cherry MX Killer? Siliworks x HMX Sonja Linear Switch Review!",
+  "creator": "Desten Sheng"
+ },
+ "hmxsiliworkssonjasonjahc": {
+  "video": "MRn0xHnF1K4",
+  "title": "The Best 2025 Scratchy Switch? Siliworks X HMX Sonja HC Linear Switch | Neo60 core | Sound Test |",
+  "creator": "Nada Wrks"
+ },
+ "hmxsillyworkshyacinthhyacinthv2": {
+  "video": "7aebREGmNSg",
+  "title": "HMX Sillyworks Hyacinth V2 Linear Switches Sound Test Clacky Switches",
+  "creator": "LumeKeebs"
+ },
+ "hmxsillyworkshyacinthhyacinthv2u": {
+  "video": "DRSf9Oqihcg",
+  "title": "HMX Sillyworks Hyacinth V2U Sound Test #linear #mechanicalgamingkeyboard #customkeyboard #hmx",
+  "creator": "LumeKeebs"
  },
  "hmxsnowflake": {
   "video": "choiz08pSIM",
@@ -517,6 +627,11 @@ globalThis.SWITCHDECK_SOUND_VIDEOS={
   "video": "ApWUvS35nng",
   "title": "0 must have a new meaning | HMX Volume 0 T silent tactile switch sound test and review",
   "creator": "The Switch Journal"
+ },
+ "hmxwaveriderv2": {
+  "video": "_IgKWVh4RZQ",
+  "title": "Weikav Nut65 | Sound Test with HMX Waverider V2 Tactile Switches",
+  "creator": "PantheonKeys"
  },
  "huanoraw": {
   "video": "DkCvKYiImPQ",
@@ -573,6 +688,11 @@ globalThis.SWITCHDECK_SOUND_VIDEOS={
   "title": "KBDfans Roller v2 sound test",
   "creator": "DadTech1981"
  },
+ "keygeekcrepe": {
+  "video": "Sq9SeAz6_Bo",
+  "title": "Keygeek’s best bright switch yet? Keygeek Crepe sound test on the Neo65CU #mechanicalkeyboard",
+  "creator": "Groke"
+ },
  "keygeekfullnylon": {
   "video": "P3OJHZ2lUi4",
   "title": "Keygeek Full Nylon sound test on Typface Univers",
@@ -591,6 +711,11 @@ globalThis.SWITCHDECK_SOUND_VIDEOS={
  "keygeeksanglei": {
   "video": "ARCpzM91fq4",
   "title": "Divinikey x ModoKey Tess65 with Keygeek Sanglei Linear Switches Typing Test"
+ },
+ "keygeekt2": {
+  "video": "wOTLM-iGx7E",
+  "title": "Keygeek T2 sound test",
+  "creator": "DadTech1981"
  },
  "keygeeky2": {
   "video": "4nwsAcXfRPo",
@@ -715,9 +840,24 @@ globalThis.SWITCHDECK_SOUND_VIDEOS={
   "title": "WEKT Nafu Silent Linear Switch | Sound Test",
   "creator": "Divinikey"
  },
+ "wektxcjzgreenmustardplus": {
+  "video": "0mo07HvgeGA",
+  "title": "WEKT XCJZ Green Mustard Plus Linear Switches | Sound Test",
+  "creator": "Divinikey"
+ },
  "wingtreebm11": {
   "video": "_tgzYrk-pco",
   "title": "Wingtree BM-11 Tactile Switch Sound Test"
+ },
+ "wingtreecamellia": {
+  "video": "-vDvW6tfV2Y",
+  "title": "Wingtree Camellia sound test",
+  "creator": "DadTech1981"
+ },
+ "wingtreegoldenapplev2": {
+  "video": "s0-9QMkB1-o",
+  "title": "Is this one enchanted or nah? | Wingtree Golden Apple V2 tactile switch sound test review",
+  "creator": "The Switch Journal"
  },
  "wingtreetorrerolight": {
   "video": "YmBFhTH2-fQ",
