@@ -39,12 +39,19 @@
   }
   const isAffiliate=url=>affiliateFor(url)!==url;
   const hasAffiliates=(cfg=globalThis.SWITCHDECK_AFFILIATES||{})=>Object.values(cfg).some(a=>a&&(a.wrap||a.param&&a.code));
+  function linkSources(p,registry){
+    const id=p.catalogId||p.id?.split('~')[0];
+    return [...(p.id===id?registry[p.id]||[]:[]),...(p.retailers||[]),...(p.id===id?[]:[...(registry[p.id]||[]),...(registry[id]||[])]),
+      ...(p.url?[{name:p.retailer||p.brand,url:p.url,available:p.available}]:[]),
+      ...(p.photo?.page?[{name:p.brand,url:p.photo.page}]:[])];
+  }
   function linksFor(p,registry=globalThis.SWITCHDECK_PRODUCT_LINKS||{}){
     if(!p)return [];
-    const id=p.catalogId||p.id?.split('~')[0];
-    return orderLinks([...(p.id===id?registry[p.id]||[]:[]),...(p.retailers||[]),...(p.id===id?[]:[...(registry[p.id]||[]),...(registry[id]||[])]),
-      ...(p.url?[{name:p.retailer||p.brand,url:p.url,available:p.available}]:[]),
-      ...(p.photo?.page?[{name:p.brand,url:p.photo.page}]:[])]).map(r=>({...r,href:affiliateFor(r.url)}));
+    return orderLinks(linkSources(p,registry)).map(r=>({...r,href:affiliateFor(r.url)}));
   }
-  globalThis.SwitchdeckLinks={productURL,isAmazon,storeRank,orderLinks,linksFor,affiliateFor,isAffiliate,hasAffiliates};
+  // Whether linksFor would return anything, without building the list: the first usable link is enough.
+  function hasLinks(p,registry=globalThis.SWITCHDECK_PRODUCT_LINKS||{}){
+    return !!p&&linkSources(p,registry).some(r=>productURL(r?.url));
+  }
+  globalThis.SwitchdeckLinks={productURL,isAmazon,storeRank,orderLinks,linksFor,hasLinks,affiliateFor,isAffiliate,hasAffiliates};
 })();

@@ -4,6 +4,7 @@ import {readFile} from 'node:fs/promises';
 import vm from 'node:vm';
 import '../assets/product-links.js';
 import {identity} from '../scripts/build-product-links.mjs';
+import {loadFullCatalog} from '../scripts/catalog-pack.mjs';
 const {productURL,orderLinks,linksFor}=globalThis.SwitchdeckLinks;
 test('reject homepages, category/search/store pages, redirects and unsafe URLs',()=>{
  for(const url of ['https://amazon.com','https://amazon.com/s?k=yellow','https://amazon.com/stores/brand','https://amazon.com/clp/B0CR1JTHWV','https://divinikey.com','https://divinikey.com/search?q=oil','https://kbdfans.com/collections/all','https://kbdfans.com/products','https://kbdfans.com/products/foo.js','https://kbdfans.com/products/foo?redirect=other','https://evil:password@amazon.com/dp/B0CR1JTHWV','javascript:alert(1)'])assert.equal(productURL(url),null,url);
@@ -24,7 +25,8 @@ test('the real finder, builder and directory data resolve only to product pages'
  const html=await readFile(new URL('../index.html',import.meta.url),'utf8');
  const script=html.match(/<script>([\s\S]*?)<\/script>/)[1];
  const ctx={URL,window:{},localStorage:{getItem:()=>null},innerWidth:1300};vm.createContext(ctx);
- for(const f of ['assets/part-names.js','assets/product-links.js','data/product-links.js','data/builder-catalog.js'])vm.runInContext(await readFile(new URL('../'+f,import.meta.url),'utf8'),ctx);
+ for(const f of ['assets/part-names.js','assets/product-links.js','data/product-links.js'])vm.runInContext(await readFile(new URL('../'+f,import.meta.url),'utf8'),ctx);
+ ctx.window.SWITCHDECK_CATALOG=await loadFullCatalog(new URL('../data/',import.meta.url));
  vm.runInContext(script.slice(0,script.indexOf('const LAYOUTS =')),ctx);
  const results=vm.runInContext('ALLPARTS.map(p=>({id:p.id,links:SwitchdeckLinks.linksFor(p)}))',ctx);
  const report=JSON.parse(await readFile(new URL('../data/product-link-report.json',import.meta.url),'utf8'));

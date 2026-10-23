@@ -4,7 +4,7 @@
 // falls back to a YouTube search link for every switch.
 import {readFile,writeFile} from 'node:fs/promises';
 import {pathToFileURL} from 'node:url';
-import vm from 'node:vm';
+import {loadFullCatalog} from './catalog-pack.mjs';
 
 const VIDEOS_FILE=new URL('../data/sound-videos.js',import.meta.url);
 const MISSES_FILE=new URL('../data/sound-video-misses.json',import.meta.url);
@@ -50,10 +50,10 @@ async function readJson(url,fallback){try{return JSON.parse(await readFile(url,'
 async function main(){
   const key=process.env.YOUTUBE_API_KEY;
   const videos=parseVideosFile(await readFile(VIDEOS_FILE,'utf8')), misses=await readJson(MISSES_FILE,{});
-  const ctx={window:{}}; vm.runInNewContext(await readFile(new URL('../data/builder-catalog.js',import.meta.url),'utf8'),ctx);
+  const catalog=await loadFullCatalog(new URL('../data/',import.meta.url));
   const today=new Date().toISOString().slice(0,10), cutoff=Date.now()-RETRY_MISSES_DAYS*864e5;
   const seen=new Map();
-  for(const p of ctx.window.SWITCHDECK_CATALOG.switches){
+  for(const p of catalog.switches){
     const k=switchKey(p); const e=seen.get(k)||{p,n:0,stock:false}; e.n++; e.stock||=p.retailers?.some(r=>r.available); seen.set(k,e);
   }
   // Re-check stored videos with the current rules, so tightening a rule also cleans up older matches.

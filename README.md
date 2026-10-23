@@ -34,8 +34,9 @@ Product photos are screened with [sharp](https://sharp.pixelplumbing.com/) in `s
 
 ## Engineering
 
+- **Loading.** The parts catalog is about 6 MB, so the finder does not wait for it. The deploy (`scripts/stage-site.mjs`) runs the page's own recommendation code on the whole catalog and inlines what the unanswered finder draws (the boards, their keycaps and prices, the build count; `scripts/boot-data.mjs`), so the quiz and the floating field paint from a page of about 100 kB. The catalog itself is four JSON files (`data/catalog-*.json`, written by `scripts/catalog-pack.mjs`), preloaded at low priority and parsed after first paint; every view that needs it (answers, results, builder, saved builds, share links, swaps) waits for it. The directory index is fetched only when the directory is opened. Assets carry content hashes (`?v=`) so a warm cache never mixes versions.
 - **Pipeline.** A scheduled Action syncs the catalog, validates it, runs the tests, and commits the data. A successful refresh triggers the Pages deploy. A failed one leaves the live site on the last good build.
-- **Tests.** 111 unit tests (Node's built-in runner) cover catalog admission, compatibility, recommendations, part swapping, share-code round trips, product links, and sound lookups. A Playwright suite checks the real UI: keyboard navigation, history, laptop and phone sizes, reduced motion, and broken images. Both gate every deploy.
+- **Tests.** Unit tests (Node's built-in runner) cover catalog admission, compatibility, recommendations, part swapping, share-code round trips, product links, and sound lookups. A Playwright suite checks the real UI: keyboard navigation, history, laptop and phone sizes, reduced motion, and broken images. Both gate every deploy.
 
 ### Credits and sources
 
@@ -50,6 +51,7 @@ npm ci
 npm test                          # unit tests
 npx playwright install chromium
 npm run test:ui                   # browser tests
+npm run test:boot                 # first paint and views before the catalog has loaded
 npm run catalog:sync              # re-crawl the stores (--offline uses cached feeds)
 npm run site:stage                # build dist/
 ```

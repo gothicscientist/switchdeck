@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import vm from 'node:vm';
+import {loadFullCatalog} from '../scripts/catalog-pack.mjs';
 
 async function load(){
   const html=await readFile(new URL('../index.html',import.meta.url),'utf8');
@@ -9,7 +10,7 @@ async function load(){
   const ctx={URL,window:{},localStorage:{getItem:()=>null},innerWidth:1300};vm.createContext(ctx);
   for(const file of ['assets/product-links.js','data/product-links.js'])vm.runInContext(await readFile(new URL('../'+file,import.meta.url),'utf8'),ctx);
   vm.runInContext(await readFile(new URL('../assets/part-names.js',import.meta.url),'utf8'),ctx);
-  vm.runInContext(await readFile(new URL('../data/builder-catalog.js',import.meta.url),'utf8'),ctx);
+  ctx.window.SWITCHDECK_CATALOG=await loadFullCatalog(new URL('../data/',import.meta.url));
   vm.runInContext(inline.slice(0,inline.indexOf('const LAYOUTS =')),ctx);
   // comboCount lives after the renderer; evaluate only the pieces it needs.
   const cfg=inline.match(/function configsFor\(c,ans\)\{[\s\S]*?\n\}/)[0];

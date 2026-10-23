@@ -41,10 +41,19 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <script src="assets/theme.js"></script>
 <script src="assets/view-meta.js"></script>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Host+Grotesk:wght@400;500;600;700;800&display=swap">
+<!--thock-preload-->
+<link rel="preload" href="assets/fonts/host-grotesk-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="data/catalog-cases.json" as="fetch" crossorigin fetchpriority="low">
+<link rel="preload" href="data/catalog-switches.json" as="fetch" crossorigin fetchpriority="low">
+<link rel="preload" href="data/catalog-keycaps.json" as="fetch" crossorigin fetchpriority="low">
+<link rel="preload" href="data/catalog-parts.json" as="fetch" crossorigin fetchpriority="low">
+<link rel="preload" href="data/product-links.js" as="script" fetchpriority="low">
+<link rel="preload" href="data/sound-videos.js" as="script" fetchpriority="low">
+<link rel="prefetch" href="assets/directory.js">
 <style>
+/* Host Grotesk, one variable file per script, served from here so the first paint never waits on another site. */
+@font-face{font-family:"Host Grotesk";font-style:normal;font-weight:400 800;font-display:swap;src:url("assets/fonts/host-grotesk-latin.woff2") format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:"Host Grotesk";font-style:normal;font-weight:400 800;font-display:swap;src:url("assets/fonts/host-grotesk-latin-ext.woff2") format("woff2");unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C4,U+2113,U+2C60-2C7F,U+A720-A7FF}
 /* One deliberate light stone theme in every viewer setting. Layout: a field of keyboards fills the screen and reacts to each answer; a single white question card sits at the bottom. Builder and saved views reuse the same warm stone palette. */
 :root{
   --bg:#F5F5F4; --surface:#FFFFFF; --tile:#F5F5F4; --tile-hover:#EDEDEB; --ink:#292524; --ink-2:#44403C; --muted:#78716C; --faint:#A8A29E; --line:#E7E5E4;
@@ -776,13 +785,10 @@ a.listen.watch:hover{background:rgba(68,64,60,.16)}
 <script src="assets/part-names.js"></script>
 <script src="assets/share-code.js"></script>
 <script src="assets/affiliates.js"></script>
-<script src="data/sound-videos.js"></script>
 <script src="assets/product-links.js"></script>
-<script src="data/product-links.js"></script>
-<script src="data/builder-catalog.js"></script>
-<script src="assets/directory.js"></script>
 <script src="assets/interactions.js"></script>
-<script src="assets/sfx.js"></script>
+<script src="assets/sfx.js" defer></script>
+<!--thock-boot-->
 <script>
 /* =========================================================
    CATALOG
@@ -958,24 +964,47 @@ for(const [id,ph] of Object.entries(PHOTOS)){const p=[...CASES,...SWITCHES,...KE
 
 // Imported parts carry only retailer-published facts. Unknown fields stay null and the
 // compatibility panel asks the buyer to check them instead of assuming a fit.
-{const cat=window.SWITCHDECK_CATALOG||{}, add=(pool,list)=>{const have=new Set(pool.map(p=>p.id));for(const p of list||[]) if(!have.has(p.id)){pool.push(p);have.add(p.id)}};
-  for(const k of ['cases','switches','keycaps','stabs','extras','pcbs','plates']) for(const p of cat[k]||[]){
-    p.catalogId??=p.id.split('~')[0]; p.checkedAt??=cat.generatedAt; if(p.photo&&!p.photo.page) p.photo.page=p.retailers?.[0]?.url;
-    if(p.cat==='switches') p.col??={top:'#D6D3D1',bot:'#A8A29E',stem:'#78716C'};
-    if(p.cat==='case'){p.keys??=LAYOUT_KEYS[p.layout]; p.keysEstimated=true}}
-  add(CASES,cat.cases); add(SWITCHES,cat.switches); add(KEYCAPS,cat.keycaps); add(STABS,cat.stabs); add(EXTRAS,cat.extras); add(PCBS,cat.pcbs); add(PLATES,cat.plates);}
+// The curated parts above are always here. The imported ones (data/catalog-*.json) arrive after first paint and are merged
+// in by hydrate() (see "Catalog loading"); FULL is true once they have, and nothing that ranks, counts or lists parts runs before.
+const PART_POOLS=[CASES,PCBS,PLATES,SWITCHES,KEYCAPS,STABS,EXTRAS];
+const CAT_OF={cases:'case',switches:'switches',keycaps:'keycaps',stabs:'stabs',extras:'extras',pcbs:'pcb',plates:'plate'};
 // The finder ranks every board. Imported kits are paired with curated switches and keycaps,
 // whose sound data drives the ranking; assembled boards are matched as they ship.
 // Historical/generic placeholders without an exact listing are kept for saved builds,
 // but cannot be offered as purchasable choices in the finder or part picker.
-const PENDING_PARTS=[];
-for(const pool of [CASES,PCBS,PLATES,SWITCHES,KEYCAPS,STABS,EXTRAS])for(let i=pool.length-1;i>=0;i--)if(!globalThis.SwitchdeckLinks.linksFor(pool[i]).length)PENDING_PARTS.push(...pool.splice(i,1));
-const FINDER_CASES=[...CASES];
-const ALLPARTS = [...CASES,...PCBS,...PLATES,...SWITCHES,...KEYCAPS,...STABS,...EXTRAS,...PENDING_PARTS];
-for(const p of ALLPARTS) Object.assign(p,SwitchdeckNames.part(p));
-// Reviewed, version-specific matches enrich existing parts without replacing kit prices or fit rules.
-for(const [id,meta] of Object.entries(window.SWITCHDECK_CATALOG?.curated||{})){const p=ALLPARTS.find(p=>p.id===id);if(p&&meta.retailers){p.photo=meta.photo?{...meta.photo}:(p.photo&&{page:p.photo.page});p.retailers=meta.retailers;if(meta.retailers.length&&meta.retailers.every(r=>r.available===false))p.soldOut=true}}
-const BYID = Object.fromEntries(ALLPARTS.map(p=>[p.id,p]));
+const PENDING_PARTS=[], FINDER_CASES=[], ALLPARTS=[];
+let BYID={}, FULL=false, hydrations=0;
+for(const p of PART_POOLS.flat()) Object.assign(p,SwitchdeckNames.part(p));
+const BASE=PART_POOLS.map(pool=>[...pool]);
+const refill=(to,from)=>{to.length=0; for(const x of from) to.push(x)};
+// Builds every pool from the curated parts plus cat (the imported catalog, or a few of its parts before the rest has loaded).
+// Imported names are already cleaned (scripts/catalog-pack.mjs).
+function hydrate(cat){
+  cat=cat||{};
+  PART_POOLS.forEach((pool,i)=>refill(pool,BASE[i]));
+  // The catalog files name the few parts with no link of their own; every other part of theirs has one, so only those and
+  // the curated parts need the link check below.
+  const nl=cat.nl&&new Set(cat.nl), linked=new Set();
+  const add=(pool,list)=>{const have=new Set(pool.map(p=>p.id));for(const p of list||[]) if(!have.has(p.id)){pool.push(p);have.add(p.id);if(nl&&!nl.has(p.id)) linked.add(p)}};
+  for(const k of ['cases','switches','keycaps','stabs','extras','pcbs','plates']) for(const p of cat[k]||[]){
+    p.cat=CAT_OF[k]; p.sourceName??=p.name; p.catalogId??=p.id.split('~')[0]; if(p.photo&&!p.photo.page) p.photo.page=p.retailers?.[0]?.url;
+    if(p.cat==='switches') p.col??={top:'#D6D3D1',bot:'#A8A29E',stem:'#78716C'};
+    if(p.cat==='case'){p.keys??=LAYOUT_KEYS[p.layout]; p.keysEstimated=true}}
+  add(CASES,cat.cases); add(SWITCHES,cat.switches); add(KEYCAPS,cat.keycaps); add(STABS,cat.stabs); add(EXTRAS,cat.extras); add(PCBS,cat.pcbs); add(PLATES,cat.plates);
+  PENDING_PARTS.length=0;
+  for(const pool of PART_POOLS)for(let i=pool.length-1;i>=0;i--)if(!linked.has(pool[i])&&!globalThis.SwitchdeckLinks.hasLinks(pool[i]))PENDING_PARTS.push(...pool.splice(i,1));
+  refill(FINDER_CASES,CASES);
+  refill(ALLPARTS,[...CASES,...PCBS,...PLATES,...SWITCHES,...KEYCAPS,...STABS,...EXTRAS,...PENDING_PARTS]);
+  // Reviewed, version-specific matches enrich existing parts without replacing kit prices or fit rules.
+  for(const [id,meta] of Object.entries(cat.curated||{})){const p=ALLPARTS.find(p=>p.id===id);if(p&&meta.retailers){p.photo=meta.photo?{...meta.photo}:(p.photo&&{page:p.photo.page});p.retailers=meta.retailers;if(meta.retailers.length&&meta.retailers.every(r=>r.available===false))p.soldOut=true}}
+  BYID=Object.fromEntries(ALLPARTS.map(p=>[p.id,p]));
+  if(hydrations++) hydrated();
+}
+// A page that already has the whole catalog (window.SWITCHDECK_CATALOG) is complete at once. The deployed page instead
+// starts with THOCK_BOOT (scripts/boot-data.mjs): the few boards the finder draws before any answer, enough to paint it.
+const BOOT=window.THOCK_BOOT||null;
+if(BOOT&&!window.SWITCHDECK_CATALOG&&BOOT.links) globalThis.SWITCHDECK_PRODUCT_LINKS=BOOT.links;
+hydrate(window.SWITCHDECK_CATALOG||BOOT?.cat); FULL=!!window.SWITCHDECK_CATALOG;
 
 const SLOTS = [
   {key:'case',label:'Case or kit',hint:'Sets the layout'},
@@ -1012,7 +1041,8 @@ function cleanBuild(b){
   out.color=Number.isInteger(out.color)&&out.color>=0&&out.color<colors?out.color:0;
   return out;
 }
-build=cleanBuild(build);saved=saved.map(cleanBuild);
+// Until the catalog has loaded the saved build stays as stored: its parts may not be in BYID yet, and cleaning would drop them.
+if(FULL){build=cleanBuild(build);saved=saved.map(cleanBuild)}
 
 function persist(){store.set('sy.build',build)}
 
@@ -1508,15 +1538,16 @@ function go(v,push=true){
     if(on){el.classList.remove('enter'); void el.offsetWidth; el.classList.add('enter')}
     document.getElementById('nav-'+id).setAttribute('aria-current',on?'page':'false');
   }
-  if(v==='build') renderBuilder(); if(v==='saved') renderSaved(); if(v==='finder') renderFinder();
-  if(v==='directory') window.SwitchdeckDirectory.open();
+  // The finder draws from the first few boards while the catalog loads; the other views are made of parts, so they wait for it.
+  if(v==='finder') renderFinder();
+  else {if(v==='directory') loadDirectory(); whenFull(()=>{if(view!==v) return; if(v==='build') renderBuilder(); if(v==='saved') renderSaved(); if(v==='directory') openDirectory()})}
   if(push&&(location.pathname!==viewPath(v)||location.search||location.hash)){try{history.pushState(null,'',viewPath(v))}catch(e){}}
   setViewMeta(v);
   window.scrollTo({top:0}); onScroll();
 }
 function route(){
   upgradeLegacyHash();
-  const code=shareCode(); if(code!=null){openShare(code);return}
+  const code=shareCode(); if(code!=null){whenFull(()=>openShare(code));return}
   if(!document.getElementById('results').hidden) closeResults();
   const v=pathView();if(v!==view)go(v,false)}
 window.addEventListener('popstate',route);
@@ -1569,6 +1600,7 @@ function renderPill(){
       return;
     }
   }
+  if(!FULL){whenFull(renderPill); return}
   fpStop(); fpHold=false; pill.onclick=null; pill.setAttribute('data-go','build'); pill.removeAttribute('aria-label'); pill.title='Open your build';
   const v=verdict(compat(build)), col={ok:'var(--ok)',warn:'var(--warn)',fail:'var(--fail)',info:'var(--info)'}[v.level];
   const c=caseOf(build);
@@ -1751,8 +1783,30 @@ function shadowed(){
   }
   return SHADOWED;
 }
+// evalSteps is evalAns written as a generator that yields between boards: evalAns runs it straight through, evalSoon
+// runs it in slices of a few milliseconds so a warm-up never holds the page up. The result is the same either way.
+const evalJobs=new Map();
 function evalAns(ans){
+  if(!FULL) throw Error('The parts catalog has not loaded yet');
   const key=JSON.stringify(ans); if(evalCache.has(key)) return evalCache.get(key);
+  const it=(evalJobs.get(key)||evalJobs.set(key,evalSteps(ans,key)).get(key));
+  let s; try{while(!(s=it.next()).done);} finally{evalJobs.delete(key)}
+  return s.value;
+}
+function evalSoon(ans,cb){
+  if(!FULL) return;
+  const key=JSON.stringify(ans), done=()=>cb&&cb(evalCache.get(key));
+  if(evalCache.has(key)) return done();
+  const it=evalJobs.get(key)||evalJobs.set(key,evalSteps(ans,key)).get(key);
+  const step=()=>{
+    if(evalJobs.get(key)!==it) return evalCache.has(key)&&done();
+    const t=performance.now(); let s;
+    try{do s=it.next(); while(!s.done&&performance.now()-t<8)} catch(e){evalJobs.delete(key); throw e}
+    if(s.done){evalJobs.delete(key); done()} else setTimeout(step,0);
+  };
+  setTimeout(step,0);
+}
+function* evalSteps(ans,key){
   const L=ans.layout&&ans.layout!=='any'?ans.layout:null;
   const budget=typeof ans.budget==='number'&&ans.budget<B_MAX?ans.budget:null;
   const feel=ans.feel&&ans.feel!=='any'?ans.feel:null;
@@ -1773,6 +1827,7 @@ function evalAns(ans){
   const kcs=surprise?kcPool:shortlist(kcPool,KC_SHORT,x=>x.k.price);
   const list=[], boards=[];
   for(const c of FINDER_CASES){
+    yield;
     if(c.soldOut||shadow.has(c.id)) continue;
     if(c.layoutLabel==='70%') continue;
     if(L&&c.layout!==L) continue;
@@ -1833,10 +1888,11 @@ function evalAns(ans){
   };
   // First the plain best score per board fixes the order; then each board, best first, takes its best pairing
   // after the repeat penalty, skipping any that the compatibility check rejects.
-  for(const bd of boards){const t=rank(bd,null,null,1)[0]; bd.prior=t?t.sc:-Infinity}
+  for(const bd of boards){const t=rank(bd,null,null,1)[0]; bd.prior=t?t.sc:-Infinity; yield}
   boards.sort((a,b)=>b.prior-a.prior);
   const useSw=new Map(), useKc=new Map(), useSt=new Map();
   for(const bd of boards){
+    yield;
     if(bd.prior===-Infinity) continue;
     for(const p of rank(bd,useSw,useKc,4)){
       const b={...p.cf.b0,switches:p.s.id,keycaps:p.k.id,extras:[...extras]};
@@ -1857,6 +1913,7 @@ function evalAns(ans){
   const T0=SOUND_T[ans.sound]||null, useMod=new Map();
   list.sort((a,b)=>b.sc-a.sc||b.t-a.t);
   for(const r of list){
+    yield;
     const room=budget?budget-r.t:MODS_MAX_SPEND; if(room<=0) continue;
     const picks=suggestMods(r.b,T0,room,useMod); if(!picks.length) continue;
     r.b={...r.b,extras:[...r.b.extras,...picks.map(x=>x.m.id)]}; r.t=total(r.b); r.e=estimate(r.b);
@@ -1894,6 +1951,7 @@ function boardHasMust(c,must){
    with board + switch (whole packs) + keycaps (+addon) <= budget, counted per board by two pointers over sorted prices. */
 const comboCache=new Map();
 function comboCount(ans){
+  if(!FULL) throw Error('The parts catalog has not loaded yet');
   const key=JSON.stringify(ans); if(comboCache.has(key)) return comboCache.get(key);
   const L=ans.layout&&ans.layout!=='any'?ans.layout:null;
   const budget=typeof ans.budget==='number'&&ans.budget<B_MAX?ans.budget:null;
@@ -1990,6 +2048,19 @@ function fieldBoard(b){return caseVisual(b,'field')}
 // The floating field draws only boards whose checked photo has a real transparent background (the image check records bg:null
 // only when the photo's border is transparent). Drawn icons and photos on a solid backdrop are never shown there.
 function cutoutBoards(list=FINDER_CASES){return list.filter(c=>c&&c.photo&&Array.isArray(c.photo.box)&&c.photo.bg===null)}
+// Before the catalog has loaded the field draws from BOOT: the boards evalAns({}) would put in it, in order, with the
+// keycaps and build price it gave each. It is only valid for the unanswered quiz, which is all a first visit has.
+const bootOK=()=>!FULL&&!!BOOT&&quizStep===0&&!Object.keys(quizAns).length;
+const fieldReady=()=>FULL||bootOK();
+let BOOT_RES=null;
+function bootRes(){
+  if(BOOT_RES) return BOOT_RES;
+  const list=BOOT.pool.filter(id=>BOOT.res[id]).map(id=>{const [keycaps,pcb,t]=BOOT.res[id]; return {b:{case:id,color:0,pcb,plate:null,switches:null,stabs:null,keycaps,extras:[]},t}});
+  return BOOT_RES={list,byCase:new Map(list.map(r=>[r.b.case,r]))};
+}
+// With nothing answered, the boot result stands in until the real one has been worked out in the background (they are
+// the same boards; scripts/boot-data.mjs checks that at deploy), so resizing or a font swap never waits on evalAns.
+const fieldRes=ans=>!FULL?bootRes():BOOT&&!bgSeed&&!Object.keys(ans).length&&!evalCache.has('{}')?(evalSoon(ans),bootRes()):evalAns(ans);
 function initField(){
 }
 function fieldEl(id){
@@ -1997,21 +2068,21 @@ function fieldEl(id){
   const field=document.getElementById('field'), c=BYID[id];
   {
     const el=document.createElement('button'); el.className='fitem hidden-slot gone'; el.type='button';
-    const r=evalAns({}).byCase.get(c.id); const b=r?r.b:{case:c.id,color:0,keycaps:null,extras:[]};
+    const r=fieldRes({}).byCase.get(c.id); const b=r?r.b:{case:c.id,color:0,keycaps:null,extras:[]};
     el.innerHTML=`<span class="art">${fieldBoard(b)}</span><span class="cap"></span>`; el.dataset.k=String(b.keycaps);
     el.setAttribute('aria-label',partName(c));
-    el.addEventListener('click',()=>{const res=evalAns(quizAns); if(res.byCase.has(c.id)) openResults(c.id); else toast(`${partName(c)} doesn't match your answers`)});
+    el.addEventListener('click',()=>whenFull(()=>{const res=evalAns(quizAns); if(res.byCase.has(c.id)) openResults(c.id); else toast(`${partName(c)} doesn't match your answers`)}));
     field.appendChild(el); fieldEls[c.id]=el; return el;
   }
 }
 function layoutField(){
-  if(view!=='finder') return;
+  if(view!=='finder'||!fieldReady()) return;
   initField();
   const counter=document.querySelector('#qcount b');
   if(counter&&shownCombos!=null) counter.textContent=fmtCombos(shownCombos);
   if(!introDone){introDone=true; introOn=true; const f=document.getElementById('field'); f.classList.add('intro');
     setTimeout(()=>{introOn=false},50); setTimeout(()=>f.classList.remove('intro'),1800)}
-  const res=evalAns(quizAns), fieldRect=document.getElementById('view-finder').getBoundingClientRect();
+  const res=fieldRes(quizAns), fieldRect=document.getElementById('view-finder').getBoundingClientRect();
   const W=fieldRect.width, H=fieldRect.height, mobile=W<=760;
   const card=document.getElementById('qwrap'), cardTop=card.getBoundingClientRect().top;
   const topBar=document.querySelector('.top .bar').getBoundingClientRect().bottom-fieldRect.top;
@@ -2208,7 +2279,7 @@ function moveQuiz(step){
   if(next>quizStep){
     const q=QUESTIONS[quizStep];
     if(q) window.ThockAnalytics?.answer(q.key,quizStep+1,quizAns[q.key]);
-    if(next===QUESTIONS.length&&QUESTIONS.every(q=>quizAns[q.key]!=null)) window.ThockAnalytics?.complete({match_count:evalAns(quizAns).list.length});
+    if(next===QUESTIONS.length&&FULL&&QUESTIONS.every(q=>quizAns[q.key]!=null)) window.ThockAnalytics?.complete({match_count:evalAns(quizAns).list.length});
   }
   qDir=next<quizStep?-1:1; quizStep=next; saveQuizProgress(); renderQuiz();
 }
@@ -2223,6 +2294,7 @@ function icon(name){return {
   undo:'<svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5.5 3 2.5 6l3 3"/><path d="M2.5 6h7a4 4 0 0 1 0 8H7"/></svg>',
   link:'<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6.8 9.2a3 3 0 0 0 4.2 0l2.3-2.3a3 3 0 0 0-4.2-4.2l-.9.9M9.2 6.8a3 3 0 0 0-4.2 0L2.7 9.1a3 3 0 0 0 4.2 4.2l.9-.9"/></svg>'}[name]}
 function renderQuiz(){
+  if(!fieldReady()){whenFull(renderQuiz); return}
   stopClip();
   const renderId=++quizRender;
   clearTimeout(window.__adv); budgetCleanup?.(); budgetCleanup=null;
@@ -2233,7 +2305,7 @@ function renderQuiz(){
   if(Q) window.ThockAnalytics?.step(Q.key,quizStep+1);
   // The budget step starts at $300. Set it before the field is laid out, or the boards would move again a moment later.
   if(Q&&Q.budget&&quizAns.budget==null){quizAns.budget=300; saveQuizProgress()}
-  const n=evalAns(quizAns).list.length, combos=comboCount(quizAns);
+  const n=done&&FULL?evalAns(quizAns).list.length:0, combos=FULL?comboCount(quizAns):BOOT.combos;
   let title, body;
   if(done){
     title='Your matches';
@@ -2286,7 +2358,7 @@ function renderQuiz(){
   paintCombos(combos,true);
   // Checking which options would leave no match runs the finder once per option, so it waits until the boards have
   // finished gliding and then runs one option per idle moment.
-  if(Q&&Q.opts) setTimeout(()=>{if(quizRender===renderId)markDisabled(Q,card)},window.ThockUI.reducedMotion()?0:950);
+  if(Q&&Q.opts) setTimeout(()=>whenFull(()=>{if(quizRender===renderId)markDisabled(Q,card)}),window.ThockUI.reducedMotion()?0:950);
 }
 function setCount(){paintCombos(comboCount(quizAns),true)}
 // Scores the next step's answers while the pressed option shows, so the card and the field change on the same frame.
@@ -2315,13 +2387,17 @@ function choose_(Q,btn){
   quizAns[Q.key]=btn.dataset.v; if(changed&&btn.dataset.v==='surprise') quizAns.seed=Math.floor(Math.random()*1e6); saveQuizProgress();
   window.ThockAnalytics?.answer(Q.key,quizStep+1,quizAns[Q.key]);
   btn.closest('.opts').querySelectorAll('.opt').forEach(o=>o.setAttribute('aria-pressed',o===btn));
-  // The pressed option paints first and the counter updates on the next frame. The field waits for the next card:
-  // laying it out now and again when the card changes size would send every board on two moves in a row.
-  cancelAnimationFrame(answerFrame); answerFrame=requestAnimationFrame(()=>{setCount(); setTimeout(prewarmNext,0)});
-  answerBg=lastBg;
-  // A must-have that leaves no boards stays on this step so the message can say why.
-  if(Q.key==='must'&&mustBlocked()){clearTimeout(window.__adv); window.__adv=setTimeout(renderQuiz,200); return}
-  clearTimeout(window.__adv); window.__adv=setTimeout(()=>moveQuiz(quizStep+1),window.ThockUI.reducedMotion()?0:320);
+  // Scoring needs the whole catalog. It has almost always arrived by the first answer; if not, the pressed option stays
+  // pressed and the card moves on the moment it does.
+  whenFull(()=>{ if(QUESTIONS[quizStep]!==Q) return;
+    // The pressed option paints first and the counter updates on the next frame. The field waits for the next card:
+    // laying it out now and again when the card changes size would send every board on two moves in a row.
+    cancelAnimationFrame(answerFrame); answerFrame=requestAnimationFrame(()=>{setCount(); setTimeout(prewarmNext,0)});
+    answerBg=lastBg;
+    // A must-have that leaves no boards stays on this step so the message can say why.
+    if(Q.key==='must'&&mustBlocked()){clearTimeout(window.__adv); window.__adv=setTimeout(renderQuiz,200); return}
+    clearTimeout(window.__adv); window.__adv=setTimeout(()=>moveQuiz(quizStep+1),window.ThockUI.reducedMotion()?0:320);
+  });
 }
 /* Must-have that, on its own, empties the results (other answers alone would still match). */
 function mustBlocked(){const m=mustOf(quizAns); return m&&!evalAns(quizAns).list.length&&evalAns({...quizAns,must:'none'}).list.length>0?m:null}
@@ -2976,7 +3052,53 @@ document.getElementById('importbtn').onclick=()=>{
    BOOT
    ========================================================= */
 // The directory lists retailer listings; one listing can hold several builder parts (one per spring weight or type).
-const BY_LISTING=new Map();for(const p of ALLPARTS)if(p.catalogId){if(!BY_LISTING.has(p.catalogId))BY_LISTING.set(p.catalogId,[]);BY_LISTING.get(p.catalogId).push(p)}
+const BY_LISTING=new Map();
+function indexListings(){BY_LISTING.clear(); for(const p of ALLPARTS)if(p.catalogId){if(!BY_LISTING.has(p.catalogId))BY_LISTING.set(p.catalogId,[]);BY_LISTING.get(p.catalogId).push(p)}}
+indexListings();
+// The catalog changed under the page (see hydrate): drop everything derived from the old parts.
+function hydrated(){
+  cutIds=null; SHADOWED=null; MOD_FIT=null; soundByKey=null; evalCache.clear(); evalJobs.clear(); comboCache.clear(); indexListings();
+}
+/* =========================================================
+   CATALOG LOADING
+   ========================================================= */
+// The page paints and takes the first answer from BOOT alone. The rest of the catalog (data/catalog-*.json, written by
+// scripts/catalog-pack.mjs, plus the product links and sound videos it is shown with) loads in the background and is
+// merged by hydrate(). whenFull(fn) runs fn once all of it is in, or at once if it already is; everything that ranks,
+// counts or lists parts goes through it. A visitor who answers before it arrives sees the pressed option and nothing
+// more until it does, which on a normal connection is before the first answer.
+const CATALOG_FILES=['data/catalog-cases.json','data/catalog-switches.json','data/catalog-keycaps.json','data/catalog-parts.json'];
+const CATALOG_SCRIPTS=['data/product-links.js','data/sound-videos.js'];
+const fullWaiters=[]; let fullLoad=null;
+function whenFull(fn){if(FULL){fn(); return} fullWaiters.push(fn); startCatalog()}
+function loadScript(src){return new Promise((ok,fail)=>{const s=document.createElement('script'); s.src=src; s.onload=ok; s.onerror=()=>fail(Error('Could not load '+src)); document.head.append(s)})}
+function startCatalog(){
+  if(FULL||fullLoad) return;
+  const get=f=>fetch(f).then(r=>{if(!r.ok) throw Error(f+' '+r.status); return r.json()});
+  fullLoad=Promise.all([...CATALOG_FILES.map(get),...CATALOG_SCRIPTS.map(loadScript)]).then(got=>{
+    const cat={nl:[]}; for(const part of got.slice(0,CATALOG_FILES.length)){cat.nl.push(...part.nl||[]); Object.assign(cat,{...part,nl:cat.nl})}
+    hydrate(cat); FULL=true; build=cleanBuild(build); saved=saved.map(cleanBuild);
+    if(fpCur) fpCur=BYID[fpCur.id]||fpCur;
+    for(const fn of fullWaiters.splice(0)) try{fn()}catch(e){setTimeout(()=>{throw e})}
+    warmEngine();
+  }).catch(e=>{
+    fullLoad=null; document.getElementById('qcard')?.removeAttribute('aria-busy');
+    toast('The parts list couldn’t load. Check your connection, then try again.');
+    if(fullWaiters.length) retryT=setTimeout(startCatalog,8000);
+  });
+}
+let retryT;
+// The first answer and the first results build the caches evalAns leans on; do that while the visitor reads instead.
+function warmEngine(){
+  const idle=window.requestIdleCallback?f=>requestIdleCallback(f,{timeout:2000}):f=>setTimeout(f,50);
+  idle(()=>{shadowed(); idle(()=>modIndex()); evalSoon(quizAns,()=>{if(view==='finder') layoutField()})});
+}
+// The directory is its own script, fetched the first time it is wanted (or when the link is about to be used).
+let dirLoad=null;
+function loadDirectory(){return window.SwitchdeckDirectory?Promise.resolve():(dirLoad??=loadScript('assets/directory.js').catch(e=>{dirLoad=null; throw e}))}
+function openDirectory(){loadDirectory().then(()=>{if(view==='directory') window.SwitchdeckDirectory.open()}).catch(()=>toast('The directory couldn’t load. Check your connection, then try again.'))}
+{const nav=document.getElementById('nav-directory'), warm=()=>loadDirectory().then(()=>window.SwitchdeckDirectory.prefetch()).catch(()=>{});
+  for(const ev of ['pointerenter','focus','touchstart']) nav.addEventListener(ev,warm,{once:true,passive:true})}
 window.SwitchdeckBuilder={
   parts:(id,url)=>(BY_LISTING.get(id)||[]).filter(p=>!url||p.retailers?.some(r=>r.url===url)),
   has:(id,url)=>!!window.SwitchdeckBuilder.parts(id,url).length,
@@ -3011,9 +3133,10 @@ cleanAnswers(quizAns);
 {const n=document.getElementById('affnote'); if(globalThis.SwitchdeckLinks.hasAffiliates()){n.textContent=AFF_NOTE; n.hidden=false}}
 upgradeLegacyHash();
 if(/\.html$/.test(location.pathname)){try{history.replaceState(null,'',viewPath(pathView())+location.search)}catch(e){}}
-go(pathView(),false);
-if(shareCode()!=null) openShare(shareCode());
-renderPill();
+// A shared link opens on its results, so it has nothing to draw before the catalog has loaded.
+if(shareCode()!=null) whenFull(()=>{go(pathView(),false); openShare(shareCode()); renderPill()});
+else {go(pathView(),false); renderPill()}
+startCatalog();
 </script>
 </html>
 

@@ -4,6 +4,7 @@ import {readFile} from 'node:fs/promises';
 import vm from 'node:vm';
 import '../assets/part-names.js';
 import {normalize,builderPart,SOURCES} from '../scripts/catalog-lib.mjs';
+import {loadFullCatalog} from '../scripts/catalog-pack.mjs';
 const {name,part}=globalThis.SwitchdeckNames;
 
 test('extras show the product identity without synonym lists or package options',()=>{
@@ -63,9 +64,7 @@ test('revisions and selected variants remain distinguishable',()=>{
 });
 
 test('existing catalog names stay nonempty and normalization preserves purchase and fit data',async()=>{
-  const ctx={window:{}};
-  vm.runInNewContext(await readFile(new URL('../data/builder-catalog.js',import.meta.url),'utf8'),ctx);
-  const parts=Object.values(ctx.window.SWITCHDECK_CATALOG).filter(Array.isArray).flat();
+  const parts=Object.values(await loadFullCatalog(new URL('../data/',import.meta.url))).filter(Array.isArray).flat();
   assert.ok(parts.length>1000);
   for(const p of parts){const n=part(p);assert.ok(n.name.trim(),p.id);assert.ok(n.name.length<=48,p.id+' compact title');assert.deepEqual(part(n),n,'idempotent '+p.id);for(const key of Object.keys(p).filter(k=>k!=='name'))assert.deepEqual(n[key],p[key],p.id+' '+key)}
   const lake=parts.find(p=>/Taihao Blue Glacial Lake/.test(p.name));

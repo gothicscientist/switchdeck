@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import vm from 'node:vm';
 import {normalize,extractSpecs,category,packQuantity,builderPart,boardName,SOURCES} from '../scripts/catalog-lib.mjs';
+import {loadFullCatalog} from '../scripts/catalog-pack.mjs';
 
 const source=SOURCES[1];
 const raw=(changes={})=>({id:123,title:'Gateron Example Linear Switches',handle:'example-switch',vendor:'Gateron',product_type:'Switches',tags:['MX Switch'],body_html:'<ul><li>Actuation: 45g</li><li>Total Travel: 3.6mm</li><li>5-Pin, PCB Mount</li><li>18 included in each pack</li></ul>',images:[{src:'https://cdn.shopify.com/example.jpg'}],options:[],variants:[{id:456,title:'18 Set',price:'9.00',available:true}],...changes});
@@ -61,7 +62,7 @@ test('site scripts compile and builder rounds switch purchases to whole packs',a
   const ctx={URL,window:{},localStorage:{getItem:()=>null}};vm.createContext(ctx);
   for(const file of ['assets/product-links.js','data/product-links.js'])vm.runInContext(await readFile(new URL('../'+file,import.meta.url),'utf8'),ctx);
   vm.runInContext(await readFile(new URL('../assets/part-names.js',import.meta.url),'utf8'),ctx);
-  vm.runInContext(await readFile(new URL('../data/builder-catalog.js',import.meta.url),'utf8'),ctx);
+  ctx.window.SWITCHDECK_CATALOG=await loadFullCatalog(new URL('../data/',import.meta.url));
   const beforeRendering=inline.slice(0,inline.indexOf('const LAYOUTS ='));
   vm.runInContext(beforeRendering,ctx);
   assert.equal(vm.runInContext('switchCost({packQuantity:18,packPrice:9,price:.5},70)',ctx),36);

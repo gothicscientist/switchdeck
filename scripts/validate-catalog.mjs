@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 // In GitHub Actions, surface the failing check as an annotation so it is readable without the raw log.
 if(process.env.GITHUB_ACTIONS) process.on('uncaughtException',e=>{console.log('::error title=catalog check::'+String(e.message).replace(/\n/g,' ').slice(0,900));process.exit(1)});
 import {readFile} from 'node:fs/promises';
-import vm from 'node:vm';
+import {loadFullCatalog} from './catalog-pack.mjs';
 import {parseVideosFile} from './sound-videos.mjs';
 import {digest,requiredFields,EXTRA_KINDS,SWITCH_SYSTEMS,soundFromMaterials,MOD_TYPES} from './catalog-lib.mjs';
 const base=new URL('../data/',import.meta.url);
@@ -24,8 +24,7 @@ for(const p of products){
 }
 for(const i of index){const p=byId.get(i.id);assert.ok(p.images.includes(i.image)||(new URL(i.image).protocol==='https:'&&new URL(i.image).hostname===new URL(p.images[0]).hostname),'directory image '+i.id);assert.equal(i.price,p.priceMin);assert.ok(manifest.shards.includes(i.shard))}
 for(const [cat,info] of Object.entries(manifest.categories))assert.equal(info.count,products.filter(p=>p.category===cat).length);
-const ctx={window:{}};vm.runInNewContext(await readFile(new URL('builder-catalog.js',base),'utf8'),ctx);
-const catalog=ctx.window.SWITCHDECK_CATALOG;
+const catalog=await loadFullCatalog(base);
 assert.equal(catalog.switches.length,manifest.builderSwitchCount);assert.equal(catalog.extras.length,manifest.builderExtraCount);
 for(const [k,m] of [['cases','builderCaseCount'],['keycaps','builderKeycapCount'],['stabs','builderStabCount'],['pcbs','builderPcbCount'],['plates','builderPlateCount']])assert.equal((catalog[k]||[]).length,manifest[m]??0,k);
 // A shown photo must have passed the image check, which records the product's outline in the frame.
