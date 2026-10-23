@@ -1090,8 +1090,9 @@ function styleFit(b,want){
   }
   return yes?'yes':'check';
 }
-const FACT_SCORE={yes:8,check:0,no:-12};
-function factScore(b,ans){let s=0; for(const v of [styleFit(b,ans.style),mountFit(b,ans.mount),fwFit(b,ans.firmware)]) if(v) s+=FACT_SCORE[v]; return s}
+// The layout weighs most: it decides which keys the board has, where mount and firmware change how it feels and is set up.
+const FACT_SCORE={yes:8,check:0,no:-12}, STYLE_SCORE={yes:16,check:0,no:-24};
+function factScore(b,ans){const st=styleFit(b,ans.style); let s=st?STYLE_SCORE[st]:0; for(const v of [mountFit(b,ans.mount),fwFit(b,ans.firmware)]) if(v) s+=FACT_SCORE[v]; return s}
 // The drawn layout. A 60% shows the Tsangan or HHKB bottom row the build asks for when a part names it, or the one
 // fixed style its parts name.
 function drawLayout(b){

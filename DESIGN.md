@@ -83,3 +83,11 @@ licence is recorded in assets/quiz/CREDITS.md: openly licensed Commons photos, o
 - The link preview (assets/og.png, 1200x630) is drawn from the site's own boards by scripts/og-image.mjs, in the stone palette with Host Grotesk. Rerun it after a palette or wordmark change rather than editing the PNG.
 - Search and AI-assistant copy stays factual. /about ("How Thock works"), llms.txt and the sitemap are filled from the catalog manifest on every deploy, so figures never go stale. The about page questions live in scripts/seo-content.mjs.
 - No visible SEO clutter in the app: the only additions are a quiet "How Thock works" link in the build and directory footers. Nav icons are real links so crawlers can follow them.
+
+## Finder questions
+
+- Order: size, the 60% layout (only after a 60% answer), feel, sound, look, use, connection, solder, mount, firmware, budget. One tap each, always with a "No preference" way out.
+- Sizes run 40% to full size. 50% is left out: almost every 50% board is ortholinear and needs ortho keycaps. ISO is left out until ISO keycap sets and boards are in the catalog.
+- The 60% layout options are drawn boards (Standard, Tsangan with its 7u spacebar, HHKB with blank bottom corners), the same stone minis as the size question. A build drawn later shows the Tsangan or HHKB row only where a part's listing names it.
+- Mount and firmware art is line drawing in the stone ink of the sound waves: a case cross-section (plate screwed to the walls, or floating on soft gaskets) and keycaps (a remap arrow, wireless arcs). No photos, no brand marks.
+- Mount, firmware and layout answers rank, never hide: a board whose store names the answer ranks first, one that names nothing ranks lower, and one that names only something else ranks lowest. Size, connection, solder and budget stay filters.
