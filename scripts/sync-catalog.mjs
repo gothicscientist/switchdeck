@@ -1,3 +1,4 @@
+import {supplemental40s,supplementalSources,reviewedAt} from './supplemental-40s.mjs';
 import {mkdir,readFile,writeFile,rename,readdir,rm} from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
 import path from 'node:path';
@@ -41,8 +42,9 @@ export async function syncCatalog({offline=false,log=console.log,photos=true}={}
   }}));
   snapshots.sort((a,b)=>SOURCES.indexOf(a.source)-SOURCES.indexOf(b.source));
   if(snapshots.some(s=>s.status==='failed'||(s.status==='stale'&&!s.source.optional)))throw Error('One or more sources failed. Existing published catalog was retained. Fix source or restore its snapshot before publishing.');
-  const products=snapshots.flatMap(({source,snapshot})=>snapshot.products.map(p=>normalize(p,source,snapshot.checkedAt)).filter(Boolean)).sort((a,b)=>a.id.localeCompare(b.id));
+  const products=snapshots.flatMap(({source,snapshot})=>snapshot.products.map(p=>normalize(p,source,snapshot.checkedAt)).filter(Boolean)).concat(supplemental40s()).sort((a,b)=>a.id.localeCompare(b.id));
   if(products.length<500)throw Error('Unexpectedly small catalog; existing catalog retained');
+  for(const source of supplementalSources) snapshots.push({source,snapshot:{checkedAt:reviewedAt,products:products.filter(p=>p.sourceId===source.id)},status:'reviewed-snapshot'});
   const previous=await readFile(path.join(root,'data/catalog-manifest.json'),'utf8').then(JSON.parse).catch(()=>null);
   if(previous&&products.length<previous.listingCount*0.8)throw Error('Catalog shrank more than 20%; review sources before accepting a destructive refresh');
   const dir=path.join(root,'data');await mkdir(path.join(dir,'parts'),{recursive:true});

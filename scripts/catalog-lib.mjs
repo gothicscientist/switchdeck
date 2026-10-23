@@ -634,9 +634,9 @@ function keyboardsRule(p) {
   const boards=vs.filter(boardVariant); if(!boards.length) return {reason:'no board variant'};
   const v=bare||cheapest(boards);
   const board=boardName(n,cleanBrand(p),p.retailer), switchSystem=switchSystemOf(n)||s.switchSystem||(LOW_PROFILE_MODELS.test(n)?'low-profile':null);
-  return {parts:{...base(p,v),cat:'case',brand:board.brand,name:board.name,layout:L.layout,layoutLabel:L.label,keys:null,knob:/\bknob\b/i.test(n),mount:tidy(s.mount??published(p,/mount/i)),material:tidy(s.material??published(p,/case material|^material$/i)),conn:s.connection||connOf(n)||connOf(v.name)||'Not listed',colors:colorsOf(p,v),assembled,...(switchSystem?{switchSystem}:{}),...boardFacts(p,v,boards),
+  return {parts:{...base(p,v),cat:'case',brand:board.brand,name:board.name,layout:L.layout,layoutLabel:L.label,keys:null,knob:p.builderKnob===true||/\bknob\b/i.test(n),mount:tidy(s.mount??published(p,/mount/i)),material:tidy(s.material??published(p,/case material|^material$/i)),conn:s.connection||connOf(n)||connOf(v.name)||'Not listed',colors:colorsOf(p,v),assembled,...(switchSystem?{switchSystem}:{}),...boardFacts(p,v,boards),
     kit:{pcb:{hotswap:s.hotswap??hotOf(n+' '+v.name),pins:null,led:null,rgb:null,stabs:[]},plate:null,stabs:null},
-    blurb:assembled?'Sold assembled. Switches and keycaps you pick here are swaps or upgrades.':'Kit listing. Check the store for exactly what is included.'}};
+    blurb:p.builderNote||(assembled?'Sold assembled. Switches and keycaps you pick here are swaps or upgrades.':'Kit listing. Check the store for exactly what is included.')}};
 }
 
 // ---- bare cases, PCBs and plates ----

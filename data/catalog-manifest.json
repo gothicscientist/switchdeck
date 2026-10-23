@@ -1,16 +1,16 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-23T04:08:23.052Z",
-  "listingCount": 9577,
+  "generatedAt": "2026-10-23T09:04:32.685Z",
+  "listingCount": 9582,
   "inStockCount": 4900,
   "builderSwitchCount": 2075,
   "builderExtraCount": 1399,
-  "builderCaseCount": 1778,
+  "builderCaseCount": 1783,
   "builderKeycapCount": 1957,
   "builderStabCount": 135,
   "builderPcbCount": 257,
   "builderPlateCount": 578,
-  "builderSoldOutCount": 4183,
+  "builderSoldOutCount": 4188,
   "builderAdmission": {
     "keycaps": {
       "total": 2939,
@@ -31,9 +31,9 @@
       }
     },
     "keyboards": {
-      "total": 2651,
+      "total": 2656,
       "admitted": 760,
-      "soldOutAdmitted": 1105,
+      "soldOutAdmitted": 1110,
       "excluded": {
         "layout the builder can't draw": 150,
         "no layout": 361,
@@ -113,7 +113,7 @@
   "categories": {
     "keyboards": {
       "label": "Keyboards & kits",
-      "count": 2651
+      "count": 2656
     },
     "cases": {
       "label": "Cases",
@@ -361,6 +361,46 @@
       "rawProducts": 0,
       "listings": 0,
       "error": "Unexpected token '<', \"<!-- 82042\"... is not valid JSON"
+    },
+    {
+      "id": "akko-direct",
+      "name": "Akko",
+      "url": "https://en.akkogear.com",
+      "currency": "USD",
+      "status": "reviewed-snapshot",
+      "checkedAt": "2026-10-23T07:00:00.000Z",
+      "rawProducts": 1,
+      "listings": 1
+    },
+    {
+      "id": "mechwild",
+      "name": "MechWild",
+      "url": "https://mechwild.com",
+      "currency": "USD",
+      "status": "reviewed-snapshot",
+      "checkedAt": "2026-10-23T07:00:00.000Z",
+      "rawProducts": 2,
+      "listings": 2
+    },
+    {
+      "id": "ringerkeys",
+      "name": "Ringer Keys",
+      "url": "https://ringerkeys.com",
+      "currency": "USD",
+      "status": "reviewed-snapshot",
+      "checkedAt": "2026-10-23T07:00:00.000Z",
+      "rawProducts": 1,
+      "listings": 1
+    },
+    {
+      "id": "keebio",
+      "name": "Keebio",
+      "url": "https://keeb.io",
+      "currency": "USD",
+      "status": "reviewed-snapshot",
+      "checkedAt": "2026-10-23T07:00:00.000Z",
+      "rawProducts": 1,
+      "listings": 1
     }
   ],
   "shards": [
@@ -483,7 +523,8 @@
     "parts/0116.json",
     "parts/0117.json",
     "parts/0118.json",
-    "parts/0119.json"
+    "parts/0119.json",
+    "parts/supplemental-40s.json"
   ],
-  "fingerprint": "8d9aa6e8eee95e09dfc595ef8491280b714be0cd276500109a42dfeb0112d69b"
+  "fingerprint": "d192242c07c660edb2cc29d81af464dd7c4d77b4a13bcc0727492f3ded2bb4df"
 }
