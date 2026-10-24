@@ -39,6 +39,11 @@ globalThis.SWITCHDECK_SOUND_VIDEOS={
   "title": "Cherry MX2A Black sound test",
   "creator": "DadTech1981"
  },
+ "cherrymx2abrown": {
+  "video": "G2yxhX59vS4",
+  "title": "Keebpilot Test CHERRY MX2A Brown Switch Sound Test",
+  "creator": "KeebPilot"
+ },
  "cherrymx2apetallight": {
   "video": "Q09trXIcTJo",
   "title": "Cherry MX2A Petal Light Clack Tactile Switch - Sound test - PC/FR4/CF Plate (Full Foam - No Foam)"
@@ -49,6 +54,11 @@ globalThis.SWITCHDECK_SOUND_VIDEOS={
   "creator": "Click and Thock"
  },
  "cherrymxclear": {
+  "video": "6xtTrQAO600",
+  "title": "Cherry MX Ergo Clear Tactile Switches Sound Test",
+  "creator": "LumeKeebs"
+ },
+ "cherrymxergoclear": {
   "video": "6xtTrQAO600",
   "title": "Cherry MX Ergo Clear Tactile Switches Sound Test",
   "creator": "LumeKeebs"
@@ -108,6 +118,11 @@ globalThis.SWITCHDECK_SOUND_VIDEOS={
   "title": "Durock Black Lotus 63.5g Switch Sound Test",
   "creator": "Mechanical Keyboards"
  },
+ "durockburgundy": {
+  "video": "K7KRbA6XYaM",
+  "title": "Durock Burgundy Light Tactile Switch Stereo Sound Test, Stock Lubed Filmed Tapping Typing",
+  "creator": "issey83"
+ },
  "durockcerulean": {
   "video": "vA61NSn7yuE",
   "title": "Durock Cerulean // The Sounds of Lockdown",
@@ -118,10 +133,30 @@ globalThis.SWITCHDECK_SOUND_VIDEOS={
   "title": "DUROCK Daybreak Silent Typing Sounds [NOT LUBED] | Silent Alpaca analog 67g",
   "creator": "KiryaChainik"
  },
+ "durockdolphinsilent": {
+  "video": "WuYaTy957_s",
+  "title": "Durock Silent Dolphin Switch Sound Test and Review | Classic Silent",
+  "creator": "Click and Thock"
+ },
  "durockkorbs": {
   "video": "GM42vthCM0g",
   "title": "Dolphin with stock Durock Korbs Typing Sounds",
   "creator": "Switch Sounds"
+ },
+ "durockl1creamyyellow": {
+  "video": "gTmiW8ZnrpU",
+  "title": "Durock L1 Creamy Yellow Switch Sound Test and Review | Really Smooth!",
+  "creator": "Click and Thock"
+ },
+ "durockl5blue": {
+  "video": "79nVfevaQMQ",
+  "title": "Durock L5 Clear Blue Sound Test with GMK, MT3 and SA Keycaps",
+  "creator": "Click and Thock"
+ },
+ "durockl7smokeyl762g": {
+  "video": "ERqjdhpJP6c",
+  "title": "Durock L7 Smokey 62g Typing Sound Test",
+  "creator": "Tatesuia"
  },
  "durocklavender": {
   "video": "V4ial6LC5QY",
@@ -157,6 +192,11 @@ globalThis.SWITCHDECK_SOUND_VIDEOS={
   "video": "K-0JRAbvwmc",
   "title": "Stock Durock Shrimp Silent Tactile Sound Test",
   "creator": "Jaeyou Park"
+ },
+ "durocksmokeyt1": {
+  "video": "5xJz5k2n_3w",
+  "title": "Stock Durock T1 Smokey Tactile Switches Sound Test on a Tofu 60 Mechanical Keyboard",
+  "creator": "Joshua"
  },
  "durockt1": {
   "video": "Un2utd6jvGc",
@@ -260,6 +300,11 @@ globalThis.SWITCHDECK_SOUND_VIDEOS={
   "title": "Gateron Baby Kangaroo + Raccoon Review: Marbly!",
   "creator": "Milktooth"
  },
+ "gateronbabyraccoon20": {
+  "video": "vZ57sXtPsdo",
+  "title": "Gateron Baby Raccoon 2.0 55g Sound Test",
+  "creator": "Mechanical Keyboards"
+ },
  "gateronbeer": {
   "video": "WTey0OOUy7Q",
   "title": "Gateron Beer Switch Review: Crisp and Refreshing",
@@ -268,6 +313,16 @@ globalThis.SWITCHDECK_SOUND_VIDEOS={
  "gateronblackink": {
   "video": "9fzcJ67SvTU",
   "title": "Gateron Ink Black V2 Sound Test | The Ultimate Cherry MX Black Killer?",
+  "creator": "Click and Thock"
+ },
+ "gateronblacklotushe": {
+  "video": "phBYo5H95oE",
+  "title": "Mekanisk Fjell / GATERON Magnetic Black Lotus HE / Silicone tube MOD Sound Test",
+  "creator": "何野何某"
+ },
+ "gateronblueinkv2": {
+  "video": "PkOv_f42zbc",
+  "title": "Gateron INK V2 Blue Sound Test with GMK, MT3 and SA Keycaps",
   "creator": "Click and Thock"
  },
  "gateronbrown": {
@@ -279,6 +334,11 @@ globalThis.SWITCHDECK_SOUND_VIDEOS={
   "video": "7hDuqu00pZE",
   "title": "⌨️ [modified] DURGOD K620W - Gateron CAP Black Crystal V2 silver lubed typing sounds",
   "creator": "VoldemarHardware"
+ },
+ "gateroncapgoldenbrownv2": {
+  "video": "82Zm7TBKGII",
+  "title": "Gateron CAP Golden Brown V2 Tactile Switch - Quick Sound Test (Stock - Factory Lubed)",
+  "creator": "2shycats"
  },
  "gateroncapgoldenyellowv2": {
   "video": "BQUjlkFWwF4",
@@ -294,6 +354,11 @@ globalThis.SWITCHDECK_SOUND_VIDEOS={
   "video": "EUcjc7lgB-g",
   "title": "Gateron Smoothie Chocolate Tactile Switches Sound Test!",
   "creator": "Click and Thock"
+ },
+ "gateroncjpom": {
+  "video": "vBcGNMNLvwM",
+  "title": "INK + POM Hybrid?? | Gateron CJ Switch Overview + Typing Sound Test",
+  "creator": "Jaeyou Park"
  },
  "gaterondualraillunarprobe": {
   "video": "qNandH-_9pc",
@@ -332,6 +397,11 @@ globalThis.SWITCHDECK_SOUND_VIDEOS={
   "video": "Gglo3Jk5xHE",
   "title": "Lubed Gateron Silent Ink Black V2 Typing Sound Test",
   "creator": "Jaeyou Park"
+ },
+ "gateroninkv2v2black": {
+  "video": "9fzcJ67SvTU",
+  "title": "Gateron Ink Black V2 Sound Test | The Ultimate Cherry MX Black Killer?",
+  "creator": "Click and Thock"
  },
  "gateronkhonsu": {
   "video": "td3nVDOmGdQ",
@@ -385,6 +455,11 @@ globalThis.SWITCHDECK_SOUND_VIDEOS={
   "video": "0UWGa_HDzz0",
   "title": "Gateron Melodic Sound Test and Review"
  },
+ "gateronmilkyblack": {
+  "video": "9eOi2vBehhE",
+  "title": "Gateron Milky Black | Sound Test | Kbdfans",
+  "creator": "Kim Jichu"
+ },
  "gateronmilkybrown": {
   "video": "94GvkLQxnks",
   "title": "Gateron Milky Brown sound Test",
@@ -393,6 +468,11 @@ globalThis.SWITCHDECK_SOUND_VIDEOS={
  "gateronmilkyprogateronks3yellow": {
   "video": "4Ib9PVhSt_s",
   "title": "Gateron KS-3 Milky Yellow Pro Switch Sound Test",
+  "creator": "LumeKeebs"
+ },
+ "gateronmilkyredpro": {
+  "video": "i_z2X1IcBGI",
+  "title": "Gateron KS-3 Milky Red Pro Switch Sound Test",
   "creator": "LumeKeebs"
  },
  "gateronmilkyyellow": {
@@ -454,6 +534,26 @@ globalThis.SWITCHDECK_SOUND_VIDEOS={
   "title": "Gateron Oil King Yellow Heavy Tactile switch Sound Test!",
   "creator": "Click and Thock"
  },
+ "gateronopticalblue": {
+  "video": "KNbZFLok_0g",
+  "title": "GK61 Gateron Optical Blue Sound Test",
+  "creator": "htz"
+ },
+ "gateronopticalbrown": {
+  "video": "O7f-bncOxO0",
+  "title": "Gateron Optical Brown Typing Sounds [LUBED] | Modded Gateron Optical Brown Tactile Switches",
+  "creator": "KiryaChainik"
+ },
+ "gateronopticalred": {
+  "video": "TrDZmSQ4SFI",
+  "title": "Gateron Optical Red Switch Typing Test - Slow and Fast WPM",
+  "creator": "Romsicle"
+ },
+ "gateronopticalyellow": {
+  "video": "fCj5EkbcBTc",
+  "title": "Gateron Optical Yellow Switches - Sound Test",
+  "creator": "Fotonz"
+ },
  "gateronpro30black": {
   "video": "_y-E2nrV8Tk",
   "title": "GMK67 | Gateron G Pro 3.0 Switch (Black) Sound Test",
@@ -498,10 +598,20 @@ globalThis.SWITCHDECK_SOUND_VIDEOS={
   "title": "Lubed Gateron Silent Ink Black V2 Typing Sound Test",
   "creator": "Jaeyou Park"
  },
+ "gateronsilentred": {
+  "video": "Q6dZgQeekxU",
+  "title": "Gateron Silent Red Sound Test STOCK & Compared to Normal Switches (Scuffed) | Mechanical Keyboard",
+  "creator": "Kowaru"
+ },
  "gateronsilentyellow": {
   "video": "Pb0PEzdUvno",
   "title": "Stock Gateron Silent Yellow Sound Test",
   "creator": "Jaeyou Park"
+ },
+ "gateronsmd": {
+  "video": "mFDcmnEi2ps",
+  "title": "Gateron KS-9 SMD Yellow Switch Sound Test, Stock/Lubed/Filmed",
+  "creator": "issey83"
  },
  "gateronsmoothie": {
   "video": "IlnVDqxA-qw",
@@ -570,6 +680,11 @@ globalThis.SWITCHDECK_SOUND_VIDEOS={
   "video": "pwuHPlq874s",
   "title": "Haimu Heartbeat Silent Switch Test"
  },
+ "haimupearllemon": {
+  "video": "sNw8bpDYXhE",
+  "title": "MONSGEEK M3 Haimu pearl lemon switch typing Sound",
+  "creator": "JoWs"
+ },
  "haimuwhispersilent": {
   "video": "T0EFbtjtPmo",
   "title": "Haimu Whisper Silent Tactile Switches | Cannon Keys | Sound Test #haimu",
@@ -589,6 +704,11 @@ globalThis.SWITCHDECK_SOUND_VIDEOS={
   "video": "ClHEWiomnbo",
   "title": "HMX Aster Linear Switch | Sound Test",
   "creator": "Divinikey"
+ },
+ "hmxblossom": {
+  "video": "re6FG-IBsts",
+  "title": "Maybe we need to pause for a sec | HMX Blossom linear switch sound test review",
+  "creator": "The Switch Journal"
  },
  "hmxcola": {
   "video": "7k_ex78Z9jY",
@@ -678,6 +798,21 @@ globalThis.SWITCHDECK_SOUND_VIDEOS={
   "title": "Jelly Epoch with JWK Seal sound test",
   "creator": "Keebaholics"
  },
+ "kailhboxblack": {
+  "video": "e3ANj8tzPFQ",
+  "title": "Kailh BOX Black Switch Sound Test and Review | Too Heavy?",
+  "creator": "Click and Thock"
+ },
+ "kailhboxbrown": {
+  "video": "Vu8Tiy3q-vM",
+  "title": "The Ultimate KAILH BOX BROWN Sound Test | Smooth and subtle tactile switch!",
+  "creator": "Click and Thock"
+ },
+ "kailhboxred": {
+  "video": "k8Dx4Xmfc00",
+  "title": "Kailh Box RED BEAN PUDDING // Sound Test & Review",
+  "creator": "KeebNews"
+ },
  "kailhboxwinter": {
   "video": "sshjsoT80QE",
   "title": "Ultimate Kailh BOX Winter Tactile Switch Sound Tests!",
@@ -703,10 +838,30 @@ globalThis.SWITCHDECK_SOUND_VIDEOS={
   "title": "Kailh Polia Switch Review and Sound Test",
   "creator": "Red Boy Boards"
  },
+ "kailhproburgundy": {
+  "video": "dyAHRy7PY3M",
+  "title": "Filmed Kailh Pro Burgundy Sound Test",
+  "creator": "Amy Tran"
+ },
+ "kailhpropurple": {
+  "video": "O4I5EHhzCyY",
+  "title": "The Ultimate KAILH PRO PURPLE Sound Test | Subtle Tactility Switch!",
+  "creator": "Click and Thock"
+ },
  "kbdfansrollerv2": {
   "video": "GwtkoEmA5pg",
   "title": "KBDfans Roller v2 sound test",
   "creator": "DadTech1981"
+ },
+ "keebmonkeyiceberg": {
+  "video": "CE1UUTeb0Q8",
+  "title": "KeebMonkey KBM68 Keyboard + Iceberg Linear Switch Type Test",
+  "creator": "KeebMonkey"
+ },
+ "keychronsilentkpro": {
+  "video": "sajeThEs5_8",
+  "title": "Keychron Silent Red K Pro switch stock(Factory lubed) sound on DAREU A104 Pro",
+  "creator": "GameCLEF"
  },
  "keygeekcrepe": {
   "video": "Sq9SeAz6_Bo",
@@ -717,6 +872,11 @@ globalThis.SWITCHDECK_SOUND_VIDEOS={
   "video": "P3OJHZ2lUi4",
   "title": "Keygeek Full Nylon sound test on Typface Univers",
   "creator": "Nguyen Voy"
+ },
+ "keygeekneoxkeygeekoat": {
+  "video": "Uw8fUjk-eNk",
+  "title": "KeyGeek x Neo OAT | Evoworks Evo80 | sound test",
+  "creator": "Jur1cek"
  },
  "keygeekpeachcheesecake": {
   "video": "AKSGIW-kU0Y",
@@ -737,6 +897,11 @@ globalThis.SWITCHDECK_SOUND_VIDEOS={
   "title": "Keygeek T2 sound test",
   "creator": "DadTech1981"
  },
+ "keygeekxevoworksrye": {
+  "video": "6IIOqWlFsZ8",
+  "title": "Typing Test: Keygeek × Evoworks Rye Linear Switches | Balanced & Crisp",
+  "creator": "Divinikey"
+ },
  "keygeeky2": {
   "video": "4nwsAcXfRPo",
   "title": "Keygeek Y2 Linear Switches Sound Test!",
@@ -746,6 +911,11 @@ globalThis.SWITCHDECK_SOUND_VIDEOS={
   "video": "PgrwNSTeOP4",
   "title": "Finally, a genuine upgrade | Keygeek Y2X linear switch sound test review",
   "creator": "The Switch Journal"
+ },
+ "kfabsunpistachiogelato": {
+  "video": "xMMrdA0q5xs",
+  "title": "KFA x BSUN Pistachio Gelato Switch Sound Test",
+  "creator": "KeebsForAll"
  },
  "kprepublicemotoyslittledaisylittledaisylinear": {
   "video": "S-Upa-L-lp0",
@@ -791,19 +961,49 @@ globalThis.SWITCHDECK_SOUND_VIDEOS={
   "title": "Momoka Frog & Flamingo Switches (Review + Sound Test)",
   "creator": "Lv7Kevin"
  },
+ "momokafrogv3": {
+  "video": "MXY4XcbP0pE",
+  "title": "Momoka Frog V3 Factory Prelubed State Sound Test | Freebird60",
+  "creator": "Jaeyou Park"
+ },
+ "momokashark": {
+  "video": "MRuACjC8sGY",
+  "title": "Good Weird or Bad Weird? - Momoka Shark Tactile Review",
+  "creator": "nearLucid"
+ },
  "owlablatte": {
   "video": "xQXWrGfZp8E",
   "title": "Neo65 Sound Test | Aluminum Plate | Owlab Latte | GMK",
   "creator": "Cats are okay"
  },
+ "owlablondonfogv2": {
+  "video": "6UqpBU6t0LM",
+  "title": "Owlab London fog v2 Linear Switches | Sound Test",
+  "creator": "Divinikey"
+ },
  "shortcutstudiosc": {
   "video": "jgUyTuO9UGU",
   "title": "Divinikey x ModoKey Tess65 with Shortcut Studio SC Linear Switches Typing Test"
+ },
+ "sillyworkshyacinthv2u": {
+  "video": "DRSf9Oqihcg",
+  "title": "HMX Sillyworks Hyacinth V2U Sound Test #linear #mechanicalgamingkeyboard #customkeyboard #hmx",
+  "creator": "LumeKeebs"
+ },
+ "tecseeblueskycloud": {
+  "video": "R_mfNYmz5c8",
+  "title": "Tecsee Blue Sky Cloud Tactile 63.5g Typing Sounds",
+  "creator": "Switch Sounds"
  },
  "tecseecarrot": {
   "video": "gkE8PILAbEA",
   "title": "Tecsee Carrot Quick Review & Sound Tests",
   "creator": "Andrew Nguyen"
+ },
+ "tecseecarrotlubed": {
+  "video": "SMGX7o3JcbM",
+  "title": "Tecsee Carrot Switches Stock v Lubed sound test #mechanicalkeyboard #keyboard #keyboardasmr",
+  "creator": "bootcutbrian"
  },
  "tecseecoffeechipicecream": {
   "video": "D1QADwa2UAg",
@@ -814,6 +1014,11 @@ globalThis.SWITCHDECK_SOUND_VIDEOS={
   "video": "tHNycNYT9j0",
   "title": "Tecsee Coral Sound Test (Stock) | FR4 Plate | KBD67 MKII",
   "creator": "bean flick"
+ },
+ "tecseeicecandy": {
+  "video": "A1EG4bHL6hI",
+  "title": "Tecsee Ice Candy Sound Test",
+  "creator": "New"
  },
  "tecseemangoice": {
   "video": "5VKM4K2Sosw",
@@ -844,6 +1049,11 @@ globalThis.SWITCHDECK_SOUND_VIDEOS={
   "video": "s4-AJqEh1vY",
   "title": "Siren VK87 with lubed Tecsee Sunny Side Up Linears Typing Sounds",
   "creator": "LightningXI"
+ },
+ "ttcace": {
+  "video": "iHaNi2g0CK0",
+  "title": "iqunix F97 TTC ACE switches sound test",
+  "creator": "GAGO"
  },
  "ttcgoldpink": {
   "video": "E0HcldRBqds",
